@@ -27,6 +27,7 @@ public:
 		up.setZ(Up.getZ());
 		up.setM(Up.getM());
 	}
+
 	void setEye(AVector Eye) {
 		eye.setX(Eye.getX());
 		eye.setY(Eye.getY());
@@ -40,13 +41,23 @@ public:
 		at.setZ(At.getZ());
 		at.setM(At.getM());
 	}
-
+	XMMATRIX getviewMLookLget() { return viewMatrix; }
 	//
-	XMMATRIX viewMLookL(AVector, AVector, AVector);
+	void setviewMLookL(AVector, AVector, AVector);
+	
 	XMMATRIX ViewPerspective(float fov, float aspectRatio, float cerca, float lejos);
 	XMMATRIX ViewOrtographic(float, float, float, float);
+
+	void move(float, float, float);
 private:
-	AVector up, eye, at, resul;
+	XMMATRIX viewMatrix;
 	
+	AVector up, eye, at, w;
+	//frot
+	AVector zaxis;
+	//right
+	AVector xaxis;
+	//up
+	AVector yaxis;
 };
 

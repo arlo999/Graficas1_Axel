@@ -70,8 +70,9 @@ XMMATRIX                            g_World;
 XMMATRIX                            g_View;
 XMMATRIX                            g_Projection;
 XMFLOAT4                            g_vMeshColor( 0.7f, 0.7f, 0.7f, 1.0f );
+// creating camera
 
-
+ACamera camera;
 //--------------------------------------------------------------------------------------
 // Forward declarations
 //--------------------------------------------------------------------------------------
@@ -80,7 +81,7 @@ HRESULT InitDevice();
 void CleanupDevice();
 LRESULT CALLBACK    WndProc( HWND, UINT, WPARAM, LPARAM );
 void Render();
-
+void Update();
 
 //--------------------------------------------------------------------------------------
 // Entry point to the program. Initializes everything and goes into a message processing 
@@ -111,6 +112,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
         }
         else
         {
+            Update();
             Render();
         }
     }
@@ -484,7 +486,7 @@ HRESULT InitDevice()
     g_World = XMMatrixIdentity();
 
     // Initialize the view matrix
-    ACamera camera;
+  
     camera.setEye(AVector(0.0f, 3.0f, -6.0f,0));
     camera.setAt(AVector(0.0f, 1.0f, 0.0f,0));
     camera.setUp(AVector(0.0f, 1.0f, 0.0f,0));
@@ -494,8 +496,9 @@ HRESULT InitDevice()
     XMVECTOR At = XMVectorSet( 0.0f, 1.0f, 0.0f, 0.0f );
     XMVECTOR Up = XMVectorSet( 0.0f, 1.0f, 0.0f, 0.0f );
    
+   camera.setviewMLookL(camera.getEye(),camera.getAt(),camera.getUp());
    
-    g_View = camera.viewMLookL(camera.getEye(),camera.getAt(),camera.getUp());
+   g_View = camera.getviewMLookLget();
    
    
 //    g_View = XMMatrixLookAtLH( Eye, At, Up );
@@ -507,10 +510,10 @@ HRESULT InitDevice()
 
     // Initialize the projection matrix
     //g_Projection = XMMatrixPerspectiveFovLH( XM_PIDIV4, width / (FLOAT)height, 0.01f, 100.0f );
-    //g_Projection = camera.ViewPerspective(XM_PIDIV4, width / (FLOAT)height, 0.01f, 100.0f);
+    g_Projection = camera.ViewPerspective(XM_PIDIV4, width / (FLOAT)height, 0.01f, 100.0f);
     
     //g_Projection = XMMatrixOrthographicLH(XM_PIDIV4, width / (FLOAT)height, 0.01f, 100.0f);
-    g_Projection = camera.ViewOrtographic(XM_PIDIV4, width / (FLOAT)height, 0.01f, 100.0f);
+    //g_Projection = camera.ViewOrtographic(XM_PIDIV4, width / (FLOAT)height, 0.01f, 100.0f);
 
     CBChangeOnResize cbChangesOnResize;
     cbChangesOnResize.mProjection = XMMatrixTranspose( g_Projection );
@@ -553,7 +556,8 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 {
     PAINTSTRUCT ps;
     HDC hdc;
-
+    //vector translation de la camara
+    AVector translationCamara;
     switch( message )
     {
         case WM_PAINT:
@@ -564,11 +568,46 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
         case WM_DESTROY:
             PostQuitMessage( 0 );
             break;
+		case WM_KEYDOWN: {
+            UINT a = LOWORD(wParam);
+            switch (a) {
+                //flechas izquierda
+            case 37:
+                camera.move(1, 0, 0);
+                break;
+                //flechas arriba
+            case 38:
+                camera.move(0, 0, 1);
+                break;
+                //flecha derecha
+            case 39:
+                camera.move(-1, 0, 0);
+                break;
+                //flechas abaja
+            case 40:
+                camera.move(0, 0, -1);
+                break;
+            case 83:
+                camera.move(0, -1, 0);
+                break;
+
+            case 87:
+                camera.move(0, 1, 0);
+                break;
+
+            default:
+                break;
+            }
+         
+			
+
+			break;
+		}
 
         default:
             return DefWindowProc( hWnd, message, wParam, lParam );
     }
-
+  
     return 0;
 }
 
@@ -578,34 +617,17 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 //--------------------------------------------------------------------------------------
 void Render()
 {
-    // Update our time
-    static float t = 0.0f;
-    if( g_driverType == D3D_DRIVER_TYPE_REFERENCE )
-    {
-        t += ( float )XM_PI * 0.0125f;
-    }
-    else
-    {
-        static DWORD dwTimeStart = 0;
-        DWORD dwTimeCur = GetTickCount();
-        if( dwTimeStart == 0 )
-            dwTimeStart = dwTimeCur;
-        t = ( dwTimeCur - dwTimeStart ) / 1000.0f;
-    }
-
-    // Rotate cube around the origin
-    
-   
-    g_World = XMMatrixRotationY( t );
-  //  g_World = XMMatrixTranslation(0, t, 0);
-    // Modify the color
-    g_vMeshColor.x = ( sinf( t * 1.0f ) + 1.0f ) * 0.5f;
-    g_vMeshColor.y = ( cosf( t * 3.0f ) + 1.0f ) * 0.5f;
-    g_vMeshColor.z = ( sinf( t * 5.0f ) + 1.0f ) * 0.5f;
-
+  
     //
     // Clear the back buffer
     //
+    g_View = camera.getviewMLookLget();
+	CBNeverChanges cbNeverChanges;
+	cbNeverChanges.mView = XMMatrixTranspose(g_View);
+	g_pImmediateContext->UpdateSubresource(g_pCBNeverChanges, 0, NULL, &cbNeverChanges, 0, 0);
+
+
+
     float ClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f }; // red, green, blue, alpha
     g_pImmediateContext->ClearRenderTargetView( g_pRenderTargetView, ClearColor );
 
@@ -639,4 +661,33 @@ void Render()
     // Present our back buffer to our front buffer
     //
     g_pSwapChain->Present( 0, 0 );
+}
+
+void Update()
+{
+    // Update our time
+    static float t = 0.0f;
+    if (g_driverType == D3D_DRIVER_TYPE_REFERENCE)
+    {
+        t += (float)XM_PI * 0.0125f;
+    }
+    else
+    {
+        static DWORD dwTimeStart = 0;
+        DWORD dwTimeCur = GetTickCount();
+        if (dwTimeStart == 0)
+            dwTimeStart = dwTimeCur;
+        t = (dwTimeCur - dwTimeStart) / 1000.0f;
+    }
+
+    // Rotate cube around the origin
+
+
+    g_World = XMMatrixRotationY(t);
+    //  g_World = XMMatrixTranslation(0, t, 0);
+      // Modify the color
+    g_vMeshColor.x = (sinf(t * 1.0f) + 1.0f) * 0.5f;
+    g_vMeshColor.y = (cosf(t * 3.0f) + 1.0f) * 0.5f;
+    g_vMeshColor.z = (sinf(t * 5.0f) + 1.0f) * 0.5f;
+
 }

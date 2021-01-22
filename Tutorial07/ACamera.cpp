@@ -4,14 +4,16 @@ ACamera::ACamera()
 {
 }
 
-XMMATRIX ACamera::viewMLookL(AVector x, AVector y, AVector z)
+void ACamera::setviewMLookL(AVector x, AVector y, AVector z)
 {
-
-    AVector zaxis= (x-y);
+    //frot
+     zaxis= (x-y);
     zaxis.normalize();
-    AVector xaxis=(up.ProductoCruz(zaxis));
+    //right
+    xaxis=(up.ProductoCruz(zaxis));
     xaxis.normalize();
-    AVector yaxis=(zaxis.ProductoCruz(xaxis));
+   //up
+    yaxis =(zaxis.ProductoCruz(xaxis));
     
 
     XMMATRIX m_View(
@@ -20,7 +22,7 @@ XMMATRIX ACamera::viewMLookL(AVector x, AVector y, AVector z)
         XMVectorSet(xaxis.getZ(), yaxis.getZ(), zaxis.getZ(),0),
         XMVectorSet(xaxis.ProductoPunto(x)*(-1),- yaxis.ProductoPunto(x) * (-1),-zaxis.ProductoPunto(x) * (-1),1));
    
-    return m_View;
+    viewMatrix = m_View;
     
     
 }
@@ -51,4 +53,28 @@ XMMATRIX ACamera::ViewOrtographic(float viewWidth, float viewHeigth, float cerca
     
     );
     return ortographic;
+}
+
+void ACamera::move(float x, float y, float z)
+{
+    //up
+    AVector UPaxis = zaxis;
+    AVector Ataxis = yaxis;
+    AVector Eyeaxis = xaxis;
+    UPaxis *= z;
+    Ataxis *= y;
+    Eyeaxis *= x;
+    
+    AVector resul(0, 0, 0);
+    resul += UPaxis;
+    resul += Ataxis;
+    resul += Eyeaxis;
+    
+   
+    eye= getEye() + resul;
+    at=getAt() + resul;
+   
+    
+    setviewMLookL(eye,at,up);
+   
 }
