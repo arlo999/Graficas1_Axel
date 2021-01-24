@@ -16,6 +16,7 @@
 #include "ACamera.h"
 #include "AVector.h"
 #include "AMatriz4.h"
+#include <windowsx.h>
 
 //--------------------------------------------------------------------------------------
 // Structures
@@ -70,9 +71,12 @@ XMMATRIX                            g_World;
 XMMATRIX                            g_View;
 XMMATRIX                            g_Projection;
 XMFLOAT4                            g_vMeshColor( 0.7f, 0.7f, 0.7f, 1.0f );
+bool perspective = false;
+ACamera* camera;
+POINT Cursor;
+POINT CursorFinal;
 // creating camera
 
-ACamera camera;
 //--------------------------------------------------------------------------------------
 // Forward declarations
 //--------------------------------------------------------------------------------------
@@ -198,6 +202,9 @@ HRESULT CompileShaderFromFile( WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR sz
 //--------------------------------------------------------------------------------------
 HRESULT InitDevice()
 {
+
+
+  
     HRESULT hr = S_OK;
 
     RECT rc;
@@ -486,38 +493,43 @@ HRESULT InitDevice()
     g_World = XMMatrixIdentity();
 
     // Initialize the view matrix
-  
-    camera.setEye(AVector(0.0f, 3.0f, -6.0f,0));
-    camera.setAt(AVector(0.0f, 1.0f, 0.0f,0));
-    camera.setUp(AVector(0.0f, 1.0f, 0.0f,0));
+    camera = new ACamera();
+    camera->setEye(AVector(0.0f, 3.0f, -6.0f,0));
+    camera->setAt(AVector(0.0f, 1.0f, 0.0f,0));
+    camera->setUp(AVector(0.0f, 1.0f, 0.0f,0));
     
-
+    /*
+    * direcX Formula
     XMVECTOR Eye = XMVectorSet( 0.0f, 3.0f, -6.0f, 0.0f );
     XMVECTOR At = XMVectorSet( 0.0f, 1.0f, 0.0f, 0.0f );
     XMVECTOR Up = XMVectorSet( 0.0f, 1.0f, 0.0f, 0.0f );
-   
-   camera.setviewMLookL(camera.getEye(),camera.getAt(),camera.getUp());
-   
-   g_View = camera.getviewMLookLget();
+    */
+  
    
    
+   
+   //direcX forma
 //    g_View = XMMatrixLookAtLH( Eye, At, Up );
+	
+    
+    camera->setviewMLookL(camera->getEye(), camera->getAt(), camera->getUp());
 
+	g_View = camera->getviewMLookLget();
     
     CBNeverChanges cbNeverChanges;
     cbNeverChanges.mView = XMMatrixTranspose( g_View );
     g_pImmediateContext->UpdateSubresource( g_pCBNeverChanges, 0, NULL, &cbNeverChanges, 0, 0 );
 
-    // Initialize the projection matrix
-    //g_Projection = XMMatrixPerspectiveFovLH( XM_PIDIV4, width / (FLOAT)height, 0.01f, 100.0f );
-    g_Projection = camera.ViewPerspective(XM_PIDIV4, width / (FLOAT)height, 0.01f, 100.0f);
-    
-    //g_Projection = XMMatrixOrthographicLH(XM_PIDIV4, width / (FLOAT)height, 0.01f, 100.0f);
-    //g_Projection = camera.ViewOrtographic(XM_PIDIV4, width / (FLOAT)height, 0.01f, 100.0f);
+    g_Projection = camera->ViewPerspective(XM_PIDIV4, width / (FLOAT)height, 0.01f, 100.0f);
 
-    CBChangeOnResize cbChangesOnResize;
-    cbChangesOnResize.mProjection = XMMatrixTranspose( g_Projection );
-    g_pImmediateContext->UpdateSubresource( g_pCBChangeOnResize, 0, NULL, &cbChangesOnResize, 0, 0 );
+	CBChangeOnResize cbChangesOnResize;
+	cbChangesOnResize.mProjection = XMMatrixTranspose(g_Projection);
+	g_pImmediateContext->UpdateSubresource(g_pCBChangeOnResize, 0, NULL, &cbChangesOnResize, 0, 0);
+    // Initialize the projection matrix DirectX
+    //g_Projection = XMMatrixPerspectiveFovLH( XM_PIDIV4, width / (FLOAT)height, 0.01f, 100.0f );
+    //g_Projection = XMMatrixOrthographicLH(XM_PIDIV4, width / (FLOAT)height, 0.01f, 100.0f);
+    
+   
 
     return S_OK;
 }
@@ -568,33 +580,65 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
         case WM_DESTROY:
             PostQuitMessage( 0 );
             break;
-		case WM_KEYDOWN: {
+		case WM_LBUTTONDOWN:
+			Cursor.x = GET_X_LPARAM(lParam);
+			Cursor.y = GET_Y_LPARAM(lParam);
+			
+            // do dragging
+			//SendMessage(hWnd, WM_NCLBUTTONDOWN, HTCAPTION, 0);
+
+            break;
+        case WM_LBUTTONUP:
+			CursorFinal.x = GET_X_LPARAM(lParam);
+			CursorFinal.y = GET_Y_LPARAM(lParam);
+            camera->rotate((CursorFinal.x - Cursor.x), (CursorFinal.y - Cursor.y), 0);
+            
+            break;
+        case WM_KEYDOWN: {
             UINT a = LOWORD(wParam);
             switch (a) {
                 //flechas izquierda
             case 37:
-                camera.move(1, 0, 0);
+                camera->move(1, 0, 0);
                 break;
                 //flechas arriba
             case 38:
-                camera.move(0, 0, 1);
+                camera->move(0, 0, 1);
                 break;
                 //flecha derecha
             case 39:
-                camera.move(-1, 0, 0);
+                camera->move(-1, 0, 0);
                 break;
                 //flechas abaja
             case 40:
-                camera.move(0, 0, -1);
+                camera->move(0, 0, -1);
                 break;
             case 83:
-                camera.move(0, -1, 0);
+                camera->move(0, -1, 0);
                 break;
 
             case 87:
-                camera.move(0, 1, 0);
+                camera->move(0, 1, 0);
                 break;
-
+          
+            case 9:
+                if (perspective==true)
+                {
+                    g_Projection = camera->ViewPerspective(XM_PIDIV4, 640 / (FLOAT)480, 0.01f, 100.0f);
+                    perspective = false;
+                }
+                else {
+                
+                g_Projection = camera->ViewOrtographic(640, (FLOAT)480, 0.01f, 100.0f);
+                perspective = true;
+                }
+                
+                
+                break;
+            
+            
+            
+            
             default:
                 break;
             }
@@ -621,13 +665,20 @@ void Render()
     //
     // Clear the back buffer
     //
-    g_View = camera.getviewMLookLget();
+    g_View = camera->getviewMLookLget();
 	CBNeverChanges cbNeverChanges;
 	cbNeverChanges.mView = XMMatrixTranspose(g_View);
 	g_pImmediateContext->UpdateSubresource(g_pCBNeverChanges, 0, NULL, &cbNeverChanges, 0, 0);
 
+	//proyeccion
+    
 
+	CBChangeOnResize cbChangesOnResize;
+	cbChangesOnResize.mProjection = XMMatrixTranspose(g_Projection);
+	g_pImmediateContext->UpdateSubresource(g_pCBChangeOnResize, 0, NULL, &cbChangesOnResize, 0, 0);
 
+  
+    
     float ClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f }; // red, green, blue, alpha
     g_pImmediateContext->ClearRenderTargetView( g_pRenderTargetView, ClearColor );
 

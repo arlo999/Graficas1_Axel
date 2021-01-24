@@ -17,12 +17,14 @@
     <ClInclude Include="AVector.h" />
     <ClInclude Include="ACamera.h" />
     <ClInclude Include="AMatriz4.h" />
+    <ClInclude Include="Mesh.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Tutorial07.cpp" />
     <ClCompile Include="AVector.cpp" />
     <ClCompile Include="ACamera.cpp" />
     <ClCompile Include="AMatriz4.cpp" />
+    <ClCompile Include="Mesh.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Tutorial07.fx">

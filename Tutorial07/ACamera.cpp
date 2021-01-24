@@ -2,6 +2,7 @@
 
 ACamera::ACamera()
 {
+
 }
 
 void ACamera::setviewMLookL(AVector x, AVector y, AVector z)
@@ -59,7 +60,9 @@ void ACamera::move(float x, float y, float z)
 {
     //up
     AVector UPaxis = zaxis;
+    //at
     AVector Ataxis = yaxis;
+    //eye
     AVector Eyeaxis = xaxis;
     UPaxis *= z;
     Ataxis *= y;
@@ -77,4 +80,15 @@ void ACamera::move(float x, float y, float z)
     
     setviewMLookL(eye,at,up);
    
+}
+
+void ACamera::rotate(float x, float y, float z)
+{
+    AVector resul(x, y, z);
+    resul.normalize();
+   
+   up = resul.ProductoCruz(up);
+    
+    setviewMLookL(eye, at,up);
+
 }
