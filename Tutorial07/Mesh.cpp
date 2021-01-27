@@ -35,6 +35,18 @@ float* Mesh::getMatrixTransFormacion()
 
 }
 
+void Mesh::setMesh2(AsimpleVertexV2* vertex, int numVertex)
+{
+	m_buffer = new AsimpleVertexV2[numVertex];
+
+	memcpy(m_buffer, vertex, numVertex * sizeof(AsimpleVertexV2));
+}
+
+AsimpleVertexV2* Mesh::getMesh2()
+{
+    return m_buffer;
+}
+
 void Mesh::setIndice(unsigned short* indice, int numIndices)
 {
 

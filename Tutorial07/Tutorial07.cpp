@@ -385,6 +385,7 @@ HRESULT InitDevice()
 
 
     // Create vertex buffer
+    /*
     AsimpleVertex Avertices[] = {
 
 		{ (-1.0f, 1.0f, -1.0f), (0.0f, 0.0f) },
@@ -422,8 +423,46 @@ HRESULT InitDevice()
 
     };
    
+    */
 
-    mesh.setMesh(Avertices, 24);
+	AsimpleVertexV2 Avertices[] = {
+
+       { Afloat3{-1.0f, 1.0f, -1.0f}, Afloat2{0.0f, 0.0f} },
+       { Afloat3{1.0f, 1.0f, -1.0f},  Afloat2{1.0f, 0.0f} },
+       { Afloat3{1.0f, 1.0f, 1.0f},   Afloat2{1.0f, 1.0f} },
+       { Afloat3{-1.0f, 1.0f, 1.0f},  Afloat2{0.0f, 1.0f} },
+                                                        
+       { Afloat3{-1.0f, -1.0f, -1.0f},Afloat2{0.0f, 0.0f} },
+       { Afloat3{1.0f, -1.0f, -1.0f}, Afloat2{1.0f, 0.0f} },
+       { Afloat3{1.0f, -1.0f, 1.0f},  Afloat2{1.0f, 1.0f} },
+       { Afloat3{-1.0f, -1.0f, 1.0f}, Afloat2{0.0f, 1.0f} },
+                                                        
+       { Afloat3{-1.0f, -1.0f, 1.0f}, Afloat2{0.0f, 0.0f} },
+       { Afloat3{-1.0f, -1.0f, -1.0f},Afloat2{1.0f, 0.0f} },
+       { Afloat3{-1.0f, 1.0f, -1.0f}, Afloat2{1.0f, 1.0f} },
+       { Afloat3{-1.0f, 1.0f, 1.0f},  Afloat2{0.0f, 1.0f} },
+                                                        
+       { Afloat3{1.0f, -1.0f, 1.0f},  Afloat2{0.0f, 0.0f} },
+       { Afloat3{1.0f, -1.0f, -1.0f}, Afloat2{1.0f, 0.0f} },
+       { Afloat3{1.0f, 1.0f, -1.0f},  Afloat2{1.0f, 1.0f} },
+       { Afloat3{1.0f, 1.0f, 1.0f},   Afloat2{0.0f, 1.0f}  },
+                                                        
+       { Afloat3{-1.0f, -1.0f, -1.0f},Afloat2{0.0f, 0.0f} },
+       { Afloat3{1.0f, -1.0f, -1.0f}, Afloat2{1.0f, 0.0f} },
+       { Afloat3{1.0f, 1.0f, -1.0f},  Afloat2{1.0f, 1.0f} },
+       { Afloat3{-1.0f, 1.0f, -1.0f}, Afloat2{0.0f, 1.0f} },
+                                                        
+       { Afloat3{-1.0f, -1.0f, 1.0f}, Afloat2{0.0f, 0.0f} },
+       { Afloat3{1.0f, -1.0f, 1.0f},  Afloat2{1.0f, 0.0f} },
+       { Afloat3{1.0f, 1.0f, 1.0f},   Afloat2{1.0f, 1.0f} },
+       { Afloat3{-1.0f, 1.0f, 1.0f},  Afloat2{0.0f, 1.0f} },
+                                                        
+
+
+
+	};
+
+    mesh.setMesh2(Avertices, 24);
     
     SimpleVertex vertices[] =
     {
@@ -464,25 +503,25 @@ HRESULT InitDevice()
     D3D11_BUFFER_DESC bd;
     ZeroMemory( &bd, sizeof(bd) );
     bd.Usage = D3D11_USAGE_DEFAULT;
-    bd.ByteWidth = sizeof( AsimpleVertex ) * 24;
+    bd.ByteWidth = sizeof( AsimpleVertexV2 ) * 24;
     
     bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
     bd.CPUAccessFlags = 0;
     D3D11_SUBRESOURCE_DATA InitData;
     ZeroMemory( &InitData, sizeof(InitData) );
-    InitData.pSysMem = Avertices;
+    InitData.pSysMem = mesh.getMesh2();
     hr = g_pd3dDevice->CreateBuffer( &bd, &InitData, &g_pVertexBuffer );
     if( FAILED( hr ) )
         return hr;
 
     // Set vertex buffer
-    UINT stride = sizeof( AsimpleVertex );
+    UINT stride = sizeof( AsimpleVertexV2 );
     UINT offset = 0;
     g_pImmediateContext->IASetVertexBuffers( 0, 1, &g_pVertexBuffer, &stride, &offset );
 
     // Create index buffer
     // Create vertex buffer
-    WORD indices[] =
+    unsigned short indices[] =
     {
         3,1,0,
         2,1,3,
@@ -506,11 +545,12 @@ HRESULT InitDevice()
 
 
     mesh.setIndice(indices,36);
+
     bd.Usage = D3D11_USAGE_DEFAULT;
-    bd.ByteWidth = sizeof( WORD ) * 36;
+    bd.ByteWidth = sizeof( unsigned short ) * 36;
     bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
     bd.CPUAccessFlags = 0;
-    InitData.pSysMem = indices;
+    InitData.pSysMem = mesh.getIndice();
     hr = g_pd3dDevice->CreateBuffer( &bd, &InitData, &g_pIndexBuffer );
     if( FAILED( hr ) )
         return hr;
@@ -564,13 +604,13 @@ HRESULT InitDevice()
     g_World = mesh.getMatrixTransFormacion();
     
     g_cubo2 = mesh.getMatrixTransFormacion();
-    g_cubo2 = XMMatrixTranslation(0, 2, 0);
+    g_cubo2 = XMMatrixTranslation(0, 5, 0);
    
     g_cubo3 = mesh.getMatrixTransFormacion();
-    g_cubo3 = XMMatrixTranslation(2, 0, 0);
+    g_cubo3 = XMMatrixTranslation(5, 0, 0);
 
     g_cubo4 = mesh.getMatrixTransFormacion();
-    g_cubo4 = XMMatrixTranslation(-2, 0, 0);
+    g_cubo4 = XMMatrixTranslation(-5, 0, 0);
 
 
     // Initialize the view matrix
@@ -687,7 +727,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
             switch (a) {
                 //flechas izquierda
             case 37:
-                camera->move(1, 0, 0);
+                camera->move(-1, 0, 0);
                 break;
                 //flechas arriba
             case 38:
@@ -695,7 +735,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
                 break;
                 //flecha derecha
             case 39:
-                camera->move(-1, 0, 0);
+                camera->move(1, 0, 0);
                 break;
                 //flechas abaja
             case 40:
