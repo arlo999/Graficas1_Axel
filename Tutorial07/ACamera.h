@@ -66,5 +66,8 @@ private:
 	AVector xaxis;
 	//up
 	AVector yaxis;
+	//bandera para identicar cambio de frame
+	bool frame = false;
+	int m_fx, m_fy;
 };
 

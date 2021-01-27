@@ -126,7 +126,7 @@ float AVector::quickReverseSqrt2(float number)
 
 	x2 = number * 0.5F;
 	conv.f = number;
-	conv.i = 0x5f3759df - (conv.i >> 1);	// what the fuck? 
+	conv.i = 0x5f3759df - (conv.i >> 1);	
 	conv.f = conv.f * (threehalfs - (x2 * conv.f * conv.f));
 	return conv.f;
 }

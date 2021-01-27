@@ -8,7 +8,7 @@ ACamera::ACamera()
 void ACamera::setviewMLookL(AVector x, AVector y, AVector z)
 {
     //frot
-     zaxis= (x-y);
+     zaxis= (y-x);
     zaxis.normalize();
     //right
     xaxis=(up.ProductoCruz(zaxis));
@@ -21,7 +21,7 @@ void ACamera::setviewMLookL(AVector x, AVector y, AVector z)
         XMVectorSet(xaxis.getX() , yaxis.getX(), zaxis.getX(),0),
         XMVectorSet(xaxis.getY(), yaxis.getY(), zaxis.getY(),0),
         XMVectorSet(xaxis.getZ(), yaxis.getZ(), zaxis.getZ(),0),
-        XMVectorSet(xaxis.ProductoPunto(x)*(-1),- yaxis.ProductoPunto(x) * (-1),-zaxis.ProductoPunto(x) * (-1),1));
+        XMVectorSet(-xaxis.ProductoPunto(x),- yaxis.ProductoPunto(x),-zaxis.ProductoPunto(x) ,1));
    
     viewMatrix = m_View;
     
@@ -84,11 +84,28 @@ void ACamera::move(float x, float y, float z)
 
 void ACamera::rotate(float x, float y, float z)
 {
-    AVector resul(x, y, z);
-    resul.normalize();
-   
-   up = resul.ProductoCruz(up);
+    if (frame == true) {
+        x = x - m_fx;
+        y = y - m_fy;
+        x /=-100;
+        y /= 100;
+
+	    AVector Ataxis(x, y, z);
+
+
+		at = Ataxis + at;
+        setviewMLookL(eye, at, up);
+        frame = false;
+    }
+    else  {
     
-    setviewMLookL(eye, at,up);
+		m_fx = x;
+		m_fy = y;
+        frame = true;
+    
+    }
+   
+  
+    
 
 }
