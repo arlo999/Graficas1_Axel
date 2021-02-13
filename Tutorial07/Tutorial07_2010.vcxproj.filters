@@ -18,6 +18,9 @@
     <ClInclude Include="ACamera.h" />
     <ClInclude Include="AMatriz4.h" />
     <ClInclude Include="Mesh.h" />
+    <ClInclude Include="ADevice.h" />
+    <ClInclude Include="ADeviceContext.h" />
+    <ClInclude Include="ASwapChain.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Tutorial07.cpp" />
@@ -25,6 +28,9 @@
     <ClCompile Include="ACamera.cpp" />
     <ClCompile Include="AMatriz4.cpp" />
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="ADevice.cpp" />
+    <ClCompile Include="ADeviceContext.cpp" />
+    <ClCompile Include="ASwapChain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Tutorial07.fx">

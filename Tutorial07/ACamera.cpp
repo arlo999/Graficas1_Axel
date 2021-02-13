@@ -4,7 +4,13 @@ ACamera::ACamera()
 {
 
 }
-
+/**
+     * @brief   esta 
+     * @param   #float: numero a summar.
+     * @param   #float: numero a summar.
+     * @bug     si metes negativos vale gorro :C.
+     * @return  #float: el numero sumado
+     */
 void ACamera::setviewMLookL(AVector x, AVector y, AVector z)
 {
     //frot
@@ -27,7 +33,14 @@ void ACamera::setviewMLookL(AVector x, AVector y, AVector z)
     
     
 }
-
+/**
+     * @brief   Esta funcion sumara 2 numeros, e informara del resultado en el return de la funcion.
+     *          Es compatible solo con numeros flotantes de 32 bits.
+     * @param   #float: numero a summar.
+     * @param   #float: numero a summar.
+     * @bug     si metes negativos vale gorro :C.
+     * @return  #float: el numero sumado
+     */
 XMMATRIX ACamera::ViewPerspective(float fov, float aspectRatio, float cerca, float lejos)
 {
     float height = cos(fov * .5) / sin(fov * .5);
@@ -43,6 +56,14 @@ XMMATRIX ACamera::ViewPerspective(float fov, float aspectRatio, float cerca, flo
     return M_VIEWPerspective;
 }
 
+/**
+     * @brief   Esta funcion sumara 2 numeros, e informara del resultado en el return de la funcion.
+     *          Es compatible solo con numeros flotantes de 32 bits.
+     * @param   #float: numero a summar.
+     * @param   #float: numero a summar.
+     * @bug     si metes negativos vale gorro :C.
+     * @return  #float: el numero sumado
+     */
 XMMATRIX ACamera::ViewOrtographic(float viewWidth, float viewHeigth, float cerca, float lejos)
 {
     XMMATRIX ortographic(
@@ -55,7 +76,14 @@ XMMATRIX ACamera::ViewOrtographic(float viewWidth, float viewHeigth, float cerca
     );
     return ortographic;
 }
-
+/**
+     * @brief   Esta funcion sumara 2 numeros, e informara del resultado en el return de la funcion.
+     *          Es compatible solo con numeros flotantes de 32 bits.
+     * @param   #float: numero a summar.
+     * @param   #float: numero a summar.
+     * @bug     si metes negativos vale gorro :C.
+     * @return  #float: el numero sumado
+     */
 void ACamera::move(float x, float y, float z)
 {
     //up
@@ -81,7 +109,14 @@ void ACamera::move(float x, float y, float z)
     setviewMLookL(eye,at,up);
    
 }
-
+/**
+     * @brief   Esta funcion sumara 2 numeros, e informara del resultado en el return de la funcion.
+     *          Es compatible solo con numeros flotantes de 32 bits.
+     * @param   #float: numero a summar.
+     * @param   #float: numero a summar.
+     * @bug     si metes negativos vale gorro :C.
+     * @return  #float: el numero sumado
+     */
 void ACamera::rotate(float x, float y, float z)
 {
     if (frame == true) {

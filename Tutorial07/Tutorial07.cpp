@@ -77,10 +77,11 @@ XMMATRIX                            g_Projection;
 XMFLOAT4                            g_vMeshColor( 0.7f, 0.7f, 0.7f, 1.0f );
 
 
-
-
-
-
+CBChangeOnResize cbChangesOnResize;
+CBNeverChanges cbNeverChanges;
+UINT offset = 0;
+UINT stride;
+D3D11_VIEWPORT vp;
 bool perspective = false;
 ACamera* camera;
 //primera forma de mover la camara 'rotacion'
@@ -317,17 +318,18 @@ HRESULT InitDevice()
     if( FAILED( hr ) )
         return hr;
 
-    g_pImmediateContext->OMSetRenderTargets( 1, &g_pRenderTargetView, g_pDepthStencilView );
+  
 
     // Setup the viewport
-    D3D11_VIEWPORT vp;
+   
     vp.Width = (FLOAT)width;
     vp.Height = (FLOAT)height;
     vp.MinDepth = 0.0f;
     vp.MaxDepth = 1.0f;
     vp.TopLeftX = 0;
     vp.TopLeftY = 0;
-    g_pImmediateContext->RSSetViewports( 1, &vp );
+   
+  
 
     // Compile the vertex shader
     ID3DBlob* pVSBlob = NULL;
@@ -362,8 +364,7 @@ HRESULT InitDevice()
     if( FAILED( hr ) )
         return hr;
 
-    // Set the input layout
-    g_pImmediateContext->IASetInputLayout( g_pVertexLayout );
+
 
     // Compile the pixel shader
     ID3DBlob* pPSBlob = NULL;
@@ -515,9 +516,9 @@ HRESULT InitDevice()
         return hr;
 
     // Set vertex buffer
-    UINT stride = sizeof( AsimpleVertexV2 );
-    UINT offset = 0;
-    g_pImmediateContext->IASetVertexBuffers( 0, 1, &g_pVertexBuffer, &stride, &offset );
+   stride = sizeof( AsimpleVertexV2 );
+ 
+	
 
     // Create index buffer
     // Create vertex buffer
@@ -554,13 +555,7 @@ HRESULT InitDevice()
     hr = g_pd3dDevice->CreateBuffer( &bd, &InitData, &g_pIndexBuffer );
     if( FAILED( hr ) )
         return hr;
-
-    // Set index buffer
-    g_pImmediateContext->IASetIndexBuffer( g_pIndexBuffer, DXGI_FORMAT_R16_UINT, 0 );
-
-    // Set primitive topology
-    g_pImmediateContext->IASetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
-
+	
     // Create the constant buffers
     bd.Usage = D3D11_USAGE_DEFAULT;
     bd.ByteWidth = sizeof(CBNeverChanges);
@@ -637,15 +632,16 @@ HRESULT InitDevice()
 
 	g_View = camera->getviewMLookLget();
     
-    CBNeverChanges cbNeverChanges;
+
     cbNeverChanges.mView = XMMatrixTranspose( g_View );
-    g_pImmediateContext->UpdateSubresource( g_pCBNeverChanges, 0, NULL, &cbNeverChanges, 0, 0 );
+  
 
     g_Projection = camera->ViewPerspective(XM_PIDIV4, width / (FLOAT)height, 0.01f, 100.0f);
 
 	CBChangeOnResize cbChangesOnResize;
 	cbChangesOnResize.mProjection = XMMatrixTranspose(g_Projection);
-	g_pImmediateContext->UpdateSubresource(g_pCBChangeOnResize, 0, NULL, &cbChangesOnResize, 0, 0);
+
+
     
     // Initialize the projection matrix DirectX
     //g_Projection = XMMatrixPerspectiveFovLH( XM_PIDIV4, width / (FLOAT)height, 0.01f, 100.0f );
@@ -790,6 +786,24 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 void Render()
 {
 
+	g_pImmediateContext->OMSetRenderTargets(1, &g_pRenderTargetView, g_pDepthStencilView);
+	g_pImmediateContext->RSSetViewports(1, &vp);
+	// Set the input layout
+	g_pImmediateContext->IASetInputLayout(g_pVertexLayout);
+	g_pImmediateContext->IASetVertexBuffers(0, 1, &g_pVertexBuffer, &stride, &offset);
+	// Set index buffer
+	g_pImmediateContext->IASetIndexBuffer(g_pIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
+
+	// Set primitive topology
+	g_pImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	g_pImmediateContext->UpdateSubresource(g_pCBNeverChanges, 0, NULL, &cbNeverChanges, 0, 0);
+
+	g_pImmediateContext->UpdateSubresource(g_pCBChangeOnResize, 0, NULL, &cbChangesOnResize, 0, 0);
+
+
+
+
     //
     // Clear the back buffer
     //
@@ -801,7 +815,6 @@ void Render()
     //proyeccion
 
 
-    CBChangeOnResize cbChangesOnResize;
     cbChangesOnResize.mProjection = XMMatrixTranspose(g_Projection);
     g_pImmediateContext->UpdateSubresource(g_pCBChangeOnResize, 0, NULL, &cbChangesOnResize, 0, 0);
 
