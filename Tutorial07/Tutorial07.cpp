@@ -18,6 +18,9 @@
 #include "AMatriz4.h"
 #include <windowsx.h>
 #include "Mesh.h"
+#include "ADevice.h"
+#include "ADeviceContext.h"
+#include "ASwapChain.h"
 
 //--------------------------------------------------------------------------------------
 // Structures
@@ -93,8 +96,14 @@ int cursorx, cursory;
 // segunda forma 
 LPPOINT p = new POINT;
 
-//
+//MESH INCLUSION
 Mesh mesh;
+//MY new variables
+
+ADevice device;
+ADeviceContext deviceContext;
+ASwapChain swapchain;
+
 
 // creating camera
 
@@ -186,6 +195,97 @@ HRESULT InitWindow( HINSTANCE hInstance, int nCmdShow )
 }
 
 
+/*
+Function que hace reload de buffer para el resize
+*/
+HRESULT ReloadBuffer(unsigned int width, unsigned int height) {
+
+    HRESULT hr = S_OK;
+	// Create a render target view
+	ID3D11Texture2D* pBackBuffer = NULL;
+     hr = g_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
+     if (FAILED(hr))
+     {
+
+		return hr;
+    }
+
+
+	//old function
+	hr = g_pd3dDevice->CreateRenderTargetView(pBackBuffer, NULL, &g_pRenderTargetView);
+	// hr = device.A_CreateRenderTargetView(pBackBuffer, NULL, &g_pRenderTargetView);
+	pBackBuffer->Release();
+	if (FAILED(hr))
+		
+        {
+        return hr;
+        }
+	// Create depth stencil texture
+	D3D11_TEXTURE2D_DESC descDepth;
+	ZeroMemory(&descDepth, sizeof(descDepth));
+	descDepth.Width = width;
+	descDepth.Height = height;
+	descDepth.MipLevels = 1;
+	descDepth.ArraySize = 1;
+	descDepth.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	descDepth.SampleDesc.Count = 1;
+	descDepth.SampleDesc.Quality = 0;
+	descDepth.Usage = D3D11_USAGE_DEFAULT;
+	descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	descDepth.CPUAccessFlags = 0;
+	descDepth.MiscFlags = 0;
+
+	hr = g_pd3dDevice->CreateTexture2D(&descDepth, NULL, &g_pDepthStencil);
+	// hr= device.A_CreateTexture2D(&descDepth,NULL,&g_pDepthStencil);
+	if (FAILED(hr))
+		return hr;
+
+	// Create the depth stencil view
+	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
+	ZeroMemory(&descDSV, sizeof(descDSV));
+	descDSV.Format = descDepth.Format;
+	descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	descDSV.Texture2D.MipSlice = 0;
+	hr = g_pd3dDevice->CreateDepthStencilView(g_pDepthStencil, &descDSV, &g_pDepthStencilView);
+	//  hr= device.A_CreateDepthStencilView(g_pDepthStencil, &descDSV, &g_pDepthStencilView);
+	if (FAILED(hr))
+		return hr;
+
+	// Setup the viewport
+
+	vp.Width = (FLOAT)width;
+	vp.Height = (FLOAT)height;
+	vp.MinDepth = 0.0f;
+	vp.MaxDepth = 1.0f;
+	vp.TopLeftX = 0;
+	vp.TopLeftY = 0;
+}
+
+
+
+
+/*
+function que te da el resize
+*/
+
+
+
+void OnSize(unsigned int width, unsigned int height) {
+
+    if(g_pRenderTargetView)
+    {
+    g_pRenderTargetView->Release();
+    }
+    if (g_pDepthStencilView)
+    {
+        g_pDepthStencilView->Release();
+    }
+    
+    g_pSwapChain->ResizeBuffers(1,width,height, DXGI_FORMAT_R8G8B8A8_UNORM,0); 
+    g_pImmediateContext->Flush();
+    ReloadBuffer(width,height);
+}
+
 //--------------------------------------------------------------------------------------
 // Helper for compiling shaders with D3DX11
 //--------------------------------------------------------------------------------------
@@ -271,8 +371,16 @@ HRESULT InitDevice()
     for( UINT driverTypeIndex = 0; driverTypeIndex < numDriverTypes; driverTypeIndex++ )
     {
         g_driverType = driverTypes[driverTypeIndex];
+        
+        
         hr = D3D11CreateDeviceAndSwapChain( NULL, g_driverType, NULL, createDeviceFlags, featureLevels, numFeatureLevels,
                                             D3D11_SDK_VERSION, &sd, &g_pSwapChain, &g_pd3dDevice, &g_featureLevel, &g_pImmediateContext );
+        
+        /*
+		hr = D3D11CreateDeviceAndSwapChain(NULL, g_driverType, NULL, createDeviceFlags, featureLevels, numFeatureLevels,
+        D3D11_SDK_VERSION, &sd, &g_pSwapChain, &device.m_device, &g_featureLevel, &g_pImmediateContext);
+        */
+        
         if( SUCCEEDED( hr ) )
             break;
     }
@@ -285,7 +393,10 @@ HRESULT InitDevice()
     if( FAILED( hr ) )
         return hr;
 
-    hr = g_pd3dDevice->CreateRenderTargetView( pBackBuffer, NULL, &g_pRenderTargetView );
+   
+   //old function
+   hr = g_pd3dDevice->CreateRenderTargetView( pBackBuffer, NULL, &g_pRenderTargetView );
+    // hr = device.A_CreateRenderTargetView(pBackBuffer, NULL, &g_pRenderTargetView);
     pBackBuffer->Release();
     if( FAILED( hr ) )
         return hr;
@@ -304,8 +415,10 @@ HRESULT InitDevice()
     descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
     descDepth.CPUAccessFlags = 0;
     descDepth.MiscFlags = 0;
-    hr = g_pd3dDevice->CreateTexture2D( &descDepth, NULL, &g_pDepthStencil );
-    if( FAILED( hr ) )
+   
+   hr = g_pd3dDevice->CreateTexture2D( &descDepth, NULL, &g_pDepthStencil );
+  // hr= device.A_CreateTexture2D(&descDepth,NULL,&g_pDepthStencil);
+   if( FAILED( hr ) )
         return hr;
 
     // Create the depth stencil view
@@ -315,7 +428,8 @@ HRESULT InitDevice()
     descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
     descDSV.Texture2D.MipSlice = 0;
     hr = g_pd3dDevice->CreateDepthStencilView( g_pDepthStencil, &descDSV, &g_pDepthStencilView );
-    if( FAILED( hr ) )
+//  hr= device.A_CreateDepthStencilView(g_pDepthStencil, &descDSV, &g_pDepthStencilView);
+  if( FAILED( hr ) )
         return hr;
 
   
@@ -343,7 +457,9 @@ HRESULT InitDevice()
 
     // Create the vertex shader
     hr = g_pd3dDevice->CreateVertexShader( pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), NULL, &g_pVertexShader );
-    if( FAILED( hr ) )
+  // hr= device.A_CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), NULL, &g_pVertexShader);
+
+   if( FAILED( hr ) )
     {    
         pVSBlob->Release();
         return hr;
@@ -358,9 +474,9 @@ HRESULT InitDevice()
     UINT numElements = ARRAYSIZE( layout );
 
     // Create the input layout
-    hr = g_pd3dDevice->CreateInputLayout( layout, numElements, pVSBlob->GetBufferPointer(),
-                                          pVSBlob->GetBufferSize(), &g_pVertexLayout );
-    pVSBlob->Release();
+    hr = g_pd3dDevice->CreateInputLayout( layout, numElements, pVSBlob->GetBufferPointer(),   pVSBlob->GetBufferSize(), &g_pVertexLayout );
+ // hr= device.A_CreateInputLayout(layout, numElements, pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), &g_pVertexLayout);
+  pVSBlob->Release();
     if( FAILED( hr ) )
         return hr;
 
@@ -378,6 +494,7 @@ HRESULT InitDevice()
 
     // Create the pixel shader
     hr = g_pd3dDevice->CreatePixelShader( pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), NULL, &g_pPixelShader );
+   // hr=device.A_CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), NULL, &g_pPixelShader);
     pPSBlob->Release();
     if( FAILED( hr ) )
         return hr;
@@ -512,6 +629,8 @@ HRESULT InitDevice()
     ZeroMemory( &InitData, sizeof(InitData) );
     InitData.pSysMem = mesh.getMesh2();
     hr = g_pd3dDevice->CreateBuffer( &bd, &InitData, &g_pVertexBuffer );
+  //  hr= device.A_CreateBuffer(&bd, &InitData, &g_pVertexBuffer);
+
     if( FAILED( hr ) )
         return hr;
 
@@ -553,7 +672,8 @@ HRESULT InitDevice()
     bd.CPUAccessFlags = 0;
     InitData.pSysMem = mesh.getIndice();
     hr = g_pd3dDevice->CreateBuffer( &bd, &InitData, &g_pIndexBuffer );
-    if( FAILED( hr ) )
+   // hr= device.A_CreateBuffer(&bd, &InitData, &g_pIndexBuffer);
+  if( FAILED( hr ) )
         return hr;
 	
     // Create the constant buffers
@@ -562,21 +682,25 @@ HRESULT InitDevice()
     bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     bd.CPUAccessFlags = 0;
     hr = g_pd3dDevice->CreateBuffer( &bd, NULL, &g_pCBNeverChanges );
-    if( FAILED( hr ) )
+  //  hr = device.A_CreateBuffer(&bd, NULL, &g_pCBNeverChanges);
+  if( FAILED( hr ) )
         return hr;
     
     bd.ByteWidth = sizeof(CBChangeOnResize);
     hr = g_pd3dDevice->CreateBuffer( &bd, NULL, &g_pCBChangeOnResize );
-    if( FAILED( hr ) )
+  //  hr = device.A_CreateBuffer(&bd, NULL, &g_pCBNeverChanges);
+ if( FAILED( hr ) )
         return hr;
     
     bd.ByteWidth = sizeof(CBChangesEveryFrame);
     hr = g_pd3dDevice->CreateBuffer( &bd, NULL, &g_pCBChangesEveryFrame );
+  //  hr = device.A_CreateBuffer(&bd, NULL, &g_pCBNeverChanges);
     if( FAILED( hr ) )
         return hr;
 
     // Load the Texture
     hr = D3DX11CreateShaderResourceViewFromFile( g_pd3dDevice, L"seafloor.dds", NULL, NULL, &g_pTextureRV, NULL );
+  //  hr = D3DX11CreateShaderResourceViewFromFile(device.m_device, L"seafloor.dds", NULL, NULL, &g_pTextureRV, NULL);
     if( FAILED( hr ) )
         return hr;
 
@@ -591,7 +715,8 @@ HRESULT InitDevice()
     sampDesc.MinLOD = 0;
     sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
     hr = g_pd3dDevice->CreateSamplerState( &sampDesc, &g_pSamplerLinear );
-    if( FAILED( hr ) )
+  //  hr = device.A_CreateSamplerState(&sampDesc, &g_pSamplerLinear);
+   if( FAILED( hr ) )
         return hr;
 
     // Initialize the world matrices
@@ -676,6 +801,7 @@ void CleanupDevice()
     if( g_pSwapChain ) g_pSwapChain->Release();
     if( g_pImmediateContext ) g_pImmediateContext->Release();
     if( g_pd3dDevice ) g_pd3dDevice->Release();
+   // if (device.m_device) device.m_device->Release();
 }
 
 
@@ -694,7 +820,15 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
             hdc = BeginPaint( hWnd, &ps );
             EndPaint( hWnd, &ps );
             break;
+       case WM_SIZE:
+           if (g_pSwapChain) {
 
+
+			   RECT rc;
+			   GetWindowRect(hWnd, &rc);
+			   OnSize(rc.right, rc.bottom);
+       }
+        break;
         case WM_DESTROY:
             PostQuitMessage( 0 );
             break;
@@ -706,8 +840,6 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
             cursory = Cursor.y;
             
             */
-			
-
             break;
         case WM_LBUTTONUP:
             
@@ -716,7 +848,6 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
             Cursor.y = GET_Y_LPARAM(lParam);
           
             */
-            
             break;
         case WM_KEYDOWN: {
             UINT a = LOWORD(wParam);

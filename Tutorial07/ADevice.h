@@ -80,7 +80,7 @@ public:
 		__out_opt  ID3D11SamplerState** ppSamplerState);
 	
 	HRESULT A_Release();
-private:
 	ID3D11Device* m_device=NULL;
+private:
 };
 
