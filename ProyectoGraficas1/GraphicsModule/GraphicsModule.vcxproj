@@ -359,13 +359,27 @@
   <ItemGroup>
     <ClInclude Include="ATexture2D.h" />
     <ClInclude Include="Include\ABuffer.h" />
+    <ClInclude Include="Include\ACamera.h" />
     <ClInclude Include="Include\ADescriptionBuffer.h" />
+    <ClInclude Include="Include\ADevice.h" />
+    <ClInclude Include="Include\ADeviceContext.h" />
+    <ClInclude Include="Include\AMatriz4.h" />
+    <ClInclude Include="Include\ASwapChain.h" />
+    <ClInclude Include="Include\AVector.h" />
     <ClInclude Include="Include\GraphicsModule.h" />
+    <ClInclude Include="Include\Mesh.h" />
     <ClInclude Include="Include\Test.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ATexture2D.cpp" />
+    <ClCompile Include="scr\ABuffer.cpp" />
+    <ClCompile Include="scr\ACamera.cpp" />
+    <ClCompile Include="scr\ADevice.cpp" />
+    <ClCompile Include="scr\ADeviceContext.cpp" />
+    <ClCompile Include="scr\AMatriz4.cpp" />
+    <ClCompile Include="scr\ASwapChain.cpp" />
+    <ClCompile Include="scr\AVector.cpp" />
+    <ClCompile Include="scr\Mesh.cpp" />
     <ClCompile Include="scr\Test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

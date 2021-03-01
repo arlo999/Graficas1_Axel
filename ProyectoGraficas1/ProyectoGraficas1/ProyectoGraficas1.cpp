@@ -7,19 +7,31 @@
 
 // -----------------Global var-----------------------------------------------------------------
 HWND g_hwnd;
-GraphicsModule::Test MiObj;
+bool first = false;
+
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam);
+
 
 /**
- * @brief   Forward declare message handler from imgui_impl_win32.cpp
- * @param   #HWND: A handle to the window.
- * @param   #UINT: The message.
- * @param   #WPARAM: Additional message information. The contents of this parameter depend on the value of the uMsg parameter.
- * @param   #LPARAM: Additional message information. The contents of this parameter depend on the value of the uMsg parameter.
- * @return  #LRESULT: The return value is the result of the message processing and depends on the message sent..
- * @bug     No know Bugs.
- * @return  #LRESULT: Status code.
+ * @brief   
+ * @param   #unsigned int: es el width de la pantalla.
+ * @param   #unsigned int: es el height de la pantalla .
  */
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam);
+void OnSize(unsigned int width, unsigned int height) {
+    auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
+    if (testObj.g_pRenderTargetView)
+    {
+        testObj.g_pRenderTargetView->Release();
+    }
+    if (testObj.g_pDepthStencilView)
+    {
+        testObj.g_pDepthStencilView->Release();
+    }
+
+    testObj.g_pSwapChain->ResizeBuffers(1, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
+    testObj.g_pImmediateContext->Flush();
+    testObj.ReloadBuffer(width, height);
+}
 
 /**
  * @brief   Message bomb.
@@ -31,6 +43,8 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND _hwnd, UINT _m
  */
 LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
 {
+   
+   
     // Handle UI inputs
     if (ImGui_ImplWin32_WndProcHandler(_hwnd, _msg, _wParam, _lParam))
         return 1;
@@ -38,11 +52,18 @@ LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
     // Handle Window inputs
     switch (_msg)
     {
+        
     case WM_SIZE:
-        //if (g_pd3dDevice != NULL && _wParam != SIZE_MINIMIZED)
-    {
-    }
-    return 0;
+      
+      if (first) {
+
+
+            RECT rc;
+            GetWindowRect(_hwnd, &rc);
+            OnSize(rc.right, rc.bottom);
+        }
+       
+        return 0;
     break;
 
     case WM_SYSCOMMAND:
@@ -98,7 +119,8 @@ HRESULT InitWindow(LONG _width, LONG _height)
         return E_FAIL;
     }
     ShowWindow(g_hwnd, SW_SHOWNORMAL);
-
+    auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
+    
     return S_OK;
 }
 
@@ -119,7 +141,8 @@ HRESULT InitWindow(LONG _width, LONG _height)
    // Setup Platform/Renderer back ends
    ImGui_ImplWin32_Init(g_hwnd);
 #if defined(DX11)
-   ImGui_ImplDX11_Init(MiObj.g_pd3dDevice, MiObj.g_pImmediateContext);
+    auto& testObj=GraphicsModule::GetTestObj(g_hwnd);
+    ImGui_ImplDX11_Init(testObj.g_pd3dDevice, testObj.g_pImmediateContext);
    #endif
    return S_OK;
  }
@@ -149,10 +172,11 @@ HRESULT InitWindow(LONG _width, LONG _height)
 
 
  void Render() {
-	 MiObj.Render();
+     auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
+     testObj.Render();
 #if defined(DX11) || defined(OGL)
      UIRender(); 
-     MiObj.g_pSwapChain->Present(0, 0);
+     testObj.g_pSwapChain->Present(0, 0);
  #endif
  }
  /**
@@ -162,20 +186,22 @@ HRESULT InitWindow(LONG _width, LONG _height)
  */
 int main()
 {
+    
     // create the window and console
     if (FAILED(InitWindow(1280, 720)))
     {
         DestroyWindow(g_hwnd);
         return 0;
     }
-
+    first = true;
     // create Graphic API interface
-    if (FAILED(MiObj.InitDevice(g_hwnd)))
+   /*if (FAILED(testObj.InitDevice(g_hwnd)))
     {
-        MiObj.CleanupDevice();
+       
+        testObj.CleanupDevice();
         return 0;
-    }
-
+    }*/
+    
      //create UI
     if (FAILED(InitImgUI()))
     {
@@ -199,12 +225,12 @@ int main()
             Render();
         }
     }
-
+    auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
     // clean resources
     ImGui_ImplDX11_Shutdown();
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();
-    MiObj.CleanupDevice();
+    testObj.CleanupDevice();
     DestroyWindow(g_hwnd);
     return (int)msg.wParam;
 }

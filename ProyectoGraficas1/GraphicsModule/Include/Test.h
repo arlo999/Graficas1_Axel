@@ -73,13 +73,13 @@ namespace GraphicsModule
 		* ID3D11Buffer* g_pIndexBuffer2 = NULL;
 		*/
 		/// Buffer Wraped
-		ABuffer * m_pVertexBuffer;
-		ABuffer* m_pIndexBuffer = NULL;
-		ABuffer* m_pCBNeverChanges = NULL;
-		ABuffer* m_pCBChangeOnResize = NULL;
-		ABuffer* m_pCBChangesEveryFrame = NULL;
-		ABuffer* m_pVertexBuffer2 = NULL;
-		ABuffer* m_pIndexBuffer2 = NULL;
+		ABuffer  m_pVertexBuffer;
+		ABuffer m_pIndexBuffer;
+		ABuffer m_pCBNeverChanges;
+		ABuffer m_pCBChangeOnResize ;
+		ABuffer m_pCBChangesEveryFrame;
+		ABuffer m_pVertexBuffer2 ;
+		ABuffer m_pIndexBuffer2 ;
 
 		ID3D11ShaderResourceView* g_pTextureRV = NULL;
 		
@@ -100,21 +100,24 @@ namespace GraphicsModule
 		ID3D11RasterizerState* g_Rasterizer2 = NULL;
 		
 		ID3D11InputLayout* g_pVertexLayout2 = NULL;
-		
-		
+		D3D11_VIEWPORT vp;
+		HWND m_hwnd;
 		
 #endif
 	public:
 #if defined(DX11)
+		HRESULT ReloadBuffer(unsigned int width, unsigned int height);
+		
 		HRESULT CompileShaderFromFile(const char* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut);
 #endif
-		HRESULT InitDevice(HWND _hwnd);
 
+		HRESULT InitDevice(HWND _hwnd);
+public:
 		void Render();
 
 		void CleanupDevice();
 
-		HWND m_hwnd;
 	};
 
+	extern  Test& GetTestObj(HWND _hwnd);
 }

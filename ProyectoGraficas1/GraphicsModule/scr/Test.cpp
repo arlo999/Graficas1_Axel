@@ -1,5 +1,6 @@
 
 #include "Test.h"
+#include "..\Include\Test.h"
 
 
 namespace GraphicsModule
@@ -35,13 +36,7 @@ namespace GraphicsModule
 
 	HRESULT Test::InitDevice(HWND _hwnd)
 	{
-		m_pVertexBuffer = new ABuffer();
-		m_pIndexBuffer =new ABuffer();
-		m_pCBNeverChanges =new ABuffer();
-		m_pCBChangeOnResize = new ABuffer();
-		m_pCBChangesEveryFrame = new ABuffer();
-		m_pVertexBuffer2 = new ABuffer();
-		m_pIndexBuffer2 = new ABuffer();
+		
 
 #if defined(DX11)
 		m_hwnd = _hwnd;
@@ -151,7 +146,7 @@ namespace GraphicsModule
 		g_pImmediateContext->OMSetRenderTargets(1, &g_pRenderTargetView, g_pDepthStencilView);
 
 		// Setup the viewport
-		D3D11_VIEWPORT vp;
+		
 		vp.Width = (FLOAT)width;
 		vp.Height = (FLOAT)height;
 		vp.MinDepth = 0.0f;
@@ -301,7 +296,7 @@ namespace GraphicsModule
 		D3D11_SUBRESOURCE_DATA InitData;
 		ZeroMemory(&InitData, sizeof(InitData));
 		InitData.pSysMem = vertices;
-		hr = g_pd3dDevice->CreateBuffer(&bd, &InitData, &m_pVertexBuffer->getBufferDX11());
+		hr = g_pd3dDevice->CreateBuffer(&bd, &InitData, &m_pVertexBuffer.getBufferDX11());
 		if (FAILED(hr))
 			return hr;
 
@@ -333,7 +328,7 @@ namespace GraphicsModule
 		bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
 		bd.CPUAccessFlags = 0;
 		InitData.pSysMem = indices;
-		hr = g_pd3dDevice->CreateBuffer(&bd, &InitData, &m_pIndexBuffer->getBufferDX11());
+		hr = g_pd3dDevice->CreateBuffer(&bd, &InitData, &m_pIndexBuffer.getBufferDX11());
 		if (FAILED(hr))
 			return hr;
 
@@ -355,7 +350,7 @@ namespace GraphicsModule
 		D3D11_SUBRESOURCE_DATA InitData2;
 		ZeroMemory(&InitData2, sizeof(InitData2));
 		InitData2.pSysMem = vertices2;
-		hr = g_pd3dDevice->CreateBuffer(&bd2, &InitData2, &m_pVertexBuffer2->getBufferDX11());
+		hr = g_pd3dDevice->CreateBuffer(&bd2, &InitData2, &m_pVertexBuffer2.getBufferDX11());
 		if (FAILED(hr))
 			return hr;
 
@@ -373,7 +368,7 @@ namespace GraphicsModule
 		bd2.BindFlags = D3D11_BIND_INDEX_BUFFER;
 		bd2.CPUAccessFlags = 0;
 		InitData2.pSysMem = indices2;
-		hr = g_pd3dDevice->CreateBuffer(&bd2, &InitData2, &m_pIndexBuffer2->getBufferDX11());
+		hr = g_pd3dDevice->CreateBuffer(&bd2, &InitData2, &m_pIndexBuffer2.getBufferDX11());
 		if (FAILED(hr))
 			return hr;
 
@@ -387,17 +382,17 @@ namespace GraphicsModule
 		bd.ByteWidth = sizeof(CBNeverChanges);
 		bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 		bd.CPUAccessFlags = 0;
-		hr = g_pd3dDevice->CreateBuffer(&bd, NULL, &m_pCBNeverChanges->getBufferDX11());
+		hr = g_pd3dDevice->CreateBuffer(&bd, NULL, &m_pCBNeverChanges.getBufferDX11());
 		if (FAILED(hr))
 			return hr;
 
 		bd.ByteWidth = sizeof(CBChangeOnResize);
-		hr = g_pd3dDevice->CreateBuffer(&bd, NULL, &m_pCBChangeOnResize->getBufferDX11());
+		hr = g_pd3dDevice->CreateBuffer(&bd, NULL, &m_pCBChangeOnResize.getBufferDX11());
 		if (FAILED(hr))
 			return hr;
 
 		bd.ByteWidth = sizeof(CBChangesEveryFrame);
-		hr = g_pd3dDevice->CreateBuffer(&bd, NULL, &m_pCBChangesEveryFrame->getBufferDX11());
+		hr = g_pd3dDevice->CreateBuffer(&bd, NULL, &m_pCBChangesEveryFrame.getBufferDX11());
 		if (FAILED(hr))
 			return hr;
 
@@ -431,14 +426,14 @@ namespace GraphicsModule
 
 		CBNeverChanges cbNeverChanges;
 		cbNeverChanges.mView = XMMatrixTranspose(g_View);
-		g_pImmediateContext->UpdateSubresource(m_pCBNeverChanges->getBufferDX11(), 0, NULL, &cbNeverChanges, 0, 0);
+		g_pImmediateContext->UpdateSubresource(m_pCBNeverChanges.getBufferDX11(), 0, NULL, &cbNeverChanges, 0, 0);
 
 		// Initialize the projection matrix
 		g_Projection = XMMatrixPerspectiveFovLH(XM_PIDIV4, width / (FLOAT)height, 0.01f, 100.0f);
 
 		CBChangeOnResize cbChangesOnResize;
 		cbChangesOnResize.mProjection = XMMatrixTranspose(g_Projection);
-		g_pImmediateContext->UpdateSubresource(m_pCBChangeOnResize->getBufferDX11(), 0, NULL, &cbChangesOnResize, 0, 0);
+		g_pImmediateContext->UpdateSubresource(m_pCBChangeOnResize.getBufferDX11(), 0, NULL, &cbChangesOnResize, 0, 0);
 
 
 		// create rasterizer state
@@ -503,7 +498,7 @@ namespace GraphicsModule
 		CBChangesEveryFrame cb;
 		cb.mWorld = XMMatrixTranspose(g_World);
 		cb.vMeshColor = g_vMeshColor;
-		g_pImmediateContext->UpdateSubresource(m_pCBChangesEveryFrame->getBufferDX11(), 0, NULL, &cb, 0, 0);
+		g_pImmediateContext->UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
 
 
 		UINT stride = sizeof(SimpleVertex);
@@ -517,16 +512,16 @@ namespace GraphicsModule
 		g_pImmediateContext->RSSetState(g_Rasterizer);
 
 		//g_pImmediateContext->IASetVertexBuffers(0, 1, &g_pVertexBuffer, &stride, &offset);
-		g_pImmediateContext->IASetVertexBuffers(0, 1, &m_pVertexBuffer->getBufferDX11(), &stride, &offset);
+		g_pImmediateContext->IASetVertexBuffers(0, 1, &m_pVertexBuffer.getBufferDX11(), &stride, &offset);
 		
 		
-		g_pImmediateContext->IASetIndexBuffer(m_pIndexBuffer->getBufferDX11(), DXGI_FORMAT_R16_UINT, 0);
+		g_pImmediateContext->IASetIndexBuffer(m_pIndexBuffer.getBufferDX11(), DXGI_FORMAT_R16_UINT, 0);
 		g_pImmediateContext->VSSetShader(g_pVertexShader, NULL, 0);
-		g_pImmediateContext->VSSetConstantBuffers(0, 1, &m_pCBNeverChanges->getBufferDX11());
-		g_pImmediateContext->VSSetConstantBuffers(1, 1, &m_pCBChangeOnResize->getBufferDX11());
-		g_pImmediateContext->VSSetConstantBuffers(2, 1, &m_pCBChangesEveryFrame->getBufferDX11());
+		g_pImmediateContext->VSSetConstantBuffers(0, 1, &m_pCBNeverChanges.getBufferDX11());
+		g_pImmediateContext->VSSetConstantBuffers(1, 1, &m_pCBChangeOnResize.getBufferDX11());
+		g_pImmediateContext->VSSetConstantBuffers(2, 1, &m_pCBChangesEveryFrame.getBufferDX11());
 		g_pImmediateContext->PSSetShader(g_pPixelShader, NULL, 0);
-		g_pImmediateContext->PSSetConstantBuffers(2, 1, &m_pCBChangesEveryFrame->getBufferDX11());
+		g_pImmediateContext->PSSetConstantBuffers(2, 1, &m_pCBChangesEveryFrame.getBufferDX11());
 		g_pImmediateContext->PSSetShaderResources(0, 1, &g_pTextureRV);
 		g_pImmediateContext->PSSetSamplers(0, 1, &g_pSamplerLinear);
 		g_pImmediateContext->DrawIndexed(36, 0, 0);
@@ -537,10 +532,10 @@ namespace GraphicsModule
 		g_pImmediateContext->IASetInputLayout(g_pVertexLayout2);
 		g_pImmediateContext->RSSetState(g_Rasterizer2);
 		
-		g_pImmediateContext->IASetVertexBuffers(0, 1, &m_pVertexBuffer2->getBufferDX11(), &stride, &offset);
+		g_pImmediateContext->IASetVertexBuffers(0, 1, &m_pVertexBuffer2.getBufferDX11(), &stride, &offset);
 		//g_pImmediateContext->IASetVertexBuffers(0, 1, &m_pVertexBuffer2, &stride, &offset);
 
-		g_pImmediateContext->IASetIndexBuffer(m_pIndexBuffer2->getBufferDX11(), DXGI_FORMAT_R16_UINT, 0);
+		g_pImmediateContext->IASetIndexBuffer(m_pIndexBuffer2.getBufferDX11(), DXGI_FORMAT_R16_UINT, 0);
 		g_pImmediateContext->VSSetShader(g_pVertexShader2, NULL, 0);
 		g_pImmediateContext->PSSetShader(g_pPixelShader2, NULL, 0);
 		//g_pImmediateContext->DrawIndexed(6, 0, 0);
@@ -569,11 +564,11 @@ namespace GraphicsModule
 		*	if (g_pVertexBuffer) g_pVertexBuffer->Release();
 		*	if (g_pIndexBuffer) g_pIndexBuffer->Release();
 		*/
-		if (m_pCBChangesEveryFrame) m_pCBChangesEveryFrame->Release();
-		if (m_pCBChangeOnResize) m_pCBChangeOnResize->Release();
-		if (m_pCBNeverChanges) m_pCBNeverChanges->Release();
-		if (m_pVertexBuffer) m_pVertexBuffer->Release();
-		if (m_pIndexBuffer) m_pIndexBuffer->Release();
+		if (m_pCBChangesEveryFrame.getBufferDX11()) m_pCBChangesEveryFrame.Release();
+		if (m_pCBChangeOnResize.getBufferDX11()) m_pCBChangeOnResize.Release();
+		if (m_pCBNeverChanges.getBufferDX11()) m_pCBNeverChanges.Release();
+		if (m_pVertexBuffer.getBufferDX11()) m_pVertexBuffer.Release();
+		if (m_pIndexBuffer.getBufferDX11()) m_pIndexBuffer.Release();
 		
 		//destructor 
 		
@@ -589,5 +584,89 @@ namespace GraphicsModule
 		if (g_pImmediateContext) g_pImmediateContext->Release();
 		if (g_pd3dDevice) g_pd3dDevice->Release();
 		#endif
+	}
+
+
+	/**
+ * @brief   Esta funcion regenera el size de la pantalla limpiando los buffer y viewports
+ * @return  #HRESULT: retorna un resultado de la funcion como si todo salio a la perfeccion o si hubo fallos
+ * @bug     No know Bugs.
+ * @return  #LRESULT: Status code.
+ */
+	HRESULT Test::ReloadBuffer(unsigned int width, unsigned int height) {
+		HRESULT hr = S_OK;
+			// Create a render target view
+		ID3D11Texture2D* pBackBuffer = NULL;
+		hr = g_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
+		if (FAILED(hr))
+			return hr;
+
+		hr = g_pd3dDevice->CreateRenderTargetView(pBackBuffer, NULL, &g_pRenderTargetView);
+		pBackBuffer->Release();
+		if (FAILED(hr))
+			return hr;
+
+		// Create depth stencil texture
+		D3D11_TEXTURE2D_DESC descDepth;
+		ZeroMemory(&descDepth, sizeof(descDepth));
+		descDepth.Width = width;
+		descDepth.Height = height;
+		descDepth.MipLevels = 1;
+		descDepth.ArraySize = 1;
+		descDepth.Format = DXGI_FORMAT_R32_TYPELESS;
+		descDepth.SampleDesc.Count = 1;
+		descDepth.SampleDesc.Quality = 0;
+		descDepth.Usage = D3D11_USAGE_DEFAULT;
+		descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+		descDepth.CPUAccessFlags = 0;
+		descDepth.MiscFlags = 0;
+		hr = g_pd3dDevice->CreateTexture2D(&descDepth, NULL, &g_pDepthStencil);
+		if (FAILED(hr))
+			return hr;
+
+		// Create the depth stencil view
+		D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
+		ZeroMemory(&descDSV, sizeof(descDSV));
+		descDSV.Format = DXGI_FORMAT_D32_FLOAT;
+		descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+		descDSV.Texture2D.MipSlice = 0;
+		hr = g_pd3dDevice->CreateDepthStencilView(g_pDepthStencil, &descDSV, &g_pDepthStencilView);
+		if (FAILED(hr))
+			return hr;
+
+		// and the resource view for the shader
+		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+		ZeroMemory(&srvDesc, sizeof(srvDesc));
+		srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
+		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+		srvDesc.Texture2D.MipLevels = 1; // same as orig texture
+		hr = g_pd3dDevice->CreateShaderResourceView(g_pDepthStencil, &srvDesc, &g_pDepthStencilSRV);
+		if (FAILED(hr))
+			return hr;
+
+		g_pImmediateContext->OMSetRenderTargets(1, &g_pRenderTargetView, g_pDepthStencilView);
+
+		// Setup the viewport
+
+		vp.Width = (FLOAT)width;
+		vp.Height = (FLOAT)height;
+		vp.MinDepth = 0.0f;
+		vp.MaxDepth = 1.0f;
+		vp.TopLeftX = 0;
+		vp.TopLeftY = 0;
+		g_pImmediateContext->RSSetViewports(1, &vp);
+
+	}
+
+	//static_cast<D>(TITO);
+extern 	Test& GetTestObj(HWND _hwnd)
+	{
+		static Test* pTest;
+		if (pTest == nullptr)
+		{
+			pTest = new Test();
+			pTest->InitDevice( _hwnd);
+		}
+		return *pTest;
 	}
 }

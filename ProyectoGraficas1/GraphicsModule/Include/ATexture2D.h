@@ -6,7 +6,6 @@
 #endif
 
 
-
 /**
 	 * @brief   Interfaz del buffer sobre esta se generan los demas buffer
 	 * @param   #float: numero a summar.
@@ -16,30 +15,17 @@
 	 */
 
 
-class ABuffer
+class ATexture2D
 {
 public:
 
-	ABuffer()=default;
-	~ABuffer(){
-		Release();
-	};
-#if defined(DX11)
-	 ID3D11Buffer*& getBufferDX11(){
-	 return m_buffer;
-	 };
+	ATexture2D()=default;
+	~ATexture2D()=default;
+	ID3D11Texture2D*& getAtexture2D() {
 
-	 void setBufferDX11(ID3D11Buffer* buffer) {
-		 buffer=m_buffer;
-	 }
-	 void Release(){
-	 m_buffer->Release();
-	 };
-#endif
-
+	return m_texture2d;
+	}
 private:
-#if defined(DX11)
-	ID3D11Buffer * m_buffer=NULL;
-#endif
+	ID3D11Texture2D * m_texture2d;
 };
 
