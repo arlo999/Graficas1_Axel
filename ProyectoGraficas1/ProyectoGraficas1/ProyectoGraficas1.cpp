@@ -146,7 +146,7 @@ HRESULT InitWindow(LONG _width, LONG _height)
    #endif
    return S_OK;
  }
-
+ 
  void UIRender()
  {
    // Start the Dear ImGui frame

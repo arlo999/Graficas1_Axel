@@ -52,7 +52,7 @@ namespace GraphicsModule
 		ID3D11DeviceContext* g_pImmediateContext = NULL;
 		
 		IDXGISwapChain* g_pSwapChain = NULL;
-		ID3D11RenderTargetView* g_pRenderTargetView = NULL;
+		
 		
 		ID3D11Texture2D* g_pDepthStencil = NULL;
 		
@@ -81,8 +81,23 @@ namespace GraphicsModule
 		ABuffer m_pVertexBuffer2 ;
 		ABuffer m_pIndexBuffer2 ;
 
-		ID3D11ShaderResourceView* g_pTextureRV = NULL;
+		//shaders ResourceView
+
+
+		ID3D11ShaderResourceView* g_pTextureRV=NULL;
+		ID3D11ShaderResourceView* m_Shader2 = NULL;
+		ID3D11ShaderResourceView* m_Shader3 = NULL;
+		ID3D11ShaderResourceView* m_Shader4 = NULL;
 		
+		//render targets
+
+		ID3D11RenderTargetView* g_pRenderTargetView = NULL;
+		ID3D11RenderTargetView* m_Target2 = NULL;
+		ID3D11RenderTargetView* m_Target3 = NULL;
+		ID3D11RenderTargetView* m_Target4 = NULL;
+
+
+
 		ID3D11SamplerState* g_pSamplerLinear = NULL;
 		
 		XMMATRIX                            g_World;

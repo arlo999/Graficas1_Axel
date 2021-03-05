@@ -146,7 +146,7 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)bin\$(Configuration)\$(PlatformTarget)\</OutDir>
     <IntDir>$(SolutionDir)Intermediate\Unused\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
-    <TargetName>ProyectoGraficas_r</TargetName>
+    <TargetName>ProyectoGraficas</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
