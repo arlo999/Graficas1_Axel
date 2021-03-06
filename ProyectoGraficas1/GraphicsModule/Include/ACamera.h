@@ -1,9 +1,9 @@
 #pragma once
 #include "AVector.h"
 #include "AMatriz4.h"
-
-#if defined(DX11)
 #include <windows.h>
+#include <iostream>
+#if defined(DX11)
 #include <xnamath.h>
 #endif
 
@@ -69,9 +69,9 @@ public:
 private:
 
 	//matriz de transformacion , cambiar por puntero de flotantes
-	
+#if defined(DX11)
 	XMMATRIX viewMatrix;
-	
+	#endif
 	float* m_viewMatrix;
 	//vectores de transformacion
 	

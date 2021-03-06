@@ -22,14 +22,14 @@ void ACamera::setviewMLookL(AVector x, AVector y, AVector z)
    //up
     yaxis =(zaxis.ProductoCruz(xaxis));
     
-
+#if defined(DX11)
     XMMATRIX m_View(
         XMVectorSet(xaxis.getX() , yaxis.getX(), zaxis.getX(),0),
         XMVectorSet(xaxis.getY(), yaxis.getY(), zaxis.getY(),0),
         XMVectorSet(xaxis.getZ(), yaxis.getZ(), zaxis.getZ(),0),
         XMVectorSet(-xaxis.ProductoPunto(x),- yaxis.ProductoPunto(x),-zaxis.ProductoPunto(x) ,1));
-   
     viewMatrix = m_View;
+   #endif
     
     
 }
@@ -43,14 +43,15 @@ void ACamera::setviewMLookL(AVector x, AVector y, AVector z)
      */
 float* ACamera::ViewPerspective(float fov, float aspectRatio, float cerca, float lejos)
 {
+
     float height = cos(fov * .5) / sin(fov * .5);
     float width = height / aspectRatio;
-    return  new float[16]{
-       width, 0.0f, 0.0f, 0.0f,
-       0.0f, height, 0.0f, 0.0f,
-       0.0f, 0.0f, lejos / (lejos - cerca), 1.0f,
-       0.0f, 0.0f, (-lejos / (lejos - cerca)) * cerca, 0.0f
-    };
+	return  new float[16]{
+	  width, 0.0f, 0.0f, 0.0f,
+	  0.0f, height, 0.0f, 0.0f,
+	  0.0f, 0.0f, lejos / (lejos - cerca), 1.0f,
+	  0.0f, 0.0f, (-lejos / (lejos - cerca)) * cerca, 0.0f
+	};
 }
 
 /**

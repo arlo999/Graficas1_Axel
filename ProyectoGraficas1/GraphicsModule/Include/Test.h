@@ -4,6 +4,8 @@
 #include "ABuffer.h"
 
 #if defined(DX11)
+#include "ACamera.h"
+
 #include <d3d11.h>
 #include <d3dx11.h>
 #include <d3dcompiler.h>
@@ -104,8 +106,9 @@ namespace GraphicsModule
 		XMMATRIX                            g_View;
 		XMMATRIX                            g_Projection;
 		XMFLOAT4                            g_vMeshColor;
-		
-		
+		//camara axel
+		ACamera				*camera;
+		CBNeverChanges cbNeverChanges;
 		
 		ID3D11VertexShader* g_pVertexShader2 = NULL;
 		
@@ -117,7 +120,7 @@ namespace GraphicsModule
 		ID3D11InputLayout* g_pVertexLayout2 = NULL;
 		D3D11_VIEWPORT vp;
 		HWND m_hwnd;
-		
+		LPPOINT p = new POINT;
 #endif
 	public:
 #if defined(DX11)
@@ -129,7 +132,7 @@ namespace GraphicsModule
 		HRESULT InitDevice(HWND _hwnd);
 public:
 		void Render();
-
+		void Update();
 		void CleanupDevice();
 
 	};

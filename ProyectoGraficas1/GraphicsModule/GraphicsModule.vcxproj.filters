@@ -54,6 +54,9 @@
     <ClInclude Include="Include\ADevice.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
+    <ClInclude Include="AMangerAPI.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="scr\Test.cpp">
@@ -81,6 +84,9 @@
       <Filter>Archivos de origen</Filter>
     </ClCompile>
     <ClCompile Include="scr\ADevice.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
+    <ClCompile Include="AMangerAPI.cpp">
       <Filter>Archivos de origen</Filter>
     </ClCompile>
   </ItemGroup>

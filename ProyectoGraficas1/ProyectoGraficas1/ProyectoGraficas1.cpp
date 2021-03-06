@@ -8,7 +8,7 @@
 // -----------------Global var-----------------------------------------------------------------
 HWND g_hwnd;
 bool first = false;
-
+bool perspective = false;
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam);
 
 
@@ -18,6 +18,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND _hwnd, UINT _m
  * @param   #unsigned int: es el height de la pantalla .
  */
 void OnSize(unsigned int width, unsigned int height) {
+#if defined(DX11)
     auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
     if (testObj.g_pRenderTargetView)
     {
@@ -31,6 +32,7 @@ void OnSize(unsigned int width, unsigned int height) {
     testObj.g_pSwapChain->ResizeBuffers(1, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
     testObj.g_pImmediateContext->Flush();
     testObj.ReloadBuffer(width, height);
+    #endif
 }
 
 /**
@@ -76,7 +78,53 @@ LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
+	case WM_KEYDOWN: {
+#if defined(DX11)
+        auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
+		UINT a = LOWORD(_wParam);
+		switch (a) {
+			//flechas izquierda
+		case 37:
+			testObj.camera->move(-1, 0, 0);
+			break;
+			//flechas arriba
+		case 38:
+            testObj.camera->move(0, 0, 1);
+			break;
+			//flecha derecha
+		case 39:
+            testObj.camera->move(1, 0, 0);
+			break;
+			//flechas abaja
+		case 40:
+            testObj.camera->move(0, 0, -1);
+			break;
+		case 83:
+            testObj.camera->move(0, -1, 0);
+			break;
 
+		case 87:
+            testObj.camera->move(0, 1, 0);
+			break;
+		case 9:
+			if (perspective == true)
+			{
+				testObj.g_Projection = testObj.camera->ViewPerspective(XM_PIDIV4, 640 / (FLOAT)480, 0.01f, 100.0f);
+				perspective = false;
+			}
+	    		else {
+
+                testObj.g_Projection = testObj.camera->ViewOrtographic(640, (FLOAT)480, 0.01f, 100.0f);
+				perspective = true;
+			}
+
+
+			break;
+		default:
+			break;
+           } 
+#endif
+        }
     }
     return ::DefWindowProc(_hwnd, _msg, _wParam, _lParam);
 }
@@ -184,6 +232,11 @@ HRESULT InitWindow(LONG _width, LONG _height)
  * @bug     No know Bugs.
  * @return  #int: Status code.
  */
+ void Update() {
+
+     auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
+     testObj.Update();
+ }
 int main()
 {
     
@@ -222,6 +275,7 @@ int main()
         }
         else
         {
+            Update();
             Render();
         }
     }

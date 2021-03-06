@@ -250,7 +250,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(DXSDK_DIR)Include\;$(SolutionDir)GraphicSModule\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -342,7 +342,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(DXSDK_DIR)Include\;$(SolutionDir)GraphicSModule\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -357,6 +357,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AMangerAPI.h" />
     <ClInclude Include="ATexture2D.h" />
     <ClInclude Include="Include\ABuffer.h" />
     <ClInclude Include="Include\ACamera.h" />
@@ -372,6 +373,7 @@
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AMangerAPI.cpp" />
     <ClCompile Include="scr\ABuffer.cpp" />
     <ClCompile Include="scr\ACamera.cpp" />
     <ClCompile Include="scr\ADevice.cpp" />

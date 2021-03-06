@@ -1,5 +1,15 @@
 #include "ADeviceContext.h"
 
+void ADeviceContext::A_ClearState()
+{
+	 m_devicecontext->ClearState();
+}
+
+HRESULT ADeviceContext::A_Release()
+{
+	return m_devicecontext->Release();
+}
+
 void ADeviceContext::A_OMSetRenderTargets(__in_range(0, D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT)UINT NumViews, ID3D11RenderTargetView* const* ppRenderTargetViews, ID3D11DepthStencilView* pDepthStencilView)
 {
 	 m_devicecontext->OMSetRenderTargets(NumViews,ppRenderTargetViews,pDepthStencilView);

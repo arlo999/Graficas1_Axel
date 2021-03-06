@@ -1,6 +1,7 @@
 
 #include "Test.h"
 #include "..\Include\Test.h"
+#include "ACamera.h"
 
 
 namespace GraphicsModule
@@ -418,21 +419,41 @@ namespace GraphicsModule
 		// Initialize the world matrices
 		g_World = XMMatrixIdentity();
 
+		camera = new ACamera();
+		camera->setEye(AVector(0.0f, 3.0f, -6.0f, 0));
+		camera->setAt(AVector(0.0f, 1.0f, 0.0f, 0));
+		camera->setUp(AVector(0.0f, 1.0f, 0.0f, 0));
+
 		// Initialize the view matrix
+		/*
 		XMVECTOR Eye = XMVectorSet(0.0f, 3.0f, -6.0f, 0.0f);
 		XMVECTOR At = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 		XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 		g_View = XMMatrixLookAtLH(Eye, At, Up);
+		*/
 
-		CBNeverChanges cbNeverChanges;
+
+		camera->setviewMLookL(camera->getEye(), camera->getAt(), camera->getUp());
+
+		g_View = camera->getviewMLookLDirectX();
+
 		cbNeverChanges.mView = XMMatrixTranspose(g_View);
+
+
+		g_Projection = camera->ViewPerspective(XM_PIDIV4, width / (FLOAT)height, 0.01f, 100.0f);
+
+		/*
+		cbNeverChanges.mView = XMMatrixTranspose(g_View);
+		*/
 		g_pImmediateContext->UpdateSubresource(m_pCBNeverChanges.getBufferDX11(), 0, NULL, &cbNeverChanges, 0, 0);
 
 		// Initialize the projection matrix
+		
 		g_Projection = XMMatrixPerspectiveFovLH(XM_PIDIV4, width / (FLOAT)height, 0.01f, 100.0f);
 
 		CBChangeOnResize cbChangesOnResize;
 		cbChangesOnResize.mProjection = XMMatrixTranspose(g_Projection);
+		
 		g_pImmediateContext->UpdateSubresource(m_pCBChangeOnResize.getBufferDX11(), 0, NULL, &cbChangesOnResize, 0, 0);
 
 
@@ -599,6 +620,8 @@ namespace GraphicsModule
 
 #if defined(DX11)
 		// Update our time
+
+		
 		static float t = 0.0f;
 		if (g_driverType == D3D_DRIVER_TYPE_REFERENCE)
 		{
@@ -613,7 +636,7 @@ namespace GraphicsModule
 			t = (dwTimeCur - dwTimeStart) / 1000.0f;
 		}
 		// Rotate cube around the origin
-		g_World = XMMatrixRotationY(t);
+		g_View = XMMatrixRotationY(t);
 
 		// Modify the color
 		g_vMeshColor.x = (sinf(t * 1.0f) + 1.0f) * 0.5f;
@@ -626,17 +649,23 @@ namespace GraphicsModule
 		float ClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f }; // red, green, blue, alpha
 
 		
-
+		g_View = camera->getviewMLookLDirectX();
+		cbNeverChanges.mView = XMMatrixTranspose(g_View);
 		CBChangesEveryFrame cb;
-		cb.mWorld = XMMatrixTranspose(g_World);
+		cb.mWorld = XMMatrixTranspose(g_View);
 		cb.vMeshColor = g_vMeshColor;
 		g_pImmediateContext->UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
 
 
 		UINT stride = sizeof(SimpleVertex);
 		UINT offset = 0;
+		
+		
 
-	
+		CBChangeOnResize cbChangesOnResize;
+		cbChangesOnResize.mProjection = XMMatrixTranspose(g_Projection);
+		g_pImmediateContext->UpdateSubresource(m_pCBChangeOnResize.getBufferDX11(), 0, NULL, &cbChangesOnResize, 0, 0);
+		
 
 		///textura 1
 		g_pImmediateContext->IASetInputLayout(g_pVertexLayout);
@@ -658,7 +687,7 @@ namespace GraphicsModule
 
 
 		cb.mWorld = XMMatrixTranslation(0, 0, 0);
-		cb.mWorld = XMMatrixMultiplyTranspose(g_World, cb.mWorld);
+		cb.mWorld = XMMatrixMultiplyTranspose(g_View, cb.mWorld);
 		g_pImmediateContext->UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
 		g_pImmediateContext->PSSetShaderResources(0, 1, &g_pTextureRV);
 
@@ -671,7 +700,7 @@ namespace GraphicsModule
 		g_pImmediateContext->OMSetRenderTargets(1,&m_Target3,g_pDepthStencilView);
 
 		cb.mWorld = XMMatrixTranslation(0, 0, 0);
-		cb.mWorld = XMMatrixMultiplyTranspose(g_World, cb.mWorld);
+		cb.mWorld = XMMatrixMultiplyTranspose(g_View, cb.mWorld);
 		g_pImmediateContext->UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
 		g_pImmediateContext->PSSetShaderResources(0, 1, &g_pTextureRV);
 		
@@ -679,7 +708,7 @@ namespace GraphicsModule
 
 
 		cb.mWorld = XMMatrixTranslation(-3, 0, 0);
-		cb.mWorld = XMMatrixMultiplyTranspose(g_World, cb.mWorld);
+		cb.mWorld = XMMatrixMultiplyTranspose(g_View, cb.mWorld);
 		g_pImmediateContext->UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
 		g_pImmediateContext->PSSetShaderResources(0, 1, &m_Shader2);
 
@@ -692,7 +721,7 @@ namespace GraphicsModule
 		g_pImmediateContext->OMSetRenderTargets(1, &m_Target4, g_pDepthStencilView);
 		
 		cb.mWorld = XMMatrixTranslation(3, 0, 0);
-		cb.mWorld = XMMatrixMultiplyTranspose(g_World, cb.mWorld);
+		cb.mWorld = XMMatrixMultiplyTranspose(g_View, cb.mWorld);
 		g_pImmediateContext->UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
 		g_pImmediateContext->PSSetShaderResources(0, 1, &m_Shader3);
 
@@ -700,14 +729,14 @@ namespace GraphicsModule
 		
 
 		cb.mWorld = XMMatrixTranslation(-3, 0, 0);
-		cb.mWorld = XMMatrixMultiplyTranspose(g_World, cb.mWorld);
+		cb.mWorld = XMMatrixMultiplyTranspose(g_View, cb.mWorld);
 		g_pImmediateContext->UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
 
 		g_pImmediateContext->PSSetShaderResources(0, 1, &m_Shader2);
 		g_pImmediateContext->DrawIndexed(36, 0, 0);
 
 		cb.mWorld = XMMatrixTranslation(0, 0, 0);
-		cb.mWorld = XMMatrixMultiplyTranspose(g_World, cb.mWorld);
+		cb.mWorld = XMMatrixMultiplyTranspose(g_View, cb.mWorld);
 		g_pImmediateContext->UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
 
 		g_pImmediateContext->PSSetShaderResources(0, 1, &g_pTextureRV);
@@ -721,7 +750,7 @@ namespace GraphicsModule
 		g_pImmediateContext->OMSetRenderTargets(1, &g_pRenderTargetView, g_pDepthStencilView);
 
 		cb.mWorld = XMMatrixTranslation(0, 2, 0);
-		cb.mWorld = XMMatrixMultiplyTranspose(g_World, cb.mWorld);
+		cb.mWorld = XMMatrixMultiplyTranspose(g_View, cb.mWorld);
 		g_pImmediateContext->UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
 
 		g_pImmediateContext->PSSetShaderResources(0, 1, &m_Shader4);
@@ -729,7 +758,7 @@ namespace GraphicsModule
 		
 		//
 		cb.mWorld = XMMatrixTranslation(3, 0, 0);
-		cb.mWorld = XMMatrixMultiplyTranspose(g_World, cb.mWorld);
+		cb.mWorld = XMMatrixMultiplyTranspose(g_View, cb.mWorld);
 		g_pImmediateContext->UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
 		g_pImmediateContext->PSSetShaderResources(0, 1, &m_Shader3);
 
@@ -737,7 +766,7 @@ namespace GraphicsModule
 		//
 
 		cb.mWorld = XMMatrixTranslation(-3, 0, 0);
-		cb.mWorld = XMMatrixMultiplyTranspose(g_World, cb.mWorld);
+		cb.mWorld = XMMatrixMultiplyTranspose(g_View, cb.mWorld);
 		g_pImmediateContext->UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
 
 		g_pImmediateContext->PSSetShaderResources(0, 1, &m_Shader2);
@@ -745,7 +774,7 @@ namespace GraphicsModule
 
 		//
 		cb.mWorld = XMMatrixTranslation(0, 0, 0);
-		cb.mWorld = XMMatrixMultiplyTranspose(g_World, cb.mWorld);
+		cb.mWorld = XMMatrixMultiplyTranspose(g_View, cb.mWorld);
 		g_pImmediateContext->UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
 
 		g_pImmediateContext->PSSetShaderResources(0, 1, &g_pTextureRV);
@@ -796,6 +825,14 @@ namespace GraphicsModule
 		#endif
 	}
 
+	void Test::Update()
+	{
+#if defined(DX11)
+		GetCursorPos(p);
+		camera->rotate(p->x, p->y, 0);
+#endif
+	}
+
 
 	/**
  * @brief   Esta funcion regenera el size de la pantalla limpiando los buffer y viewports
@@ -803,7 +840,9 @@ namespace GraphicsModule
  * @bug     No know Bugs.
  * @return  #LRESULT: Status code.
  */
+#if defined(DX11)
 	HRESULT Test::ReloadBuffer(unsigned int width, unsigned int height) {
+		
 		HRESULT hr = S_OK;
 			// Create a render target view
 		ID3D11Texture2D* pBackBuffer = NULL;
@@ -866,8 +905,145 @@ namespace GraphicsModule
 		vp.TopLeftY = 0;
 		g_pImmediateContext->RSSetViewports(1, &vp);
 
-	}
 
+
+
+		/*
+		primera textura y shader inicializados
+		*/
+
+
+		/// ESTO DEBE ESTA EN EL MANAGER
+
+	//TEXTURA CON LA QUE SE HACE LA DESCRIPCION
+		ID3D11Texture2D* Text2D = NULL;
+
+		D3D11_TEXTURE2D_DESC descTextRT;
+		ZeroMemory(&descTextRT, sizeof(descTextRT));
+		descTextRT.Width = width;
+		descTextRT.Height = height;
+		descTextRT.MipLevels = 1;
+		descTextRT.ArraySize = 1;
+		descTextRT.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		descTextRT.SampleDesc.Count = 1;
+		descTextRT.SampleDesc.Quality = 0;
+		descTextRT.Usage = D3D11_USAGE_DEFAULT;
+		descTextRT.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+		descTextRT.CPUAccessFlags = 0;
+		descTextRT.MiscFlags = 0;
+		//CAMBIAR EN EL MANAGER
+		hr = g_pd3dDevice->CreateTexture2D(&descTextRT, NULL, &Text2D);
+		if (FAILED(hr))
+			return hr;
+
+		// create the rt Shader resource view 2
+
+		D3D11_SHADER_RESOURCE_VIEW_DESC descViewRT;
+		ZeroMemory(&descViewRT, sizeof(descViewRT));
+		descViewRT.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		descViewRT.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+		descViewRT.Texture2D.MostDetailedMip = 0;
+		descViewRT.Texture2D.MipLevels = 1;
+		hr = g_pd3dDevice->CreateShaderResourceView(Text2D, &descViewRT, &m_Shader2);
+		if (FAILED(hr))
+			return hr;
+
+		// Create the render target view 2
+		hr = g_pd3dDevice->CreateRenderTargetView(Text2D, NULL, &m_Target2);
+
+		if (FAILED(hr))
+			return hr;
+
+		/*
+		segunda textura
+		*/
+
+		/// ESTO DEBE ESTA EN EL MANAGER
+		//Realease para poder usarla 
+		Text2D->Release();
+
+		ZeroMemory(&descTextRT, sizeof(descTextRT));
+		descTextRT.Width = width;
+		descTextRT.Height = height;
+		descTextRT.MipLevels = 1;
+		descTextRT.ArraySize = 1;
+		descTextRT.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		descTextRT.SampleDesc.Count = 1;
+		descTextRT.SampleDesc.Quality = 0;
+		descTextRT.Usage = D3D11_USAGE_DEFAULT;
+		descTextRT.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+		descTextRT.CPUAccessFlags = 0;
+		descTextRT.MiscFlags = 0;
+		//CAMBIAR EN EL MANAGER
+		hr = g_pd3dDevice->CreateTexture2D(&descTextRT, NULL, &Text2D);
+		if (FAILED(hr))
+			return hr;
+
+		// create the rt Shader resource view 2
+
+
+		ZeroMemory(&descViewRT, sizeof(descViewRT));
+		descViewRT.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		descViewRT.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+		descViewRT.Texture2D.MostDetailedMip = 0;
+		descViewRT.Texture2D.MipLevels = 1;
+		hr = g_pd3dDevice->CreateShaderResourceView(Text2D, &descViewRT, &m_Shader3);
+		if (FAILED(hr))
+			return hr;
+
+		// Create the render target view 2
+		hr = g_pd3dDevice->CreateRenderTargetView(Text2D, NULL, &m_Target3);
+
+		if (FAILED(hr))
+			return hr;
+
+
+
+
+		/*
+		Tercera textura
+		*/
+
+		/// ESTO DEBE ESTA EN EL MANAGER
+		///Realease para poder usarla 
+		Text2D->Release();
+
+		ZeroMemory(&descTextRT, sizeof(descTextRT));
+		descTextRT.Width = width;
+		descTextRT.Height = height;
+		descTextRT.MipLevels = 1;
+		descTextRT.ArraySize = 1;
+		descTextRT.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		descTextRT.SampleDesc.Count = 1;
+		descTextRT.SampleDesc.Quality = 0;
+		descTextRT.Usage = D3D11_USAGE_DEFAULT;
+		descTextRT.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+		descTextRT.CPUAccessFlags = 0;
+		descTextRT.MiscFlags = 0;
+		//CAMBIAR EN EL MANAGER
+		hr = g_pd3dDevice->CreateTexture2D(&descTextRT, NULL, &Text2D);
+		if (FAILED(hr))
+			return hr;
+
+		// create the rt Shader resource view 2
+
+
+		ZeroMemory(&descViewRT, sizeof(descViewRT));
+		descViewRT.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		descViewRT.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+		descViewRT.Texture2D.MostDetailedMip = 0;
+		descViewRT.Texture2D.MipLevels = 1;
+		hr = g_pd3dDevice->CreateShaderResourceView(Text2D, &descViewRT, &m_Shader4);
+		if (FAILED(hr))
+			return hr;
+
+		// Create the render target view 2
+		hr = g_pd3dDevice->CreateRenderTargetView(Text2D, NULL, &m_Target4);
+
+		if (FAILED(hr))
+			return hr;
+	}
+#endif
 	//static_cast<D>(TITO);
 extern 	Test& GetTestObj(HWND _hwnd)
 	{

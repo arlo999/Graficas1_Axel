@@ -21,9 +21,7 @@ class ABuffer
 public:
 
 	ABuffer()=default;
-	~ABuffer(){
-		Release();
-	};
+	~ABuffer()=default;
 #if defined(DX11)
 	 ID3D11Buffer*& getBufferDX11(){
 	 return m_buffer;
