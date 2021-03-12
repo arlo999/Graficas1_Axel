@@ -201,13 +201,22 @@ HRESULT InitWindow(LONG _width, LONG _height)
 #if defined(DX11)
    ImGui_ImplDX11_NewFrame();
    #endif
-
+   
    ImGui_ImplWin32_NewFrame();
    ImGui::NewFrame();
 
    // example window
    if (ImGui::Begin("Another Window", nullptr))
    {
+       
+   static float dir[3]{};
+   if (ImGui::DragFloat3("Direccion de luz", dir,0.001,-1,1))
+        {
+       auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
+#if defined(DX11)
+            testObj.m_LigthBufferStruct.dir= XMFLOAT4(dir[0],dir[1],dir[2],0.0f);
+#endif
+        }
    }
    ImGui::End();
 

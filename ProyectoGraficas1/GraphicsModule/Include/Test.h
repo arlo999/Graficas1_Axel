@@ -11,13 +11,20 @@
 #include <d3dcompiler.h>
 #include <xnamath.h>
 #endif
+#include <vector>
+
 namespace GraphicsModule
 {
+	struct DirLigth {
+	
+	XMFLOAT4 dir;
+	};
 	struct SimpleVertex
 	{
 #if defined(DX11)
 		XMFLOAT3 Pos;
 		XMFLOAT2 Tex;
+		XMFLOAT3 Normal;
 	#endif
 	};
 
@@ -82,7 +89,9 @@ namespace GraphicsModule
 		ABuffer m_pCBChangesEveryFrame;
 		ABuffer m_pVertexBuffer2 ;
 		ABuffer m_pIndexBuffer2 ;
-
+		//DirLight
+		ABuffer  m_LigthBuffer;
+		DirLigth m_LigthBufferStruct;
 		//shaders ResourceView
 
 

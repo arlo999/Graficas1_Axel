@@ -41,7 +41,7 @@ namespace GraphicsModule
 
 #if defined(DX11)
 		m_hwnd = _hwnd;
-
+		camera = new ACamera();
 		HRESULT hr = S_OK;
 
 		RECT rc;
@@ -174,11 +174,79 @@ namespace GraphicsModule
 			return hr;
 		}
 
+		// Reflect shader info
+		ID3D11ShaderReflection* pVertexShaderReflection = NULL;
+		if (FAILED(D3DReflect(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), IID_ID3D11ShaderReflection, (void**)&pVertexShaderReflection)))
+		{
+			return S_FALSE;
+		}
+
+		// Get shader info
+		D3D11_SHADER_DESC shaderDesc;
+		pVertexShaderReflection->GetDesc(&shaderDesc);
+
+		// Read input layout description from shader info
+		std::vector<D3D11_INPUT_ELEMENT_DESC> inputLayoutDesc;
+		for (UINT32 i = 0; i < shaderDesc.InputParameters; i++)
+		{
+			D3D11_SIGNATURE_PARAMETER_DESC paramDesc;
+			pVertexShaderReflection->GetInputParameterDesc(i, &paramDesc);
+
+			// fill out input element desc
+			D3D11_INPUT_ELEMENT_DESC elementDesc;
+			elementDesc.SemanticName = paramDesc.SemanticName;
+			elementDesc.SemanticIndex = paramDesc.SemanticIndex;
+			elementDesc.InputSlot = 0;
+			elementDesc.AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
+			elementDesc.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+			elementDesc.InstanceDataStepRate = 0;
+
+			// determine DXGI format
+			if (paramDesc.Mask == 1)
+			{
+				if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_UINT32) elementDesc.Format = DXGI_FORMAT_R32_UINT;
+				else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_SINT32) elementDesc.Format = DXGI_FORMAT_R32_SINT;
+				else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32) elementDesc.Format = DXGI_FORMAT_R32_FLOAT;
+			}
+			else if (paramDesc.Mask <= 3)
+			{
+				if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_UINT32) elementDesc.Format = DXGI_FORMAT_R32G32_UINT;
+				else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_SINT32) elementDesc.Format = DXGI_FORMAT_R32G32_SINT;
+				else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32) elementDesc.Format = DXGI_FORMAT_R32G32_FLOAT;
+			}
+			else if (paramDesc.Mask <= 7)
+			{
+				if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_UINT32) elementDesc.Format = DXGI_FORMAT_R32G32B32_UINT;
+				else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_SINT32) elementDesc.Format = DXGI_FORMAT_R32G32B32_SINT;
+				else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32) elementDesc.Format = DXGI_FORMAT_R32G32B32_FLOAT;
+			}
+			else if (paramDesc.Mask <= 15)
+			{
+				if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_UINT32) elementDesc.Format = DXGI_FORMAT_R32G32B32A32_UINT;
+				else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_SINT32) elementDesc.Format = DXGI_FORMAT_R32G32B32A32_SINT;
+				else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32) elementDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+			}
+
+			//save element desc
+			inputLayoutDesc.push_back(elementDesc);
+		}
+
+		// Try to create Input Layout
+		 hr = g_pd3dDevice->CreateInputLayout(&inputLayoutDesc[0], inputLayoutDesc.size(), pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), &g_pVertexLayout);
+
+		//Free allocation shader reflection memory
+		pVertexShaderReflection->Release();
+		pVSBlob->Release();
+		
+
+		/*
 		// Define the input layout
 		D3D11_INPUT_ELEMENT_DESC layout[] =
 		{
 			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+
 		};
 		UINT numElements = ARRAYSIZE(layout);
 
@@ -188,39 +256,11 @@ namespace GraphicsModule
 		pVSBlob->Release();
 		if (FAILED(hr))
 			return hr;
+		*/
 
-		// Compile the vertex shader
-		ID3DBlob* pVSBlob2 = NULL;
-		hr = CompileShaderFromFile("Limpio.fx", "VS", "vs_4_0", &pVSBlob2);
-		if (FAILED(hr))
-		{
-			MessageBox(NULL,
-				"The FX file cannot be compiled.  Please run this executable from the directory that contains the FX file.", "Error", MB_OK);
-			return hr;
-		}
-
-		// Create the vertex shader
-		hr = g_pd3dDevice->CreateVertexShader(pVSBlob2->GetBufferPointer(), pVSBlob2->GetBufferSize(), NULL, &g_pVertexShader2);
-		if (FAILED(hr))
-		{
-			pVSBlob2->Release();
-			return hr;
-		}
-
-		// Define the input layout
-		D3D11_INPUT_ELEMENT_DESC layout2[] =
-		{
-			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		};
-		UINT numElements2 = ARRAYSIZE(layout2);
-
-		// Create the input layout
-		hr = g_pd3dDevice->CreateInputLayout(layout2, numElements2, pVSBlob2->GetBufferPointer(),
-			pVSBlob2->GetBufferSize(), &g_pVertexLayout2);
-		pVSBlob2->Release();
-		if (FAILED(hr))
-			return hr;
+	
+		
+	
 
 		// Compile the pixel shader
 		ID3DBlob* pPSBlob = NULL;
@@ -257,35 +297,35 @@ namespace GraphicsModule
 		// Create vertex buffer
 		SimpleVertex vertices[] =
 		{
-			{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT2(0.0f, 0.0f) },
-			{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT2(1.0f, 0.0f) },
-			{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f) },
-			{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) },
+			{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT2(0.0f, 0.0f),XMFLOAT3(0.0f, 1.0f, 0.0f) },
+			{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT2(1.0f, 0.0f),XMFLOAT3(0.0f, 1.0f, 0.0f) },
+			{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f),XMFLOAT3(0.0f, 1.0f, 0.0f) },
+			{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f),XMFLOAT3(0.0f, 1.0f, 0.0f) },
 
-			{ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2(0.0f, 0.0f) },
-			{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT2(1.0f, 0.0f) },
-			{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f) },
-			{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) }, 
+			{ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2(0.0f, 0.0f),XMFLOAT3(1.0f, -1.0f, 0.0f) },
+			{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT2(1.0f, 0.0f),XMFLOAT3(1.0f, -1.0f, 0.0f) },
+			{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f),XMFLOAT3(1.0f, -1.0f, 0.0f) },
+			{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f),XMFLOAT3(1.0f, -1.0f, 0.0f) },
 
-			{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
-			{ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2(1.0f, 0.0f) },
-			{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT2(1.0f, 1.0f) },
-			{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) },
+			{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f),XMFLOAT3(-1.0f, 0.0f, 0.0f) },
+			{ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2(1.0f, 0.0f),XMFLOAT3(-1.0f, 0.0f, 0.0f) },
+			{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT2(1.0f, 1.0f),XMFLOAT3(-1.0f, 0.0f, 0.0f) },
+			{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f),XMFLOAT3(-1.0f, 0.0f, 0.0f) },
 
-			{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
-			{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT2(1.0f, 0.0f) },
-			{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT2(1.0f, 1.0f) },
-			{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) },
+			{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f),XMFLOAT3(1.0f, 0.0f, 0.0f) },
+			{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT2(1.0f, 0.0f),XMFLOAT3(1.0f, 0.0f, 0.0f) },
+			{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT2(1.0f, 1.0f) ,XMFLOAT3(1.0f, 0.0f, 0.0f)},
+			{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) ,XMFLOAT3(1.0f, 0.0f, 0.0f)},
 
-			{ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2(0.0f, 0.0f) },
-			{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT2(1.0f, 0.0f) },
-			{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT2(1.0f, 1.0f) },
-			{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT2(0.0f, 1.0f) },
+			{ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2(0.0f, 0.0f) ,XMFLOAT3(0.0f, 0.0f, -1.0f)},
+			{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT2(1.0f, 0.0f) ,XMFLOAT3(0.0f, 0.0f, -1.0f)},
+			{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT2(1.0f, 1.0f),XMFLOAT3(0.0f, 0.0f, -1.0f) },
+			{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT2(0.0f, 1.0f),XMFLOAT3(0.0f, 0.0f, -1.0f) },
 
-			{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
-			{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) },
-			{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f) },
-			{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) },
+			{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f),XMFLOAT3(0.0f, 0.0f, 1.0f) },
+			{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT2(1.0f, 0.0f),XMFLOAT3(0.0f, 0.0f, 1.0f) },
+			{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f),XMFLOAT3(0.0f, 0.0f, 1.0f) },
+			{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f),XMFLOAT3(0.0f, 0.0f, 1.0f) },
 		};
 		
 		D3D11_BUFFER_DESC bd;
@@ -396,6 +436,11 @@ namespace GraphicsModule
 		hr = g_pd3dDevice->CreateBuffer(&bd, NULL, &m_pCBChangesEveryFrame.getBufferDX11());
 		if (FAILED(hr))
 			return hr;
+			//light 
+		bd.ByteWidth = sizeof(DirLigth);
+		hr = g_pd3dDevice->CreateBuffer(&bd, NULL, &m_LigthBuffer.getBufferDX11());
+		if (FAILED(hr))
+			return hr;
 
 		// Load the Texture
 		hr = D3DX11CreateShaderResourceViewFromFile(g_pd3dDevice, "meme.dds", NULL, NULL, &g_pTextureRV, NULL);
@@ -419,7 +464,7 @@ namespace GraphicsModule
 		// Initialize the world matrices
 		g_World = XMMatrixIdentity();
 
-		camera = new ACamera();
+		
 		camera->setEye(AVector(0.0f, 3.0f, -6.0f, 0));
 		camera->setAt(AVector(0.0f, 1.0f, 0.0f, 0));
 		camera->setUp(AVector(0.0f, 1.0f, 0.0f, 0));
@@ -656,6 +701,7 @@ namespace GraphicsModule
 		cb.vMeshColor = g_vMeshColor;
 		g_pImmediateContext->UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
 
+		g_pImmediateContext->UpdateSubresource(m_LigthBuffer.getBufferDX11(), 0, NULL, &m_LigthBufferStruct, 0, 0);
 
 		UINT stride = sizeof(SimpleVertex);
 		UINT offset = 0;
@@ -667,7 +713,7 @@ namespace GraphicsModule
 		g_pImmediateContext->UpdateSubresource(m_pCBChangeOnResize.getBufferDX11(), 0, NULL, &cbChangesOnResize, 0, 0);
 		
 
-		///textura 1
+		///textura 1---------//
 		g_pImmediateContext->IASetInputLayout(g_pVertexLayout);
 		g_pImmediateContext->RSSetState(g_Rasterizer);
 		g_pImmediateContext->IASetVertexBuffers(0, 1, &m_pVertexBuffer.getBufferDX11(), &stride, &offset);
@@ -676,6 +722,9 @@ namespace GraphicsModule
 		g_pImmediateContext->VSSetConstantBuffers(0, 1, &m_pCBNeverChanges.getBufferDX11());
 		g_pImmediateContext->VSSetConstantBuffers(1, 1, &m_pCBChangeOnResize.getBufferDX11());
 		g_pImmediateContext->VSSetConstantBuffers(2, 1, &m_pCBChangesEveryFrame.getBufferDX11());
+		//light
+		g_pImmediateContext->VSSetConstantBuffers(3, 1, &m_LigthBuffer.getBufferDX11());
+
 		g_pImmediateContext->PSSetShader(g_pPixelShader, NULL, 0);
 		g_pImmediateContext->PSSetConstantBuffers(2, 1, &m_pCBChangesEveryFrame.getBufferDX11());
 		g_pImmediateContext->PSSetShaderResources(0, 1, &g_pTextureRV);
@@ -703,7 +752,6 @@ namespace GraphicsModule
 		cb.mWorld = XMMatrixMultiplyTranspose(g_View, cb.mWorld);
 		g_pImmediateContext->UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
 		g_pImmediateContext->PSSetShaderResources(0, 1, &g_pTextureRV);
-		
 		g_pImmediateContext->DrawIndexed(36, 0, 0);
 
 
@@ -711,7 +759,6 @@ namespace GraphicsModule
 		cb.mWorld = XMMatrixMultiplyTranspose(g_View, cb.mWorld);
 		g_pImmediateContext->UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
 		g_pImmediateContext->PSSetShaderResources(0, 1, &m_Shader2);
-
 		g_pImmediateContext->DrawIndexed(36, 0, 0);
 
 		//--------------------------textura 3
@@ -719,26 +766,22 @@ namespace GraphicsModule
 		g_pImmediateContext->ClearRenderTargetView(m_Target4, ClearColor);
 		g_pImmediateContext->ClearDepthStencilView(g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 		g_pImmediateContext->OMSetRenderTargets(1, &m_Target4, g_pDepthStencilView);
-		
 		cb.mWorld = XMMatrixTranslation(3, 0, 0);
 		cb.mWorld = XMMatrixMultiplyTranspose(g_View, cb.mWorld);
 		g_pImmediateContext->UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
 		g_pImmediateContext->PSSetShaderResources(0, 1, &m_Shader3);
-
 		g_pImmediateContext->DrawIndexed(36, 0, 0);
 		
 
 		cb.mWorld = XMMatrixTranslation(-3, 0, 0);
 		cb.mWorld = XMMatrixMultiplyTranspose(g_View, cb.mWorld);
 		g_pImmediateContext->UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
-
 		g_pImmediateContext->PSSetShaderResources(0, 1, &m_Shader2);
 		g_pImmediateContext->DrawIndexed(36, 0, 0);
 
 		cb.mWorld = XMMatrixTranslation(0, 0, 0);
 		cb.mWorld = XMMatrixMultiplyTranspose(g_View, cb.mWorld);
 		g_pImmediateContext->UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
-
 		g_pImmediateContext->PSSetShaderResources(0, 1, &g_pTextureRV);
 		g_pImmediateContext->DrawIndexed(36, 0, 0);
 		
@@ -752,7 +795,6 @@ namespace GraphicsModule
 		cb.mWorld = XMMatrixTranslation(0, 2, 0);
 		cb.mWorld = XMMatrixMultiplyTranspose(g_View, cb.mWorld);
 		g_pImmediateContext->UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
-
 		g_pImmediateContext->PSSetShaderResources(0, 1, &m_Shader4);
 		g_pImmediateContext->DrawIndexed(36, 0, 0);
 		
@@ -761,14 +803,12 @@ namespace GraphicsModule
 		cb.mWorld = XMMatrixMultiplyTranspose(g_View, cb.mWorld);
 		g_pImmediateContext->UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
 		g_pImmediateContext->PSSetShaderResources(0, 1, &m_Shader3);
-
 		g_pImmediateContext->DrawIndexed(36, 0, 0);
 		//
 
 		cb.mWorld = XMMatrixTranslation(-3, 0, 0);
 		cb.mWorld = XMMatrixMultiplyTranspose(g_View, cb.mWorld);
 		g_pImmediateContext->UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
-
 		g_pImmediateContext->PSSetShaderResources(0, 1, &m_Shader2);
 		g_pImmediateContext->DrawIndexed(36, 0, 0);
 
@@ -776,7 +816,6 @@ namespace GraphicsModule
 		cb.mWorld = XMMatrixTranslation(0, 0, 0);
 		cb.mWorld = XMMatrixMultiplyTranspose(g_View, cb.mWorld);
 		g_pImmediateContext->UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
-
 		g_pImmediateContext->PSSetShaderResources(0, 1, &g_pTextureRV);
 		g_pImmediateContext->DrawIndexed(36, 0, 0);
 
@@ -804,6 +843,7 @@ namespace GraphicsModule
 		*	if (g_pIndexBuffer) g_pIndexBuffer->Release();
 		*/
 		if (m_pCBChangesEveryFrame.getBufferDX11()) m_pCBChangesEveryFrame.Release();
+		if (m_LigthBuffer.getBufferDX11()) m_LigthBuffer.Release();
 		if (m_pCBChangeOnResize.getBufferDX11()) m_pCBChangeOnResize.Release();
 		if (m_pCBNeverChanges.getBufferDX11()) m_pCBNeverChanges.Release();
 		if (m_pVertexBuffer.getBufferDX11()) m_pVertexBuffer.Release();
