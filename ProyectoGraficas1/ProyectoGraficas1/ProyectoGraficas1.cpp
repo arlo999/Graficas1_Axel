@@ -1,5 +1,5 @@
 #include <windows.h>
-
+#include <Windowsx.h>
 #include "imgui.h"
 #include "imgui_impl_win32.h"
 #include "imgui_impl_dx11.h"
@@ -9,6 +9,8 @@
 HWND g_hwnd;
 bool first = false;
 bool perspective = false;
+POINT Cursor;
+int cursorx, cursory;
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam);
 
 
@@ -78,11 +80,31 @@ LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
+    case WM_LBUTTONUP:
+
+        
+        Cursor.x = GET_X_LPARAM(_wParam);
+        Cursor.y = GET_Y_LPARAM(_wParam);
+        
+        
+        
+        break;
+    case WM_LBUTTONDOWN:
+        
+        Cursor.x = GET_X_LPARAM(_wParam);
+        cursorx = Cursor.x;
+        Cursor.y = GET_Y_LPARAM(_wParam);
+        cursory = Cursor.y;
+        
+
+        
+        break;
 	case WM_KEYDOWN: {
 #if defined(DX11)
         auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
 		UINT a = LOWORD(_wParam);
 		switch (a) {
+
 			//flechas izquierda
 		case 37:
 			testObj.camera->move(-1, 0, 0);
@@ -190,7 +212,7 @@ HRESULT InitWindow(LONG _width, LONG _height)
    ImGui_ImplWin32_Init(g_hwnd);
 #if defined(DX11)
     auto& testObj=GraphicsModule::GetTestObj(g_hwnd);
-    ImGui_ImplDX11_Init(testObj.g_pd3dDevice, testObj.g_pImmediateContext);
+    ImGui_ImplDX11_Init(testObj.g_pd3dDevice.m_device, testObj.g_pImmediateContext);
    #endif
    return S_OK;
  }
@@ -210,13 +232,28 @@ HRESULT InitWindow(LONG _width, LONG _height)
    {
        
    static float dir[3]{};
-   if (ImGui::DragFloat3("Direccion de luz", dir,0.001,-1,1))
-        {
+   if (ImGui::DragFloat3("Direccion de luz", dir,0.001,-1,1)){
        auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
 #if defined(DX11)
             testObj.m_LigthBufferStruct.dir= XMFLOAT4(dir[0],dir[1],dir[2],0.0f);
 #endif
         }
+   if (ImGui::Button("open file")) {
+
+       auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
+        testObj.LoadMesh(testObj.OpenWindowFile(g_hwnd));
+        
+        }
+   auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
+   float my_tex_w = 256;
+   float my_tex_h = 256;
+   ImTextureID my_tex_id = testObj.g_pTextureRV;
+   ImVec2 pos = ImGui::GetCursorScreenPos();
+   ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
+   ImVec2 uv_max = ImVec2(1.0f, 1.0f);                 // Lower-right
+   ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
+   ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.5f); // 50% opaque white
+   ImGui::Image(my_tex_id, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max, tint_col, border_col);
    }
    ImGui::End();
 
@@ -256,13 +293,7 @@ int main()
         return 0;
     }
     first = true;
-    // create Graphic API interface
-   /*if (FAILED(testObj.InitDevice(g_hwnd)))
-    {
-       
-        testObj.CleanupDevice();
-        return 0;
-    }*/
+   
     
      //create UI
     if (FAILED(InitImgUI()))

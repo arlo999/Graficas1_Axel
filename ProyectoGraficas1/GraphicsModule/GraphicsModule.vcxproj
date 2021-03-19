@@ -272,7 +272,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include\;$(SolutionDir)GraphicSModule\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)include;$(DXSDK_DIR)Include\;$(SolutionDir)GraphicSModule\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -281,8 +281,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalLibraryDirectories>$(DXSDK_DIR)Include\;$(DXSDK_DIR)Lib\$(PlatformTarget)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>d3d11.lib;dxerr.lib;dxguid.lib;</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)Include\;$(DXSDK_DIR)Lib\$(PlatformTarget)\;C:\Users\axels\OneDrive\Escritorio\Graficos1_recursos\ProyectoGraficas1\lib\GraphicsModule\Debug_directx\x64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>d3d11.lib;dxerr.lib;dxguid.lib;assimp-vc142-mtd.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_directx|x64'">
@@ -293,7 +293,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include\;$(SolutionDir)GraphicSModule\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)include;$(DXSDK_DIR)Include\;$(SolutionDir)GraphicSModule\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -302,8 +302,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalLibraryDirectories>$(DXSDK_DIR)Include\;$(DXSDK_DIR)Lib\$(PlatformTarget)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>d3d11.lib;dxerr.lib;dxguid.lib;</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)Include\;$(DXSDK_DIR)Lib\$(PlatformTarget)\;C:\Users\axels\OneDrive\Escritorio\Graficos1_recursos\ProyectoGraficas1\lib\GraphicsModule\Debug_directx\x64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>d3d11.lib;dxerr.lib;dxguid.lib;assimp-vc142-mtd.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -316,7 +316,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include\;$(SolutionDir)GraphicSModule\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)include;$(DXSDK_DIR)Include\;$(SolutionDir)GraphicSModule\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -327,8 +327,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalLibraryDirectories>$(DXSDK_DIR)Include\;$(DXSDK_DIR)Lib\$(PlatformTarget)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>d3d11.lib;dxerr.lib;dxguid.lib;</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)Include\;$(DXSDK_DIR)Lib\$(PlatformTarget)\;C:\Users\axels\OneDrive\Escritorio\Graficos1_recursos\ProyectoGraficas1\lib\GraphicsModule\Debug_directx\x64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>d3d11.lib;dxerr.lib;dxguid.lib;assimp-vc142-mtd.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_DirectX|x64'">
@@ -341,7 +341,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include\;$(SolutionDir)GraphicSModule\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)include;$(DXSDK_DIR)Include\;$(SolutionDir)GraphicSModule\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -352,12 +352,14 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalLibraryDirectories>$(DXSDK_DIR)Include\;$(DXSDK_DIR)Lib\$(PlatformTarget)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>d3d11.lib;dxerr.lib;dxguid.lib;</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)Include\;$(DXSDK_DIR)Lib\$(PlatformTarget)\;C:\Users\axels\OneDrive\Escritorio\Graficos1_recursos\ProyectoGraficas1\lib\GraphicsModule\Debug_directx\x64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>d3d11.lib;dxerr.lib;dxguid.lib;assimp-vc142-mtd.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AInputLayout.h" />
     <ClInclude Include="AMangerAPI.h" />
+    <ClInclude Include="AVertexShader.h" />
     <ClInclude Include="Include\ABuffer.h" />
     <ClInclude Include="Include\ACamera.h" />
     <ClInclude Include="Include\ADescriptionBuffer.h" />
@@ -373,7 +375,9 @@
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AInputLayout.cpp" />
     <ClCompile Include="AMangerAPI.cpp" />
+    <ClCompile Include="AVertexShader.cpp" />
     <ClCompile Include="scr\ABuffer.cpp" />
     <ClCompile Include="scr\ACamera.cpp" />
     <ClCompile Include="scr\ADevice.cpp" />

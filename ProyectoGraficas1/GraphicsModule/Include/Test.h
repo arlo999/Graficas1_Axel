@@ -2,23 +2,32 @@
 
 #include <windows.h>
 #include "ABuffer.h"
-
+#include "Mesh.h"
+#include "ADevice.h"
 #if defined(DX11)
 #include "ACamera.h"
-
 #include <d3d11.h>
 #include <d3dx11.h>
 #include <d3dcompiler.h>
 #include <xnamath.h>
 #endif
+#include <assimp/Importer.hpp>      // C++ importer interface
+#include <assimp/scene.h>  // Output data structure
+#include <assimp/postprocess.h>     // Post processing flags
+#include <assimp/mesh.h>
+#include <assimp/cimport.h>
+
 #include <vector>
+#include <iostream>
 
 namespace GraphicsModule
 {
+#if defined(DX11)
 	struct DirLigth {
 	
 	XMFLOAT4 dir;
 	};
+#endif
 	struct SimpleVertex
 	{
 #if defined(DX11)
@@ -57,7 +66,8 @@ namespace GraphicsModule
 		D3D_DRIVER_TYPE                     g_driverType = D3D_DRIVER_TYPE_NULL;
 		D3D_FEATURE_LEVEL                   g_featureLevel = D3D_FEATURE_LEVEL_11_0;
 		
-		ID3D11Device* g_pd3dDevice = NULL;
+		ADevice g_pd3dDevice;
+		//ID3D11Device* g_pd3dDevice = NULL;
 		ID3D11DeviceContext* g_pImmediateContext = NULL;
 		
 		IDXGISwapChain* g_pSwapChain = NULL;
@@ -87,8 +97,6 @@ namespace GraphicsModule
 		ABuffer m_pCBNeverChanges;
 		ABuffer m_pCBChangeOnResize ;
 		ABuffer m_pCBChangesEveryFrame;
-		ABuffer m_pVertexBuffer2 ;
-		ABuffer m_pIndexBuffer2 ;
 		//DirLight
 		ABuffer  m_LigthBuffer;
 		DirLigth m_LigthBufferStruct;
@@ -118,15 +126,19 @@ namespace GraphicsModule
 		//camara axel
 		ACamera				*camera;
 		CBNeverChanges cbNeverChanges;
-		
-		ID3D11VertexShader* g_pVertexShader2 = NULL;
-		
-		ID3D11PixelShader* g_pPixelShader2 = NULL;
+	
 		
 		ID3D11RasterizerState* g_Rasterizer = NULL;
-		ID3D11RasterizerState* g_Rasterizer2 = NULL;
 		
-		ID3D11InputLayout* g_pVertexLayout2 = NULL;
+		//variables for load model
+		Afloat3 m_pos;
+		Afloat3 m_normal;
+		Afloat2 m_vertex;
+		unsigned int numVertex;
+		std::vector <AsimpleVertexV2> arrSimpleVertex;
+		 std::vector<unsigned int> m_indices ;
+		
+		//importans variables
 		D3D11_VIEWPORT vp;
 		HWND m_hwnd;
 		LPPOINT p = new POINT;
@@ -143,6 +155,8 @@ public:
 		void Render();
 		void Update();
 		void CleanupDevice();
+		std::string OpenWindowFile(HWND _hwnd);
+		void LoadMesh(const std::string& Filename);
 
 	};
 

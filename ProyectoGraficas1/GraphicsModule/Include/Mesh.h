@@ -2,8 +2,9 @@
 #include "AVector.h"
 struct AsimpleVertex {
 
-	float Vertex[4];
-	float TexVex[3];
+	float Vertex[3];
+	float TexVex[2];
+	float Normal[3];
 
 };
 struct Afloat3 {
@@ -18,8 +19,9 @@ struct Afloat2 {
 	float y;
 };
 struct AsimpleVertexV2 {
-	Afloat3 Vertex;
+	Afloat3 Pos;
 	Afloat2 TextVex;
+	Afloat3 Vertex;
 };
 
 

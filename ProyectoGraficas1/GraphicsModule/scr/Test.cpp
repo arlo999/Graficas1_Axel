@@ -4,6 +4,7 @@
 #include "ACamera.h"
 
 
+
 namespace GraphicsModule
 {
 	
@@ -88,7 +89,7 @@ namespace GraphicsModule
 		{
 			g_driverType = driverTypes[driverTypeIndex];
 			hr = D3D11CreateDeviceAndSwapChain(NULL, g_driverType, NULL, createDeviceFlags, featureLevels, numFeatureLevels,
-				D3D11_SDK_VERSION, &sd, &g_pSwapChain, &g_pd3dDevice, &g_featureLevel, &g_pImmediateContext);
+				D3D11_SDK_VERSION, &sd, &g_pSwapChain, &g_pd3dDevice.m_device, &g_featureLevel, &g_pImmediateContext);
 			if (SUCCEEDED(hr))
 				break;
 		}
@@ -101,7 +102,7 @@ namespace GraphicsModule
 		if (FAILED(hr))
 			return hr;
 
-		hr = g_pd3dDevice->CreateRenderTargetView(pBackBuffer, NULL, &g_pRenderTargetView);
+		hr = g_pd3dDevice.A_CreateRenderTargetView(pBackBuffer, NULL, &g_pRenderTargetView);
 		pBackBuffer->Release();
 		if (FAILED(hr))
 			return hr;
@@ -120,7 +121,7 @@ namespace GraphicsModule
 		descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
 		descDepth.CPUAccessFlags = 0;
 		descDepth.MiscFlags = 0;
-		hr = g_pd3dDevice->CreateTexture2D(&descDepth, NULL, &g_pDepthStencil);
+		hr = g_pd3dDevice.A_CreateTexture2D(&descDepth, NULL, &g_pDepthStencil);
 		if (FAILED(hr))
 			return hr;
 
@@ -130,7 +131,7 @@ namespace GraphicsModule
 		descDSV.Format = DXGI_FORMAT_D32_FLOAT;
 		descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 		descDSV.Texture2D.MipSlice = 0;
-		hr = g_pd3dDevice->CreateDepthStencilView(g_pDepthStencil, &descDSV, &g_pDepthStencilView);
+		hr = g_pd3dDevice.A_CreateDepthStencilView(g_pDepthStencil, &descDSV, &g_pDepthStencilView);
 		if (FAILED(hr))
 			return hr;
 
@@ -140,7 +141,7 @@ namespace GraphicsModule
 		srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
 		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		srvDesc.Texture2D.MipLevels = 1; // same as orig texture
-		hr = g_pd3dDevice->CreateShaderResourceView(g_pDepthStencil, &srvDesc, &g_pDepthStencilSRV);
+		hr = g_pd3dDevice.A_CreateShaderResourceView(g_pDepthStencil, &srvDesc, &g_pDepthStencilSRV);
 		if (FAILED(hr))
 			return hr;
 
@@ -167,7 +168,7 @@ namespace GraphicsModule
 		}
 
 		// Create the vertex shader
-		hr = g_pd3dDevice->CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), NULL, &g_pVertexShader);
+		hr = g_pd3dDevice.A_CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), NULL, &g_pVertexShader);
 		if (FAILED(hr))
 		{
 			pVSBlob->Release();
@@ -232,35 +233,12 @@ namespace GraphicsModule
 		}
 
 		// Try to create Input Layout
-		 hr = g_pd3dDevice->CreateInputLayout(&inputLayoutDesc[0], inputLayoutDesc.size(), pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), &g_pVertexLayout);
+		 hr = g_pd3dDevice.A_CreateInputLayout(&inputLayoutDesc[0], inputLayoutDesc.size(), pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), &g_pVertexLayout);
 
 		//Free allocation shader reflection memory
 		pVertexShaderReflection->Release();
 		pVSBlob->Release();
 		
-
-		/*
-		// Define the input layout
-		D3D11_INPUT_ELEMENT_DESC layout[] =
-		{
-			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-
-		};
-		UINT numElements = ARRAYSIZE(layout);
-
-		// Create the input layout
-		hr = g_pd3dDevice->CreateInputLayout(layout, numElements, pVSBlob->GetBufferPointer(),
-			pVSBlob->GetBufferSize(), &g_pVertexLayout);
-		pVSBlob->Release();
-		if (FAILED(hr))
-			return hr;
-		*/
-
-	
-		
-	
 
 		// Compile the pixel shader
 		ID3DBlob* pPSBlob = NULL;
@@ -273,7 +251,7 @@ namespace GraphicsModule
 		}
 
 		// Create the pixel shader
-		hr = g_pd3dDevice->CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), NULL, &g_pPixelShader);
+		hr = g_pd3dDevice.A_CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), NULL, &g_pPixelShader);
 		pPSBlob->Release();
 		if (FAILED(hr))
 			return hr;
@@ -288,11 +266,7 @@ namespace GraphicsModule
 			return hr;
 		}
 
-		// Create the pixel shader
-		hr = g_pd3dDevice->CreatePixelShader(pPSBlob2->GetBufferPointer(), pPSBlob2->GetBufferSize(), NULL, &g_pPixelShader2);
-		pPSBlob2->Release();
-		if (FAILED(hr))
-			return hr;
+	
 
 		// Create vertex buffer
 		SimpleVertex vertices[] =
@@ -337,13 +311,13 @@ namespace GraphicsModule
 		D3D11_SUBRESOURCE_DATA InitData;
 		ZeroMemory(&InitData, sizeof(InitData));
 		InitData.pSysMem = vertices;
-		hr = g_pd3dDevice->CreateBuffer(&bd, &InitData, &m_pVertexBuffer.getBufferDX11());
+	hr = g_pd3dDevice.A_CreateBuffer(&bd, &InitData, &m_pVertexBuffer.getBufferDX11());
 		if (FAILED(hr))
 			return hr;
 
 		// Create index buffer
 		// Create vertex buffer
-		WORD indices[] =
+		unsigned int indices[] =
 		{
 			3,1,0,
 			2,1,3,
@@ -363,56 +337,17 @@ namespace GraphicsModule
 			22,20,21,
 			23,20,22
 		};
-
+		numVertex=36;
 		bd.Usage = D3D11_USAGE_DEFAULT;
-		bd.ByteWidth = sizeof(WORD) * 36;
+		bd.ByteWidth = sizeof(unsigned int) * 36;
 		bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
 		bd.CPUAccessFlags = 0;
 		InitData.pSysMem = indices;
-		hr = g_pd3dDevice->CreateBuffer(&bd, &InitData, &m_pIndexBuffer.getBufferDX11());
+		hr = g_pd3dDevice.A_CreateBuffer(&bd, &InitData, &m_pIndexBuffer.getBufferDX11());
 		if (FAILED(hr))
 			return hr;
 
-		// Create vertex buffer
-		SimpleVertex vertices2[] =
-		{
-			 { XMFLOAT3(-1.0f, -1.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) },
-			{ XMFLOAT3(1.0f, -1.0f, 0.0f), XMFLOAT2(1.0f, 0.0f) },
-			{ XMFLOAT3(1.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) },
-			{ XMFLOAT3(-1.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 1.0f) },
-		};
-
-		D3D11_BUFFER_DESC bd2;
-		ZeroMemory(&bd2, sizeof(bd2));
-		bd2.Usage = D3D11_USAGE_DEFAULT;
-		bd2.ByteWidth = sizeof(SimpleVertex) * 4;
-		bd2.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		bd2.CPUAccessFlags = 0;
-		D3D11_SUBRESOURCE_DATA InitData2;
-		ZeroMemory(&InitData2, sizeof(InitData2));
-		InitData2.pSysMem = vertices2;
-		hr = g_pd3dDevice->CreateBuffer(&bd2, &InitData2, &m_pVertexBuffer2.getBufferDX11());
-		if (FAILED(hr))
-			return hr;
-
-
-		// Create index buffer
-		// Create vertex buffer
-		WORD indices2[] =
-		{
-			2,0,1,
-			3,0,2
-		};
-
-		bd2.Usage = D3D11_USAGE_DEFAULT;
-		bd2.ByteWidth = sizeof(WORD) * 6;
-		bd2.BindFlags = D3D11_BIND_INDEX_BUFFER;
-		bd2.CPUAccessFlags = 0;
-		InitData2.pSysMem = indices2;
-		hr = g_pd3dDevice->CreateBuffer(&bd2, &InitData2, &m_pIndexBuffer2.getBufferDX11());
-		if (FAILED(hr))
-			return hr;
-
+		
 
 
 		// Set primitive topology
@@ -423,27 +358,27 @@ namespace GraphicsModule
 		bd.ByteWidth = sizeof(CBNeverChanges);
 		bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 		bd.CPUAccessFlags = 0;
-		hr = g_pd3dDevice->CreateBuffer(&bd, NULL, &m_pCBNeverChanges.getBufferDX11());
+		hr = g_pd3dDevice.A_CreateBuffer(&bd, NULL, &m_pCBNeverChanges.getBufferDX11());
 		if (FAILED(hr))
 			return hr;
 
 		bd.ByteWidth = sizeof(CBChangeOnResize);
-		hr = g_pd3dDevice->CreateBuffer(&bd, NULL, &m_pCBChangeOnResize.getBufferDX11());
+		hr = g_pd3dDevice.A_CreateBuffer(&bd, NULL, &m_pCBChangeOnResize.getBufferDX11());
 		if (FAILED(hr))
 			return hr;
 
 		bd.ByteWidth = sizeof(CBChangesEveryFrame);
-		hr = g_pd3dDevice->CreateBuffer(&bd, NULL, &m_pCBChangesEveryFrame.getBufferDX11());
+		hr = g_pd3dDevice.A_CreateBuffer(&bd, NULL, &m_pCBChangesEveryFrame.getBufferDX11());
 		if (FAILED(hr))
 			return hr;
 			//light 
 		bd.ByteWidth = sizeof(DirLigth);
-		hr = g_pd3dDevice->CreateBuffer(&bd, NULL, &m_LigthBuffer.getBufferDX11());
+		hr = g_pd3dDevice.A_CreateBuffer(&bd, NULL, &m_LigthBuffer.getBufferDX11());
 		if (FAILED(hr))
 			return hr;
 
 		// Load the Texture
-		hr = D3DX11CreateShaderResourceViewFromFile(g_pd3dDevice, "meme.dds", NULL, NULL, &g_pTextureRV, NULL);
+		hr = D3DX11CreateShaderResourceViewFromFile(g_pd3dDevice.m_device, "meme.dds", NULL, NULL, &g_pTextureRV, NULL);
 		if (FAILED(hr))
 			return hr;
 
@@ -457,7 +392,7 @@ namespace GraphicsModule
 		sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
 		sampDesc.MinLOD = 0;
 		sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
-		hr = g_pd3dDevice->CreateSamplerState(&sampDesc, &g_pSamplerLinear);
+		hr = g_pd3dDevice.A_CreateSamplerState(&sampDesc, &g_pSamplerLinear);
 		if (FAILED(hr))
 			return hr;
 
@@ -469,13 +404,7 @@ namespace GraphicsModule
 		camera->setAt(AVector(0.0f, 1.0f, 0.0f, 0));
 		camera->setUp(AVector(0.0f, 1.0f, 0.0f, 0));
 
-		// Initialize the view matrix
-		/*
-		XMVECTOR Eye = XMVectorSet(0.0f, 3.0f, -6.0f, 0.0f);
-		XMVECTOR At = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-		XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-		g_View = XMMatrixLookAtLH(Eye, At, Up);
-		*/
+	
 
 
 		camera->setviewMLookL(camera->getEye(), camera->getAt(), camera->getUp());
@@ -485,7 +414,7 @@ namespace GraphicsModule
 		cbNeverChanges.mView = XMMatrixTranspose(g_View);
 
 
-		g_Projection = camera->ViewPerspective(XM_PIDIV4, width / (FLOAT)height, 0.01f, 100.0f);
+		g_Projection = camera->ViewPerspective(XM_PIDIV4, width / (FLOAT)height, 0.01f, 1000.0f);
 
 		/*
 		cbNeverChanges.mView = XMMatrixTranspose(g_View);
@@ -494,7 +423,7 @@ namespace GraphicsModule
 
 		// Initialize the projection matrix
 		
-		g_Projection = XMMatrixPerspectiveFovLH(XM_PIDIV4, width / (FLOAT)height, 0.01f, 100.0f);
+		g_Projection = XMMatrixPerspectiveFovLH(XM_PIDIV4, width / (FLOAT)height, 0.01f, 1000.0f);
 
 		CBChangeOnResize cbChangesOnResize;
 		cbChangesOnResize.mProjection = XMMatrixTranspose(g_Projection);
@@ -502,20 +431,6 @@ namespace GraphicsModule
 		g_pImmediateContext->UpdateSubresource(m_pCBChangeOnResize.getBufferDX11(), 0, NULL, &cbChangesOnResize, 0, 0);
 
 
-		
-		// create rasterizer state
-		D3D11_RASTERIZER_DESC desc;
-		ZeroMemory(&desc, sizeof(desc));
-		desc.CullMode = D3D11_CULL_BACK;
-		desc.FillMode = D3D11_FILL_SOLID;
-		hr = g_pd3dDevice->CreateRasterizerState(&desc, &g_Rasterizer);
-		if (FAILED(hr))
-			return hr;
-
-		desc.CullMode = D3D11_CULL_NONE;
-		hr = g_pd3dDevice->CreateRasterizerState(&desc, &g_Rasterizer2);
-		if (FAILED(hr))
-			return hr;
 
 
 		/*				
@@ -542,7 +457,7 @@ namespace GraphicsModule
 		descTextRT.CPUAccessFlags = 0;
 		descTextRT.MiscFlags = 0;
 		//CAMBIAR EN EL MANAGER
-		hr = g_pd3dDevice->CreateTexture2D(&descTextRT, NULL, &Text2D);
+		hr = g_pd3dDevice.A_CreateTexture2D(&descTextRT, NULL, &Text2D);
 		if (FAILED(hr))
 			return hr;
 
@@ -554,12 +469,12 @@ namespace GraphicsModule
 		descViewRT.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		descViewRT.Texture2D.MostDetailedMip = 0;
 		descViewRT.Texture2D.MipLevels = 1;
-		hr = g_pd3dDevice->CreateShaderResourceView(Text2D, &descViewRT, &m_Shader2);
+		hr = g_pd3dDevice.A_CreateShaderResourceView(Text2D, &descViewRT, &m_Shader2);
 		if (FAILED(hr))
 			return hr;
 
 		// Create the render target view 2
-		hr = g_pd3dDevice->CreateRenderTargetView(Text2D, NULL, &m_Target2);
+		hr = g_pd3dDevice.A_CreateRenderTargetView(Text2D, NULL, &m_Target2);
 		
 		if (FAILED(hr))
 			return hr;
@@ -585,7 +500,7 @@ namespace GraphicsModule
 		descTextRT.CPUAccessFlags = 0;
 		descTextRT.MiscFlags = 0;
 		//CAMBIAR EN EL MANAGER
-		hr = g_pd3dDevice->CreateTexture2D(&descTextRT, NULL, &Text2D);
+		hr = g_pd3dDevice.A_CreateTexture2D(&descTextRT, NULL, &Text2D);
 		if (FAILED(hr))
 			return hr;
 
@@ -597,12 +512,12 @@ namespace GraphicsModule
 		descViewRT.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		descViewRT.Texture2D.MostDetailedMip = 0;
 		descViewRT.Texture2D.MipLevels = 1;
-		hr = g_pd3dDevice->CreateShaderResourceView(Text2D, &descViewRT, &m_Shader3);
+		hr = g_pd3dDevice.A_CreateShaderResourceView(Text2D, &descViewRT, &m_Shader3);
 		if (FAILED(hr))
 			return hr;
 
 		// Create the render target view 2
-		hr = g_pd3dDevice->CreateRenderTargetView(Text2D, NULL, &m_Target3);
+		hr = g_pd3dDevice.A_CreateRenderTargetView(Text2D, NULL, &m_Target3);
 
 		if (FAILED(hr))
 			return hr;
@@ -631,7 +546,7 @@ namespace GraphicsModule
 		descTextRT.CPUAccessFlags = 0;
 		descTextRT.MiscFlags = 0;
 		//CAMBIAR EN EL MANAGER
-		hr = g_pd3dDevice->CreateTexture2D(&descTextRT, NULL, &Text2D);
+		hr = g_pd3dDevice.A_CreateTexture2D(&descTextRT, NULL, &Text2D);
 		if (FAILED(hr))
 			return hr;
 
@@ -643,12 +558,12 @@ namespace GraphicsModule
 		descViewRT.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		descViewRT.Texture2D.MostDetailedMip = 0;
 		descViewRT.Texture2D.MipLevels = 1;
-		hr = g_pd3dDevice->CreateShaderResourceView(Text2D, &descViewRT, &m_Shader4);
+		hr = g_pd3dDevice.A_CreateShaderResourceView(Text2D, &descViewRT, &m_Shader4);
 		if (FAILED(hr))
 			return hr;
 
 		// Create the render target view 2
-		hr = g_pd3dDevice->CreateRenderTargetView(Text2D, NULL, &m_Target4);
+		hr = g_pd3dDevice.A_CreateRenderTargetView(Text2D, NULL, &m_Target4);
 
 		if (FAILED(hr))
 			return hr;
@@ -717,7 +632,7 @@ namespace GraphicsModule
 		g_pImmediateContext->IASetInputLayout(g_pVertexLayout);
 		g_pImmediateContext->RSSetState(g_Rasterizer);
 		g_pImmediateContext->IASetVertexBuffers(0, 1, &m_pVertexBuffer.getBufferDX11(), &stride, &offset);
-		g_pImmediateContext->IASetIndexBuffer(m_pIndexBuffer.getBufferDX11(), DXGI_FORMAT_R16_UINT, 0);
+		g_pImmediateContext->IASetIndexBuffer(m_pIndexBuffer.getBufferDX11(), DXGI_FORMAT_R32_UINT, 0);
 		g_pImmediateContext->VSSetShader(g_pVertexShader, NULL, 0);
 		g_pImmediateContext->VSSetConstantBuffers(0, 1, &m_pCBNeverChanges.getBufferDX11());
 		g_pImmediateContext->VSSetConstantBuffers(1, 1, &m_pCBChangeOnResize.getBufferDX11());
@@ -734,16 +649,17 @@ namespace GraphicsModule
 		g_pImmediateContext->ClearDepthStencilView(g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 		g_pImmediateContext->OMSetRenderTargets(1, &m_Target2, g_pDepthStencilView);
 
-
+		/*
 		cb.mWorld = XMMatrixTranslation(0, 0, 0);
 		cb.mWorld = XMMatrixMultiplyTranspose(g_View, cb.mWorld);
 		g_pImmediateContext->UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
 		g_pImmediateContext->PSSetShaderResources(0, 1, &g_pTextureRV);
 
-		g_pImmediateContext->DrawIndexed(36, 0, 0);
+		g_pImmediateContext->DrawIndexed(numVertex, 0, 0);
 		
+		*/
 		//------------------------------------textura 2
-
+		/*
 		g_pImmediateContext->ClearRenderTargetView(m_Target3, ClearColor);
 		g_pImmediateContext->ClearDepthStencilView(g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 		g_pImmediateContext->OMSetRenderTargets(1,&m_Target3,g_pDepthStencilView);
@@ -760,9 +676,10 @@ namespace GraphicsModule
 		g_pImmediateContext->UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
 		g_pImmediateContext->PSSetShaderResources(0, 1, &m_Shader2);
 		g_pImmediateContext->DrawIndexed(36, 0, 0);
+		*/
 
 		//--------------------------textura 3
-		
+		/*
 		g_pImmediateContext->ClearRenderTargetView(m_Target4, ClearColor);
 		g_pImmediateContext->ClearDepthStencilView(g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 		g_pImmediateContext->OMSetRenderTargets(1, &m_Target4, g_pDepthStencilView);
@@ -785,9 +702,10 @@ namespace GraphicsModule
 		g_pImmediateContext->PSSetShaderResources(0, 1, &g_pTextureRV);
 		g_pImmediateContext->DrawIndexed(36, 0, 0);
 		
+		*/
 		//--------------------------------textura 4
 
-
+		
 		g_pImmediateContext->ClearRenderTargetView(g_pRenderTargetView, ClearColor);
 		g_pImmediateContext->ClearDepthStencilView(g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 		g_pImmediateContext->OMSetRenderTargets(1, &g_pRenderTargetView, g_pDepthStencilView);
@@ -796,29 +714,31 @@ namespace GraphicsModule
 		cb.mWorld = XMMatrixMultiplyTranspose(g_View, cb.mWorld);
 		g_pImmediateContext->UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
 		g_pImmediateContext->PSSetShaderResources(0, 1, &m_Shader4);
-		g_pImmediateContext->DrawIndexed(36, 0, 0);
+		//g_pImmediateContext->DrawIndexed(36, 0, 0);
 		
-		//
+		
 		cb.mWorld = XMMatrixTranslation(3, 0, 0);
 		cb.mWorld = XMMatrixMultiplyTranspose(g_View, cb.mWorld);
 		g_pImmediateContext->UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
 		g_pImmediateContext->PSSetShaderResources(0, 1, &m_Shader3);
-		g_pImmediateContext->DrawIndexed(36, 0, 0);
-		//
+		//g_pImmediateContext->DrawIndexed(36, 0, 0);
+		
 
 		cb.mWorld = XMMatrixTranslation(-3, 0, 0);
 		cb.mWorld = XMMatrixMultiplyTranspose(g_View, cb.mWorld);
 		g_pImmediateContext->UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
 		g_pImmediateContext->PSSetShaderResources(0, 1, &m_Shader2);
-		g_pImmediateContext->DrawIndexed(36, 0, 0);
+		//g_pImmediateContext->DrawIndexed(36, 0, 0);
 
+		
 		//
 		cb.mWorld = XMMatrixTranslation(0, 0, 0);
 		cb.mWorld = XMMatrixMultiplyTranspose(g_View, cb.mWorld);
 		g_pImmediateContext->UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
 		g_pImmediateContext->PSSetShaderResources(0, 1, &g_pTextureRV);
-		g_pImmediateContext->DrawIndexed(36, 0, 0);
+		g_pImmediateContext->DrawIndexed(numVertex, 0, 0);
 
+		
 		
 		
 		
@@ -861,13 +781,118 @@ namespace GraphicsModule
 		if (g_pRenderTargetView) g_pRenderTargetView->Release();
 		if (g_pSwapChain) g_pSwapChain->Release();
 		if (g_pImmediateContext) g_pImmediateContext->Release();
-		if (g_pd3dDevice) g_pd3dDevice->Release();
+		if (g_pd3dDevice.m_device) g_pd3dDevice.A_Release();
 		#endif
+	}
+
+	std::string Test::OpenWindowFile(HWND _hwnd)
+	{
+		// common dialog box structure, setting all fields to 0 is important
+		OPENFILENAME ofn = { 0 };
+		char szFile[260] = { 0 };
+		// Initialize remaining fields of OPENFILENAME structure
+		ofn.lStructSize = sizeof(ofn);
+		ofn.hwndOwner = _hwnd;
+		ofn.lpstrFile = szFile;
+		ofn.nMaxFile = sizeof(szFile);
+		ofn.lpstrFilter = ("All\0*.*\0Text\0*.TXT\0");
+		ofn.nFilterIndex = 1;
+		ofn.lpstrFileTitle = NULL;
+		ofn.nMaxFileTitle = 0;
+		ofn.lpstrInitialDir = NULL;
+		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+
+		if (GetOpenFileName(&ofn) == TRUE)
+		{
+			
+			return (std::string)szFile;
+		}
+		return NULL;
+	}
+
+	void Test::LoadMesh(const std::string& _Filename)
+	{
+		
+		m_pVertexBuffer.Release();
+		m_pIndexBuffer.Release();
+		arrSimpleVertex.clear();
+		numVertex=0;
+		Assimp::Importer imp;
+		const aiScene* pScene= imp.ReadFile(_Filename, aiProcess_Triangulate);
+		if (!pScene)
+		{
+		std::cout<<"Error to load assimp file"<<_Filename<<": "<<std::endl;
+
+		}
+		for(std::uint32_t meshIndex=0u; meshIndex < pScene->mNumMeshes; meshIndex++){
+			
+			aiMesh* mesh = pScene->mMeshes[meshIndex];
+			numVertex+=mesh->mNumVertices;
+			
+		for (std::uint32_t vertIndex = 0u; vertIndex < mesh->mNumVertices; vertIndex++) {
+
+				
+				aiVector3D vert = mesh->mVertices[vertIndex];
+				aiVector3D tex = mesh->mTextureCoords[0][vertIndex];
+				
+				
+				aiVector3D norm = mesh->mNormals[vertIndex];
+				
+				m_pos.x = vert.x;
+				m_pos.y =vert.y;
+				m_pos.z =vert.z;
+
+				m_normal.x = norm.x;
+				m_normal.y = norm.y;
+				m_normal.z = norm.z;
+
+				m_vertex.x = tex.x;
+				m_vertex.y = tex.y;
+				 
+				arrSimpleVertex.push_back(AsimpleVertexV2{m_pos,m_vertex,m_normal});
+			
+				
+			}
+
+		}
+		for (int i =0; i<numVertex;i++)
+		{
+			m_indices.push_back(i);
+		}
+		// Create vertex buffer
+		
+		D3D11_BUFFER_DESC bd;
+		ZeroMemory(&bd, sizeof(bd));
+		bd.Usage = D3D11_USAGE_DEFAULT;
+		bd.ByteWidth = sizeof(AsimpleVertexV2) * numVertex;
+		bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		bd.CPUAccessFlags = 0;
+		D3D11_SUBRESOURCE_DATA InitData;
+		ZeroMemory(&InitData, sizeof(InitData));
+		InitData.pSysMem = arrSimpleVertex.data();
+		g_pd3dDevice.A_CreateBuffer(&bd, &InitData, &m_pVertexBuffer.getBufferDX11());
+		//need valid
+	
+		
+		
+		
+		bd.Usage = D3D11_USAGE_DEFAULT;
+		bd.ByteWidth = sizeof(unsigned int) * numVertex;
+		bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+		bd.CPUAccessFlags = 0;
+		InitData.pSysMem = m_indices.data();
+		g_pd3dDevice.A_CreateBuffer(&bd, &InitData, &m_pIndexBuffer.getBufferDX11());
+		
+
+
+		
+		//aiReleaseImport(pScene);
 	}
 
 	void Test::Update()
 	{
 #if defined(DX11)
+		
 		GetCursorPos(p);
 		camera->rotate(p->x, p->y, 0);
 #endif
@@ -890,7 +915,7 @@ namespace GraphicsModule
 		if (FAILED(hr))
 			return hr;
 
-		hr = g_pd3dDevice->CreateRenderTargetView(pBackBuffer, NULL, &g_pRenderTargetView);
+		hr = g_pd3dDevice.A_CreateRenderTargetView(pBackBuffer, NULL, &g_pRenderTargetView);
 		pBackBuffer->Release();
 		if (FAILED(hr))
 			return hr;
@@ -909,7 +934,7 @@ namespace GraphicsModule
 		descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
 		descDepth.CPUAccessFlags = 0;
 		descDepth.MiscFlags = 0;
-		hr = g_pd3dDevice->CreateTexture2D(&descDepth, NULL, &g_pDepthStencil);
+		hr = g_pd3dDevice.A_CreateTexture2D(&descDepth, NULL, &g_pDepthStencil);
 		if (FAILED(hr))
 			return hr;
 
@@ -919,7 +944,7 @@ namespace GraphicsModule
 		descDSV.Format = DXGI_FORMAT_D32_FLOAT;
 		descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 		descDSV.Texture2D.MipSlice = 0;
-		hr = g_pd3dDevice->CreateDepthStencilView(g_pDepthStencil, &descDSV, &g_pDepthStencilView);
+		hr = g_pd3dDevice.A_CreateDepthStencilView(g_pDepthStencil, &descDSV, &g_pDepthStencilView);
 		if (FAILED(hr))
 			return hr;
 
@@ -929,7 +954,7 @@ namespace GraphicsModule
 		srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
 		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		srvDesc.Texture2D.MipLevels = 1; // same as orig texture
-		hr = g_pd3dDevice->CreateShaderResourceView(g_pDepthStencil, &srvDesc, &g_pDepthStencilSRV);
+		hr = g_pd3dDevice.A_CreateShaderResourceView(g_pDepthStencil, &srvDesc, &g_pDepthStencilSRV);
 		if (FAILED(hr))
 			return hr;
 
@@ -972,7 +997,7 @@ namespace GraphicsModule
 		descTextRT.CPUAccessFlags = 0;
 		descTextRT.MiscFlags = 0;
 		//CAMBIAR EN EL MANAGER
-		hr = g_pd3dDevice->CreateTexture2D(&descTextRT, NULL, &Text2D);
+		hr = g_pd3dDevice.A_CreateTexture2D(&descTextRT, NULL, &Text2D);
 		if (FAILED(hr))
 			return hr;
 
@@ -984,12 +1009,12 @@ namespace GraphicsModule
 		descViewRT.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		descViewRT.Texture2D.MostDetailedMip = 0;
 		descViewRT.Texture2D.MipLevels = 1;
-		hr = g_pd3dDevice->CreateShaderResourceView(Text2D, &descViewRT, &m_Shader2);
+		hr = g_pd3dDevice.A_CreateShaderResourceView(Text2D, &descViewRT, &m_Shader2);
 		if (FAILED(hr))
 			return hr;
 
 		// Create the render target view 2
-		hr = g_pd3dDevice->CreateRenderTargetView(Text2D, NULL, &m_Target2);
+		hr = g_pd3dDevice.A_CreateRenderTargetView(Text2D, NULL, &m_Target2);
 
 		if (FAILED(hr))
 			return hr;
@@ -1015,7 +1040,7 @@ namespace GraphicsModule
 		descTextRT.CPUAccessFlags = 0;
 		descTextRT.MiscFlags = 0;
 		//CAMBIAR EN EL MANAGER
-		hr = g_pd3dDevice->CreateTexture2D(&descTextRT, NULL, &Text2D);
+		hr = g_pd3dDevice.A_CreateTexture2D(&descTextRT, NULL, &Text2D);
 		if (FAILED(hr))
 			return hr;
 
@@ -1027,12 +1052,12 @@ namespace GraphicsModule
 		descViewRT.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		descViewRT.Texture2D.MostDetailedMip = 0;
 		descViewRT.Texture2D.MipLevels = 1;
-		hr = g_pd3dDevice->CreateShaderResourceView(Text2D, &descViewRT, &m_Shader3);
+		hr = g_pd3dDevice.A_CreateShaderResourceView(Text2D, &descViewRT, &m_Shader3);
 		if (FAILED(hr))
 			return hr;
 
 		// Create the render target view 2
-		hr = g_pd3dDevice->CreateRenderTargetView(Text2D, NULL, &m_Target3);
+		hr = g_pd3dDevice.A_CreateRenderTargetView(Text2D, NULL, &m_Target3);
 
 		if (FAILED(hr))
 			return hr;
@@ -1061,7 +1086,7 @@ namespace GraphicsModule
 		descTextRT.CPUAccessFlags = 0;
 		descTextRT.MiscFlags = 0;
 		//CAMBIAR EN EL MANAGER
-		hr = g_pd3dDevice->CreateTexture2D(&descTextRT, NULL, &Text2D);
+		hr = g_pd3dDevice.A_CreateTexture2D(&descTextRT, NULL, &Text2D);
 		if (FAILED(hr))
 			return hr;
 
@@ -1073,12 +1098,12 @@ namespace GraphicsModule
 		descViewRT.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		descViewRT.Texture2D.MostDetailedMip = 0;
 		descViewRT.Texture2D.MipLevels = 1;
-		hr = g_pd3dDevice->CreateShaderResourceView(Text2D, &descViewRT, &m_Shader4);
+		hr = g_pd3dDevice.A_CreateShaderResourceView(Text2D, &descViewRT, &m_Shader4);
 		if (FAILED(hr))
 			return hr;
 
 		// Create the render target view 2
-		hr = g_pd3dDevice->CreateRenderTargetView(Text2D, NULL, &m_Target4);
+		hr = g_pd3dDevice.A_CreateRenderTargetView(Text2D, NULL, &m_Target4);
 
 		if (FAILED(hr))
 			return hr;

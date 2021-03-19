@@ -254,7 +254,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(DEVLIBS)imgui-1.8\;$(DEVLIBS)imgui-1.8\backends\;$(DXSDK_DIR)Include\;$(SolutionDir)GraphicsModule\include\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)include;$(DEVLIBS)imgui-1.8\;$(DEVLIBS)imgui-1.8\backends\;$(DXSDK_DIR)Include\;$(SolutionDir)GraphicsModule\include\</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -271,7 +271,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>DX11;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(DEVLIBS)imgui-1.8\;$(DEVLIBS)imgui-1.8\backends\;$(DXSDK_DIR)Include\;$(SolutionDir)GraphicsModule\include\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)include;$(DEVLIBS)imgui-1.8\;$(DEVLIBS)imgui-1.8\backends\;$(DXSDK_DIR)Include\;$(SolutionDir)GraphicsModule\include\</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -290,7 +290,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(DEVLIBS)imgui-1.8\;$(DEVLIBS)imgui-1.8\backends\;$(DXSDK_DIR)Include\;$(SolutionDir)GraphicsModule\include\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)include;$(DEVLIBS)imgui-1.8\;$(DEVLIBS)imgui-1.8\backends\;$(DXSDK_DIR)Include\;$(SolutionDir)GraphicsModule\include\</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -311,7 +311,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>DX11;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(DEVLIBS)imgui-1.8\;$(DEVLIBS)imgui-1.8\backends\;$(DXSDK_DIR)Include\;$(SolutionDir)GraphicsModule\include\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)include;$(DEVLIBS)imgui-1.8\;$(DEVLIBS)imgui-1.8\backends\;$(DXSDK_DIR)Include\;$(SolutionDir)GraphicsModule\include\</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>

@@ -101,3 +101,14 @@ HRESULT ADevice::A_CreateSamplerState(const D3D11_SAMPLER_DESC* pSamplerDesc, ID
 {
     return m_device->CreateSamplerState(pSamplerDesc, ppSamplerState);;
 }
+
+HRESULT ADevice::A_CreateShaderResourceView(ID3D11Resource* pResource,const D3D11_SHADER_RESOURCE_VIEW_DESC* pDesc, ID3D11ShaderResourceView** ppSRView)
+{
+  return m_device->CreateShaderResourceView(pResource,pDesc, ppSRView);
+  
+}
+
+HRESULT ADevice::A_Release()
+{
+    return m_device->Release();
+}

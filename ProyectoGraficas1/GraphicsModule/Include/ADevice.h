@@ -78,7 +78,13 @@ public:
 		__in  const D3D11_SAMPLER_DESC* pSamplerDesc,
 		/* [annotation] */
 		__out_opt  ID3D11SamplerState** ppSamplerState);
-	
+	 HRESULT  A_CreateShaderResourceView(
+		 /* [annotation] */
+		 __in  ID3D11Resource* pResource,
+	/* [annotation] */
+		__in_opt  const D3D11_SHADER_RESOURCE_VIEW_DESC* pDesc,
+		/* [annotation] */
+		__out_opt  ID3D11ShaderResourceView** ppSRView);
 	HRESULT A_Release();
 	ID3D11Device* m_device=NULL;
 private:
