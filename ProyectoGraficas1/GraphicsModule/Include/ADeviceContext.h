@@ -120,7 +120,19 @@ public:
 		__in_range(0, D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT - StartSlot)  UINT NumViews,
 		/* [annotation] */
 		__in_ecount(NumViews)  ID3D11ShaderResourceView* const* ppShaderResourceViews);
+	void STDMETHODCALLTYPE A_RSSetState(
+		/* [annotation] */
+		__in_opt  ID3D11RasterizerState* pRasterizerState);
 	
+	void STDMETHODCALLTYPE A_CSSetConstantBuffers(
+		/* [annotation] */
+		__in_range(0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - 1)  UINT StartSlot,
+		/* [annotation] */
+		__in_range(0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - StartSlot)  UINT NumBuffers,
+		/* [annotation] */
+		__in_ecount(NumBuffers)  ID3D11Buffer* const* ppConstantBuffers);
+
+
 	void  A_PSSetSamplers(
 		/* [annotation] */
 		__in_range(0, D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT - 1)  UINT StartSlot,

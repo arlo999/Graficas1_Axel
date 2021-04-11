@@ -14,10 +14,14 @@ Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug_directx|x64 = Debug_directx|x64
 		Debug_directx|x86 = Debug_directx|x86
+		Debug_Opengl|x64 = Debug_Opengl|x64
+		Debug_Opengl|x86 = Debug_Opengl|x86
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
 		Release_DirectX|x64 = Release_DirectX|x64
 		Release_DirectX|x86 = Release_DirectX|x86
+		Release_Opengl|x64 = Release_Opengl|x64
+		Release_Opengl|x86 = Release_Opengl|x86
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
@@ -26,6 +30,10 @@ Global
 		{AF4D568C-A110-4390-85A6-D4F766D94811}.Debug_directx|x64.Build.0 = Debug_directx|x64
 		{AF4D568C-A110-4390-85A6-D4F766D94811}.Debug_directx|x86.ActiveCfg = Debug_directx|Win32
 		{AF4D568C-A110-4390-85A6-D4F766D94811}.Debug_directx|x86.Build.0 = Debug_directx|Win32
+		{AF4D568C-A110-4390-85A6-D4F766D94811}.Debug_Opengl|x64.ActiveCfg = Debug_Opengl|x64
+		{AF4D568C-A110-4390-85A6-D4F766D94811}.Debug_Opengl|x64.Build.0 = Debug_Opengl|x64
+		{AF4D568C-A110-4390-85A6-D4F766D94811}.Debug_Opengl|x86.ActiveCfg = Debug_Opengl|Win32
+		{AF4D568C-A110-4390-85A6-D4F766D94811}.Debug_Opengl|x86.Build.0 = Debug_Opengl|Win32
 		{AF4D568C-A110-4390-85A6-D4F766D94811}.Debug|x64.ActiveCfg = Debug|x64
 		{AF4D568C-A110-4390-85A6-D4F766D94811}.Debug|x64.Build.0 = Debug|x64
 		{AF4D568C-A110-4390-85A6-D4F766D94811}.Debug|x86.ActiveCfg = Debug|Win32
@@ -34,6 +42,10 @@ Global
 		{AF4D568C-A110-4390-85A6-D4F766D94811}.Release_DirectX|x64.Build.0 = Release_DirectX|x64
 		{AF4D568C-A110-4390-85A6-D4F766D94811}.Release_DirectX|x86.ActiveCfg = Release_DirectX|Win32
 		{AF4D568C-A110-4390-85A6-D4F766D94811}.Release_DirectX|x86.Build.0 = Release_DirectX|Win32
+		{AF4D568C-A110-4390-85A6-D4F766D94811}.Release_Opengl|x64.ActiveCfg = Release_Opengl|x64
+		{AF4D568C-A110-4390-85A6-D4F766D94811}.Release_Opengl|x64.Build.0 = Release_Opengl|x64
+		{AF4D568C-A110-4390-85A6-D4F766D94811}.Release_Opengl|x86.ActiveCfg = Release_Opengl|Win32
+		{AF4D568C-A110-4390-85A6-D4F766D94811}.Release_Opengl|x86.Build.0 = Release_Opengl|Win32
 		{AF4D568C-A110-4390-85A6-D4F766D94811}.Release|x64.ActiveCfg = Release|x64
 		{AF4D568C-A110-4390-85A6-D4F766D94811}.Release|x64.Build.0 = Release|x64
 		{AF4D568C-A110-4390-85A6-D4F766D94811}.Release|x86.ActiveCfg = Release|Win32
@@ -42,6 +54,10 @@ Global
 		{01362AD4-5625-4347-91AD-9C21366DA6C5}.Debug_directx|x64.Build.0 = Debug_directx|x64
 		{01362AD4-5625-4347-91AD-9C21366DA6C5}.Debug_directx|x86.ActiveCfg = Debug_directx|Win32
 		{01362AD4-5625-4347-91AD-9C21366DA6C5}.Debug_directx|x86.Build.0 = Debug_directx|Win32
+		{01362AD4-5625-4347-91AD-9C21366DA6C5}.Debug_Opengl|x64.ActiveCfg = Debug_Opengl|x64
+		{01362AD4-5625-4347-91AD-9C21366DA6C5}.Debug_Opengl|x64.Build.0 = Debug_Opengl|x64
+		{01362AD4-5625-4347-91AD-9C21366DA6C5}.Debug_Opengl|x86.ActiveCfg = Debug_Opengl|Win32
+		{01362AD4-5625-4347-91AD-9C21366DA6C5}.Debug_Opengl|x86.Build.0 = Debug_Opengl|Win32
 		{01362AD4-5625-4347-91AD-9C21366DA6C5}.Debug|x64.ActiveCfg = Debug|x64
 		{01362AD4-5625-4347-91AD-9C21366DA6C5}.Debug|x64.Build.0 = Debug|x64
 		{01362AD4-5625-4347-91AD-9C21366DA6C5}.Debug|x86.ActiveCfg = Debug|Win32
@@ -50,6 +66,10 @@ Global
 		{01362AD4-5625-4347-91AD-9C21366DA6C5}.Release_DirectX|x64.Build.0 = Release_DirectX|x64
 		{01362AD4-5625-4347-91AD-9C21366DA6C5}.Release_DirectX|x86.ActiveCfg = Release_DirectX|Win32
 		{01362AD4-5625-4347-91AD-9C21366DA6C5}.Release_DirectX|x86.Build.0 = Release_DirectX|Win32
+		{01362AD4-5625-4347-91AD-9C21366DA6C5}.Release_Opengl|x64.ActiveCfg = Release_Opengl|x64
+		{01362AD4-5625-4347-91AD-9C21366DA6C5}.Release_Opengl|x64.Build.0 = Release_Opengl|x64
+		{01362AD4-5625-4347-91AD-9C21366DA6C5}.Release_Opengl|x86.ActiveCfg = Release_Opengl|Win32
+		{01362AD4-5625-4347-91AD-9C21366DA6C5}.Release_Opengl|x86.Build.0 = Release_Opengl|Win32
 		{01362AD4-5625-4347-91AD-9C21366DA6C5}.Release|x64.ActiveCfg = Release|x64
 		{01362AD4-5625-4347-91AD-9C21366DA6C5}.Release|x64.Build.0 = Release|x64
 		{01362AD4-5625-4347-91AD-9C21366DA6C5}.Release|x86.ActiveCfg = Release|Win32

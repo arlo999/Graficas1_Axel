@@ -83,6 +83,16 @@ __in_range(0, D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT - StartSlot)UINT NumV
 	 m_devicecontext->PSSetShaderResources(StartSlot,NumViews,ppShaderResourceViews);
 }
 
+void __stdcall ADeviceContext::A_RSSetState(ID3D11RasterizerState* pRasterizerState)
+{
+	m_devicecontext->RSSetState(pRasterizerState);
+}
+
+void __stdcall ADeviceContext::A_CSSetConstantBuffers(__in_range(0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - 1)UINT StartSlot, __in_range(0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - StartSlot)UINT NumBuffers, ID3D11Buffer* const* ppConstantBuffers)
+{
+	m_devicecontext->CSSetConstantBuffers(StartSlot, NumBuffers, ppConstantBuffers);
+}
+
 void ADeviceContext::A_PSSetSamplers(__in_range(0, D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT - 1)UINT StartSlot, __in_range(0, D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT - StartSlot)UINT NumSamplers,
 ID3D11SamplerState* const* ppSamplers)
 {

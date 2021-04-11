@@ -1,5 +1,12 @@
 #pragma once
 #include "AVector.h"
+#include <glad/glad.h>
+#include "AShader.h"
+#include <string>
+#include <vector>
+
+using namespace std;
+
 struct AsimpleVertex {
 
 	float Vertex[3];
@@ -24,7 +31,22 @@ struct AsimpleVertexV2 {
 	Afloat3 Vertex;
 };
 
+struct Texture {
+	unsigned int id;
+	string type;
+	string path;
+};
+struct Vertex {
+	float Position[3];
+	
+	float Normal[3];
+	
+	float TexCoords[2];
 
+	float Tanget[3];
+
+	float Bitanget[3];
+};
 class Mesh
 {
 public:
@@ -47,6 +69,24 @@ public:
 
 	void setIndice(unsigned short* indice, int);
 	unsigned short* getIndice() { return m_Indice; }
+
+
+	//opengl
+public:
+	vector<Vertex>       vertices;
+	vector<unsigned int> indices;
+	vector<Texture>      textures;
+	unsigned int VAO;
+
+	Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures);
+	// render the mesh
+	void Draw(AShader& shader);
+
+//opengl
+private:
+	// render data 
+	unsigned int VBO, EBO;
+	void setupMesh();
 
 private:
 	AsimpleVertex* buffer;

@@ -89,7 +89,7 @@ namespace GraphicsModule
 		{
 			g_driverType = driverTypes[driverTypeIndex];
 			hr = D3D11CreateDeviceAndSwapChain(NULL, g_driverType, NULL, createDeviceFlags, featureLevels, numFeatureLevels,
-				D3D11_SDK_VERSION, &sd, &g_pSwapChain, &g_pd3dDevice.m_device, &g_featureLevel, &g_pImmediateContext);
+				D3D11_SDK_VERSION, &sd, &g_pSwapChain.m_swapchain, &g_pd3dDevice.m_device, &g_featureLevel, &g_pImmediateContext.m_devicecontext);
 			if (SUCCEEDED(hr))
 				break;
 		}
@@ -98,7 +98,7 @@ namespace GraphicsModule
 
 		// Create a render target view
 		ID3D11Texture2D* pBackBuffer = NULL;
-		hr = g_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
+		hr = g_pSwapChain.A_GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
 		if (FAILED(hr))
 			return hr;
 
@@ -121,7 +121,7 @@ namespace GraphicsModule
 		descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
 		descDepth.CPUAccessFlags = 0;
 		descDepth.MiscFlags = 0;
-		hr = g_pd3dDevice.A_CreateTexture2D(&descDepth, NULL, &g_pDepthStencil);
+		hr = g_pd3dDevice.A_CreateTexture2D(&descDepth, NULL, &g_pDepthStencil.getAtexture2D());
 		if (FAILED(hr))
 			return hr;
 
@@ -131,7 +131,7 @@ namespace GraphicsModule
 		descDSV.Format = DXGI_FORMAT_D32_FLOAT;
 		descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 		descDSV.Texture2D.MipSlice = 0;
-		hr = g_pd3dDevice.A_CreateDepthStencilView(g_pDepthStencil, &descDSV, &g_pDepthStencilView);
+		hr = g_pd3dDevice.A_CreateDepthStencilView(g_pDepthStencil.getAtexture2D(), &descDSV, &g_pDepthStencilView);
 		if (FAILED(hr))
 			return hr;
 
@@ -141,7 +141,7 @@ namespace GraphicsModule
 		srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
 		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		srvDesc.Texture2D.MipLevels = 1; // same as orig texture
-		hr = g_pd3dDevice.A_CreateShaderResourceView(g_pDepthStencil, &srvDesc, &g_pDepthStencilSRV);
+		hr = g_pd3dDevice.A_CreateShaderResourceView(g_pDepthStencil.getAtexture2D(), &srvDesc, &g_pDepthStencilSRV);
 		if (FAILED(hr))
 			return hr;
 
@@ -155,7 +155,7 @@ namespace GraphicsModule
 		vp.MaxDepth = 1.0f;
 		vp.TopLeftX = 0;
 		vp.TopLeftY = 0;
-		g_pImmediateContext->RSSetViewports(1, &vp);
+		g_pImmediateContext.A_RSSetViewports(1, &vp);
 
 		// Compile the vertex shader
 		ID3DBlob* pVSBlob = NULL;
@@ -351,7 +351,7 @@ namespace GraphicsModule
 
 
 		// Set primitive topology
-		g_pImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		g_pImmediateContext.A_IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		// Create the constant buffers
 		bd.Usage = D3D11_USAGE_DEFAULT;
@@ -419,7 +419,7 @@ namespace GraphicsModule
 		/*
 		cbNeverChanges.mView = XMMatrixTranspose(g_View);
 		*/
-		g_pImmediateContext->UpdateSubresource(m_pCBNeverChanges.getBufferDX11(), 0, NULL, &cbNeverChanges, 0, 0);
+		g_pImmediateContext.A_UpdateSubresource(m_pCBNeverChanges.getBufferDX11(), 0, NULL, &cbNeverChanges, 0, 0);
 
 		// Initialize the projection matrix
 		
@@ -428,7 +428,7 @@ namespace GraphicsModule
 		CBChangeOnResize cbChangesOnResize;
 		cbChangesOnResize.mProjection = XMMatrixTranspose(g_Projection);
 		
-		g_pImmediateContext->UpdateSubresource(m_pCBChangeOnResize.getBufferDX11(), 0, NULL, &cbChangesOnResize, 0, 0);
+		g_pImmediateContext.A_UpdateSubresource(m_pCBChangeOnResize.getBufferDX11(), 0, NULL, &cbChangesOnResize, 0, 0);
 
 
 
@@ -573,6 +573,15 @@ namespace GraphicsModule
 		return S_OK;
 	}
 
+	HRESULT Test::InitDeviceOGL(HWND _hwnd)
+	{
+	
+		
+		
+		
+		return E_NOTIMPL;
+	}
+
 	void Test::Render()
 	{
 
@@ -614,9 +623,9 @@ namespace GraphicsModule
 		CBChangesEveryFrame cb;
 		cb.mWorld = XMMatrixTranspose(g_View);
 		cb.vMeshColor = g_vMeshColor;
-		g_pImmediateContext->UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
+		g_pImmediateContext.A_UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
 
-		g_pImmediateContext->UpdateSubresource(m_LigthBuffer.getBufferDX11(), 0, NULL, &m_LigthBufferStruct, 0, 0);
+		g_pImmediateContext.A_UpdateSubresource(m_LigthBuffer.getBufferDX11(), 0, NULL, &m_LigthBufferStruct, 0, 0);
 
 		UINT stride = sizeof(SimpleVertex);
 		UINT offset = 0;
@@ -625,29 +634,28 @@ namespace GraphicsModule
 
 		CBChangeOnResize cbChangesOnResize;
 		cbChangesOnResize.mProjection = XMMatrixTranspose(g_Projection);
-		g_pImmediateContext->UpdateSubresource(m_pCBChangeOnResize.getBufferDX11(), 0, NULL, &cbChangesOnResize, 0, 0);
+		g_pImmediateContext.A_UpdateSubresource(m_pCBChangeOnResize.getBufferDX11(), 0, NULL, &cbChangesOnResize, 0, 0);
 		
 
 		///textura 1---------//
-		g_pImmediateContext->IASetInputLayout(g_pVertexLayout);
-		g_pImmediateContext->RSSetState(g_Rasterizer);
-		g_pImmediateContext->IASetVertexBuffers(0, 1, &m_pVertexBuffer.getBufferDX11(), &stride, &offset);
-		g_pImmediateContext->IASetIndexBuffer(m_pIndexBuffer.getBufferDX11(), DXGI_FORMAT_R32_UINT, 0);
-		g_pImmediateContext->VSSetShader(g_pVertexShader, NULL, 0);
-		g_pImmediateContext->VSSetConstantBuffers(0, 1, &m_pCBNeverChanges.getBufferDX11());
-		g_pImmediateContext->VSSetConstantBuffers(1, 1, &m_pCBChangeOnResize.getBufferDX11());
-		g_pImmediateContext->VSSetConstantBuffers(2, 1, &m_pCBChangesEveryFrame.getBufferDX11());
+		g_pImmediateContext.A_IASetInputLayout(g_pVertexLayout);
+		g_pImmediateContext.A_IASetVertexBuffers(0, 1, &m_pVertexBuffer.getBufferDX11(), &stride, &offset);
+		g_pImmediateContext.A_IASetIndexBuffer(m_pIndexBuffer.getBufferDX11(), DXGI_FORMAT_R32_UINT, 0);
+		g_pImmediateContext.A_VSSetShader(g_pVertexShader, NULL, 0);
+		g_pImmediateContext.A_VSSetConstantBuffers(0, 1, &m_pCBNeverChanges.getBufferDX11());
+		g_pImmediateContext.A_VSSetConstantBuffers(1, 1, &m_pCBChangeOnResize.getBufferDX11());
+		g_pImmediateContext.A_VSSetConstantBuffers(2, 1, &m_pCBChangesEveryFrame.getBufferDX11());
 		//light
-		g_pImmediateContext->VSSetConstantBuffers(3, 1, &m_LigthBuffer.getBufferDX11());
+		g_pImmediateContext.A_VSSetConstantBuffers(3, 1, &m_LigthBuffer.getBufferDX11());
 
-		g_pImmediateContext->PSSetShader(g_pPixelShader, NULL, 0);
-		g_pImmediateContext->PSSetConstantBuffers(2, 1, &m_pCBChangesEveryFrame.getBufferDX11());
-		g_pImmediateContext->PSSetShaderResources(0, 1, &g_pTextureRV);
-		g_pImmediateContext->PSSetSamplers(0, 1, &g_pSamplerLinear);
+		g_pImmediateContext.A_PSSetShader(g_pPixelShader, NULL, 0);
+		g_pImmediateContext.A_CSSetConstantBuffers(2, 1, &m_pCBChangesEveryFrame.getBufferDX11());
+		g_pImmediateContext.A_PSSetShaderResources(0, 1, &g_pTextureRV);
+		g_pImmediateContext.A_PSSetSamplers(0, 1, &g_pSamplerLinear);
 		//-------------------------
-		g_pImmediateContext->ClearRenderTargetView(m_Target2, ClearColor);
-		g_pImmediateContext->ClearDepthStencilView(g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
-		g_pImmediateContext->OMSetRenderTargets(1, &m_Target2, g_pDepthStencilView);
+		g_pImmediateContext.A_ClearRenderTargetView(m_Target2, ClearColor);
+		g_pImmediateContext.A_ClearDepthStencilView(g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+		g_pImmediateContext.A_OMSetRenderTargets(1, &m_Target2, g_pDepthStencilView);
 
 		/*
 		cb.mWorld = XMMatrixTranslation(0, 0, 0);
@@ -706,37 +714,37 @@ namespace GraphicsModule
 		//--------------------------------textura 4
 
 		
-		g_pImmediateContext->ClearRenderTargetView(g_pRenderTargetView, ClearColor);
-		g_pImmediateContext->ClearDepthStencilView(g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
-		g_pImmediateContext->OMSetRenderTargets(1, &g_pRenderTargetView, g_pDepthStencilView);
+		g_pImmediateContext.A_ClearRenderTargetView(g_pRenderTargetView, ClearColor);
+		g_pImmediateContext.A_ClearDepthStencilView(g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+		g_pImmediateContext.A_OMSetRenderTargets(1, &g_pRenderTargetView, g_pDepthStencilView);
 
 		cb.mWorld = XMMatrixTranslation(0, 2, 0);
 		cb.mWorld = XMMatrixMultiplyTranspose(g_View, cb.mWorld);
-		g_pImmediateContext->UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
-		g_pImmediateContext->PSSetShaderResources(0, 1, &m_Shader4);
+		g_pImmediateContext.A_UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
+		g_pImmediateContext.A_PSSetShaderResources(0, 1, &m_Shader4);
 		//g_pImmediateContext->DrawIndexed(36, 0, 0);
 		
 		
 		cb.mWorld = XMMatrixTranslation(3, 0, 0);
 		cb.mWorld = XMMatrixMultiplyTranspose(g_View, cb.mWorld);
-		g_pImmediateContext->UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
-		g_pImmediateContext->PSSetShaderResources(0, 1, &m_Shader3);
+		g_pImmediateContext.A_UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
+		g_pImmediateContext.A_PSSetShaderResources(0, 1, &m_Shader3);
 		//g_pImmediateContext->DrawIndexed(36, 0, 0);
 		
 
 		cb.mWorld = XMMatrixTranslation(-3, 0, 0);
 		cb.mWorld = XMMatrixMultiplyTranspose(g_View, cb.mWorld);
-		g_pImmediateContext->UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
-		g_pImmediateContext->PSSetShaderResources(0, 1, &m_Shader2);
+		g_pImmediateContext.A_UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
+		g_pImmediateContext.A_PSSetShaderResources(0, 1, &m_Shader2);
 		//g_pImmediateContext->DrawIndexed(36, 0, 0);
 
 		
 		//
 		cb.mWorld = XMMatrixTranslation(0, 0, 0);
 		cb.mWorld = XMMatrixMultiplyTranspose(g_View, cb.mWorld);
-		g_pImmediateContext->UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
-		g_pImmediateContext->PSSetShaderResources(0, 1, &g_pTextureRV);
-		g_pImmediateContext->DrawIndexed(numVertex, 0, 0);
+		g_pImmediateContext.A_UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
+		g_pImmediateContext.A_PSSetShaderResources(0, 1, &g_pTextureRV);
+		g_pImmediateContext.A_DrawIndexed(numVertex, 0, 0);
 
 		
 		
@@ -747,154 +755,37 @@ namespace GraphicsModule
 
 	void Test::CleanupDevice()
 	{
+	
 #if defined(DX11)
-		if (g_pImmediateContext) g_pImmediateContext->ClearState();
-
+		if (g_pImmediateContext.m_devicecontext) g_pImmediateContext.A_ClearState();
 		if (g_pSamplerLinear) g_pSamplerLinear->Release();
 		if (g_pTextureRV) g_pTextureRV->Release();
-			
-		// DirectX 
-		/*
-		* 
-		* 	if (g_pCBChangesEveryFrame) g_pCBChangesEveryFrame->Release();
-		*	if (g_pCBChangeOnResize) g_pCBChangeOnResize->Release();
-		*	if (g_pCBNeverChanges) g_pCBNeverChanges->Release();
-		*	if (g_pVertexBuffer) g_pVertexBuffer->Release();
-		*	if (g_pIndexBuffer) g_pIndexBuffer->Release();
-		*/
 		if (m_pCBChangesEveryFrame.getBufferDX11()) m_pCBChangesEveryFrame.Release();
 		if (m_LigthBuffer.getBufferDX11()) m_LigthBuffer.Release();
 		if (m_pCBChangeOnResize.getBufferDX11()) m_pCBChangeOnResize.Release();
 		if (m_pCBNeverChanges.getBufferDX11()) m_pCBNeverChanges.Release();
 		if (m_pVertexBuffer.getBufferDX11()) m_pVertexBuffer.Release();
 		if (m_pIndexBuffer.getBufferDX11()) m_pIndexBuffer.Release();
-		
-		//destructor 
-		
-
-
 		if (g_pVertexLayout) g_pVertexLayout->Release();
 		if (g_pVertexShader) g_pVertexShader->Release();
 		if (g_pPixelShader) g_pPixelShader->Release();
-		if (g_pDepthStencil) g_pDepthStencil->Release();
+		if (g_pDepthStencil.getAtexture2D()) g_pDepthStencil.getAtexture2D()->Release();
 		if (g_pDepthStencilView) g_pDepthStencilView->Release();
 		if (g_pRenderTargetView) g_pRenderTargetView->Release();
-		if (g_pSwapChain) g_pSwapChain->Release();
-		if (g_pImmediateContext) g_pImmediateContext->Release();
+		if (g_pSwapChain.m_swapchain) g_pSwapChain.A_Release();
+		if (g_pImmediateContext.m_devicecontext) g_pImmediateContext.A_Release();
 		if (g_pd3dDevice.m_device) g_pd3dDevice.A_Release();
 		#endif
 	}
 
-	std::string Test::OpenWindowFile(HWND _hwnd)
-	{
-		// common dialog box structure, setting all fields to 0 is important
-		OPENFILENAME ofn = { 0 };
-		char szFile[260] = { 0 };
-		// Initialize remaining fields of OPENFILENAME structure
-		ofn.lStructSize = sizeof(ofn);
-		ofn.hwndOwner = _hwnd;
-		ofn.lpstrFile = szFile;
-		ofn.nMaxFile = sizeof(szFile);
-		ofn.lpstrFilter = ("All\0*.*\0Text\0*.TXT\0");
-		ofn.nFilterIndex = 1;
-		ofn.lpstrFileTitle = NULL;
-		ofn.nMaxFileTitle = 0;
-		ofn.lpstrInitialDir = NULL;
-		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
-
-		if (GetOpenFileName(&ofn) == TRUE)
-		{
-			
-			return (std::string)szFile;
-		}
-		return NULL;
-	}
-
-	void Test::LoadMesh(const std::string& _Filename)
-	{
-		
-		m_pVertexBuffer.Release();
-		m_pIndexBuffer.Release();
-		arrSimpleVertex.clear();
-		numVertex=0;
-		Assimp::Importer imp;
-		const aiScene* pScene= imp.ReadFile(_Filename, aiProcess_Triangulate);
-		if (!pScene)
-		{
-		std::cout<<"Error to load assimp file"<<_Filename<<": "<<std::endl;
-
-		}
-		for(std::uint32_t meshIndex=0u; meshIndex < pScene->mNumMeshes; meshIndex++){
-			
-			aiMesh* mesh = pScene->mMeshes[meshIndex];
-			numVertex+=mesh->mNumVertices;
-			
-		for (std::uint32_t vertIndex = 0u; vertIndex < mesh->mNumVertices; vertIndex++) {
-
-				
-				aiVector3D vert = mesh->mVertices[vertIndex];
-				aiVector3D tex = mesh->mTextureCoords[0][vertIndex];
-				
-				
-				aiVector3D norm = mesh->mNormals[vertIndex];
-				
-				m_pos.x = vert.x;
-				m_pos.y =vert.y;
-				m_pos.z =vert.z;
-
-				m_normal.x = norm.x;
-				m_normal.y = norm.y;
-				m_normal.z = norm.z;
-
-				m_vertex.x = tex.x;
-				m_vertex.y = tex.y;
-				 
-				arrSimpleVertex.push_back(AsimpleVertexV2{m_pos,m_vertex,m_normal});
-			
-				
-			}
-
-		}
-		for (int i =0; i<numVertex;i++)
-		{
-			m_indices.push_back(i);
-		}
-		// Create vertex buffer
-		
-		D3D11_BUFFER_DESC bd;
-		ZeroMemory(&bd, sizeof(bd));
-		bd.Usage = D3D11_USAGE_DEFAULT;
-		bd.ByteWidth = sizeof(AsimpleVertexV2) * numVertex;
-		bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		bd.CPUAccessFlags = 0;
-		D3D11_SUBRESOURCE_DATA InitData;
-		ZeroMemory(&InitData, sizeof(InitData));
-		InitData.pSysMem = arrSimpleVertex.data();
-		g_pd3dDevice.A_CreateBuffer(&bd, &InitData, &m_pVertexBuffer.getBufferDX11());
-		//need valid
 	
-		
-		
-		
-		bd.Usage = D3D11_USAGE_DEFAULT;
-		bd.ByteWidth = sizeof(unsigned int) * numVertex;
-		bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
-		bd.CPUAccessFlags = 0;
-		InitData.pSysMem = m_indices.data();
-		g_pd3dDevice.A_CreateBuffer(&bd, &InitData, &m_pIndexBuffer.getBufferDX11());
-		
 
-
-		
-		//aiReleaseImport(pScene);
-	}
-
+	
 	void Test::Update()
 	{
 #if defined(DX11)
 		
-		GetCursorPos(p);
-		camera->rotate(p->x, p->y, 0);
+		
 #endif
 	}
 
@@ -911,7 +802,7 @@ namespace GraphicsModule
 		HRESULT hr = S_OK;
 			// Create a render target view
 		ID3D11Texture2D* pBackBuffer = NULL;
-		hr = g_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
+		hr = g_pSwapChain.A_GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
 		if (FAILED(hr))
 			return hr;
 
@@ -934,7 +825,7 @@ namespace GraphicsModule
 		descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
 		descDepth.CPUAccessFlags = 0;
 		descDepth.MiscFlags = 0;
-		hr = g_pd3dDevice.A_CreateTexture2D(&descDepth, NULL, &g_pDepthStencil);
+		hr = g_pd3dDevice.A_CreateTexture2D(&descDepth, NULL, &g_pDepthStencil.getAtexture2D());
 		if (FAILED(hr))
 			return hr;
 
@@ -944,7 +835,7 @@ namespace GraphicsModule
 		descDSV.Format = DXGI_FORMAT_D32_FLOAT;
 		descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 		descDSV.Texture2D.MipSlice = 0;
-		hr = g_pd3dDevice.A_CreateDepthStencilView(g_pDepthStencil, &descDSV, &g_pDepthStencilView);
+		hr = g_pd3dDevice.A_CreateDepthStencilView(g_pDepthStencil.getAtexture2D(), &descDSV, &g_pDepthStencilView);
 		if (FAILED(hr))
 			return hr;
 
@@ -954,11 +845,11 @@ namespace GraphicsModule
 		srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
 		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		srvDesc.Texture2D.MipLevels = 1; // same as orig texture
-		hr = g_pd3dDevice.A_CreateShaderResourceView(g_pDepthStencil, &srvDesc, &g_pDepthStencilSRV);
+		hr = g_pd3dDevice.A_CreateShaderResourceView(g_pDepthStencil.getAtexture2D(), &srvDesc, &g_pDepthStencilSRV);
 		if (FAILED(hr))
 			return hr;
 
-		g_pImmediateContext->OMSetRenderTargets(1, &g_pRenderTargetView, g_pDepthStencilView);
+		g_pImmediateContext.A_OMSetRenderTargets(1, &g_pRenderTargetView, g_pDepthStencilView);
 
 		// Setup the viewport
 
@@ -968,7 +859,7 @@ namespace GraphicsModule
 		vp.MaxDepth = 1.0f;
 		vp.TopLeftX = 0;
 		vp.TopLeftY = 0;
-		g_pImmediateContext->RSSetViewports(1, &vp);
+		g_pImmediateContext.A_RSSetViewports(1, &vp);
 
 
 
