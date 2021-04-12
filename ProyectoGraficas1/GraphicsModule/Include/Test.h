@@ -8,11 +8,11 @@
 #include "ASwapChain.h"
 #include "ATexture2D.h"
 #include "ATextura.h"
-
+#if defined(OGL)
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-
+#endif
 #if defined(DX11)
 #include "ACamera.h"
 #include <d3d11.h>

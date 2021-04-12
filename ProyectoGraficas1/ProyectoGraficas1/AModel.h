@@ -2,9 +2,10 @@
 class AModel
 {
 };
-
+#if defined(OGL)
 #include <glad/glad.h> 
-
+#include <stb/stb_image.h>
+#endif
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -18,7 +19,6 @@ class AModel
 #include <map>
 #include <vector>
 #include "ATextura.h"
-#include <stb/stb_image.h>
 
 using namespace std;
 
@@ -29,6 +29,7 @@ public:
 
 	unsigned int TextureFromFile(const char* path, const string& directory, bool gamma)
 	{
+#if defined(OGL)
 		string filename = string(path);
 		filename = "C://Graficos1_recursos//ProyectoGraficas1//bin//"  + filename;
 		
@@ -75,6 +76,7 @@ public:
 		}
 
 		return textureID;
+		#endif
 	};
 	// model data 
 

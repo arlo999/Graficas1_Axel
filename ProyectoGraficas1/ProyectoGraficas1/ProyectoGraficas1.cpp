@@ -11,16 +11,11 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#endif
 #include "ATextura.h"
-
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
 #include "AModel.h"
 #include "ACamera.h"
 
-#endif
 
 /////
 #include "GraphicsModule.h"
@@ -62,6 +57,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND _hwnd, UINT _m
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
+#if defined(OGL)
 	if (firstMouse)
 	{
 		lastX = xpos;
@@ -76,16 +72,21 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	lastY = ypos;
 
 	camera.ProcessMouseMovement(xoffset, yoffset);
+    #endif
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
+#if defined(OGL)
 	camera.ProcessMouseScroll(yoffset);
+#endif
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
+#if defined(OGL)
 	glViewport(0, 0, width, height);
+    #endif
 }
 void OnSize(unsigned int width, unsigned int height) {
 #if defined(DX11)
@@ -207,9 +208,10 @@ void LoadMesh(const std::string& _Filename)
     testObj.g_pd3dDevice.A_CreateBuffer(&bd, &InitData, &testObj.m_pIndexBuffer.getBufferDX11());
 
 #endif // 
+#if defined(OGL)
 	 ourModel.loadModel(_Filename);
 
-   
+   #endif
 }
 
 /**
@@ -522,18 +524,18 @@ HRESULT InitWindow(LONG _width, LONG _height)
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    _shader.Use();
-	glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), 1270.0f / 720.0f , 0.1f, 100.0f);
+	_shader.Use();
+	glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), 1270.0f / 720.0f, 0.1f, 100.0f);
 	glm::mat4 view = camera.GetViewMatrix();
-    _shader.setMat4("projection", projection);
-    _shader.setMat4("view", view);
-	
-    glm::mat4 model = glm::mat4(1.0f);
+	_shader.setMat4("projection", projection);
+	_shader.setMat4("view", view);
+
+	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
 	model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
-    _shader.setMat4("model", model);
-	
-    ourModel.Draw(_shader);
+	_shader.setMat4("model", model);
+
+	ourModel.Draw(_shader); 
     
      UIRender();
 	 ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -551,6 +553,7 @@ HRESULT InitWindow(LONG _width, LONG _height)
  //inputs Opengl
  void processInput(GLFWwindow* window)
  {
+#if defined(OGL)
 	 if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		 glfwSetWindowShouldClose(window, true);
 
@@ -562,6 +565,7 @@ HRESULT InitWindow(LONG _width, LONG _height)
 		 camera.ProcessKeyboard(LEFT, deltaTime);
 	 if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		 camera.ProcessKeyboard(RIGHT, deltaTime);
+#endif
  }
 
  /**
@@ -600,7 +604,7 @@ int main()
       ImGui::DestroyContext();
       return 0;
     }
-	
+#if defined(OGL)
     while (!glfwWindowShouldClose(window))
 	{
         processInput(window);
@@ -608,6 +612,7 @@ int main()
         Render(ourShader);
 
 	}
+    #endif
 #if  defined(DX11)
     // main loop
     MSG msg = { 0 };
@@ -621,7 +626,7 @@ int main()
         else
         {
             Update();
-            Render();
+            Render(ourShader);
         }
     }
 #endif    

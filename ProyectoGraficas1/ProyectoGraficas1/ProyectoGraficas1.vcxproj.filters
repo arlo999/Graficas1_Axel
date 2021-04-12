@@ -59,9 +59,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Externals\Opengl_stuff\Include\gl3w\GL\gl3w.h">
-      <Filter>Archivos de origen</Filter>
-    </ClInclude>
     <ClInclude Include="AModel.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>

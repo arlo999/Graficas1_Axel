@@ -69,12 +69,14 @@ Mesh::Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture
 void Mesh::Draw(AShader& shader)
 {
 	// bind appropriate textures
+
 	unsigned int diffuseNr = 1;
 	unsigned int specularNr = 1;
 	unsigned int normalNr = 1;
 	unsigned int heightNr = 1;
 	for (unsigned int i = 0; i < textures.size(); i++)
 	{
+#if defined(OGL)
 		glActiveTexture(GL_TEXTURE0 + i); // active proper texture unit before binding
 		// retrieve texture number (the N in diffuse_textureN)
 		string number;
@@ -92,8 +94,9 @@ void Mesh::Draw(AShader& shader)
 		glUniform1i(glGetUniformLocation(shader.ID, (name + number).c_str()), i);
 		// and finally bind the texture
 		glBindTexture(GL_TEXTURE_2D, textures[i].id);
+#endif
 	}
-
+#if defined(OGL)
 	// draw mesh
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
@@ -101,10 +104,12 @@ void Mesh::Draw(AShader& shader)
 
 	// always good practice to set everything back to defaults once configured.
 	glActiveTexture(GL_TEXTURE0);
+	#endif
 }
 
 void Mesh::setupMesh()
 {
+#if defined(OGL)
 	// create buffers/arrays
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
@@ -139,4 +144,5 @@ void Mesh::setupMesh()
 	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Bitanget));
 
 	glBindVertexArray(0);
+#endif
 }

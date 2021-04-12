@@ -40,6 +40,10 @@ public:
 	float magnitude();
 	float quickReverseSqrt2(float number);
 
+	AVector translate();
+	AVector scale();
+	AVector Rotate();
+
 private:
 	float X;
 	float Y;

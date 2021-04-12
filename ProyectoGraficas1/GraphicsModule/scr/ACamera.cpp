@@ -22,14 +22,16 @@ void ACamera::setviewMLookL(AVector x, AVector y, AVector z)
    //up
     yaxis =(zaxis.ProductoCruz(xaxis));
     
-#if defined(DX11)
-    XMMATRIX m_View(
-        XMVectorSet(xaxis.getX() , yaxis.getX(), zaxis.getX(),0),
-        XMVectorSet(xaxis.getY(), yaxis.getY(), zaxis.getY(),0),
-        XMVectorSet(xaxis.getZ(), yaxis.getZ(), zaxis.getZ(),0),
-        XMVectorSet(-xaxis.ProductoPunto(x),- yaxis.ProductoPunto(x),-zaxis.ProductoPunto(x) ,1));
-    viewMatrix = m_View;
-   #endif
+#
+    m_viewMatrix = new float[16]{
+        xaxis.getX() , yaxis.getX(), zaxis.getX(),0,
+        xaxis.getY(), yaxis.getY(), zaxis.getY(),0,
+        xaxis.getZ(), yaxis.getZ(), zaxis.getZ(),0,
+        -xaxis.ProductoPunto(x),- yaxis.ProductoPunto(x),-zaxis.ProductoPunto(x) ,1
+
+    };
+    
+   
     
     
 }

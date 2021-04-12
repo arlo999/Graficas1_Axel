@@ -36,6 +36,7 @@ AShader::AShader(const char* vertexPath, const char* fragmentPath)
 	// 2. compile shaders
 	unsigned int vertex=0, fragment;
 	// vertex shader
+#if defined(OGL)
 	vertex = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertex, 1, &vShaderCode, NULL);
 	glCompileShader(vertex);
@@ -54,10 +55,12 @@ AShader::AShader(const char* vertexPath, const char* fragmentPath)
 	// delete the shaders as they're linked into our program now and no longer necessary
 	glDeleteShader(vertex);
 	glDeleteShader(fragment);
+	#endif
 }
 
 void AShader::CheckCompileErrors(unsigned int shader, std::string type)
 {
+#if defined(OGL)
 	int success;
 	char infoLog[1024];
 	if (type != "PROGRAM")
@@ -78,5 +81,5 @@ void AShader::CheckCompileErrors(unsigned int shader, std::string type)
 			std::cout << "ERROR::PROGRAM_LINKING_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
 		}
 	}
-
+#endif
 }

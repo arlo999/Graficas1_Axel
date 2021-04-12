@@ -1,6 +1,8 @@
 #pragma once
 #include "AVector.h"
+#if defined(OGL)
 #include <glad/glad.h>
+#endif
 #include "AShader.h"
 #include <string>
 #include <vector>

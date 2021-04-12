@@ -489,7 +489,9 @@
     <ClCompile Include="..\..\..\..\..\..\..\DEV-librerias\imgui-1.8\imgui_draw.cpp" />
     <ClCompile Include="..\..\..\..\..\..\..\DEV-librerias\imgui-1.8\imgui_tables.cpp" />
     <ClCompile Include="..\..\..\..\..\..\..\DEV-librerias\imgui-1.8\imgui_widgets.cpp" />
-    <ClCompile Include="..\..\glad\src\glad.c" />
+    <ClCompile Include="..\..\glad\src\glad.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_directx|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\imgui-master\backends\imgui_impl_glfw.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_directx|x64'">true</ExcludedFromBuild>
     </ClCompile>
@@ -499,10 +501,12 @@
     <ClCompile Include="AModel.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="ProyectoGraficas1.cpp" />
-    <ClCompile Include="stb.cpp" />
+    <ClCompile Include="stb.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Opengl|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_directx|x64'">true</ExcludedFromBuild>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Externals\Opengl_stuff\Include\gl3w\GL\gl3w.h" />
     <ClInclude Include="AModel.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
