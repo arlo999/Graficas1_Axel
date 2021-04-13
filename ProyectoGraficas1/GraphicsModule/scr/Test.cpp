@@ -1,7 +1,6 @@
 
 #include "Test.h"
 #include "..\Include\Test.h"
-#include "ACamera.h"
 
 
 
@@ -267,7 +266,7 @@ namespace GraphicsModule
 		}
 
 	
-
+	
 		// Create vertex buffer
 		SimpleVertex vertices[] =
 		{
@@ -346,6 +345,7 @@ namespace GraphicsModule
 		hr = g_pd3dDevice.A_CreateBuffer(&bd, &InitData, &m_pIndexBuffer.getBufferDX11());
 		if (FAILED(hr))
 			return hr;
+	
 
 		
 
@@ -431,17 +431,15 @@ namespace GraphicsModule
 		g_pImmediateContext.A_UpdateSubresource(m_pCBChangeOnResize.getBufferDX11(), 0, NULL, &cbChangesOnResize, 0, 0);
 
 
-
-
-		/*				
+		/*
 		primera textura y shader inicializados
 		*/
 
 
-			/// ESTO DEBE ESTA EN EL MANAGER
-		
-		//TEXTURA CON LA QUE SE HACE LA DESCRIPCION
-		ID3D11Texture2D* Text2D=NULL;
+		/// ESTO DEBE ESTA EN EL MANAGER
+
+	//TEXTURA CON LA QUE SE HACE LA DESCRIPCION
+		ID3D11Texture2D* Text2D = NULL;
 
 		D3D11_TEXTURE2D_DESC descTextRT;
 		ZeroMemory(&descTextRT, sizeof(descTextRT));
@@ -475,13 +473,13 @@ namespace GraphicsModule
 
 		// Create the render target view 2
 		hr = g_pd3dDevice.A_CreateRenderTargetView(Text2D, NULL, &m_Target2);
-		
+
 		if (FAILED(hr))
 			return hr;
 
-			/*
-			segunda textura 
-			*/
+		/*
+		segunda textura
+		*/
 
 		/// ESTO DEBE ESTA EN EL MANAGER
 		//Realease para poder usarla 
@@ -506,7 +504,7 @@ namespace GraphicsModule
 
 		// create the rt Shader resource view 2
 
-		
+
 		ZeroMemory(&descViewRT, sizeof(descViewRT));
 		descViewRT.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		descViewRT.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
@@ -521,11 +519,11 @@ namespace GraphicsModule
 
 		if (FAILED(hr))
 			return hr;
-		
-		
-		
-		
-		/*	
+
+
+
+
+		/*
 		Tercera textura
 		*/
 
@@ -568,7 +566,6 @@ namespace GraphicsModule
 		if (FAILED(hr))
 			return hr;
 
-
 #endif
 		return S_OK;
 	}
@@ -590,7 +587,7 @@ namespace GraphicsModule
 #if defined(DX11)
 		// Update our time
 
-		
+
 		static float t = 0.0f;
 		if (g_driverType == D3D_DRIVER_TYPE_REFERENCE)
 		{
@@ -614,14 +611,14 @@ namespace GraphicsModule
 
 
 		// Clear the back buffer
-	
+
 		float ClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f }; // red, green, blue, alpha
 
-		
+
 		g_View = camera->getviewMLookLDirectX();
 		cbNeverChanges.mView = XMMatrixTranspose(g_View);
 		CBChangesEveryFrame cb;
-		cb.mWorld = XMMatrixTranspose(g_View);
+		cb.mWorld = XMMatrixTranspose(g_World);
 		cb.vMeshColor = g_vMeshColor;
 		g_pImmediateContext.A_UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
 
@@ -629,13 +626,13 @@ namespace GraphicsModule
 
 		UINT stride = sizeof(SimpleVertex);
 		UINT offset = 0;
-		
-		
+
+
 
 		CBChangeOnResize cbChangesOnResize;
 		cbChangesOnResize.mProjection = XMMatrixTranspose(g_Projection);
 		g_pImmediateContext.A_UpdateSubresource(m_pCBChangeOnResize.getBufferDX11(), 0, NULL, &cbChangesOnResize, 0, 0);
-		
+
 
 		///textura 1---------//
 		g_pImmediateContext.A_IASetInputLayout(g_pVertexLayout);
@@ -664,7 +661,7 @@ namespace GraphicsModule
 		g_pImmediateContext->PSSetShaderResources(0, 1, &g_pTextureRV);
 
 		g_pImmediateContext->DrawIndexed(numVertex, 0, 0);
-		
+
 		*/
 		//------------------------------------textura 2
 		/*
@@ -696,7 +693,7 @@ namespace GraphicsModule
 		g_pImmediateContext->UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
 		g_pImmediateContext->PSSetShaderResources(0, 1, &m_Shader3);
 		g_pImmediateContext->DrawIndexed(36, 0, 0);
-		
+
 
 		cb.mWorld = XMMatrixTranslation(-3, 0, 0);
 		cb.mWorld = XMMatrixMultiplyTranspose(g_View, cb.mWorld);
@@ -709,11 +706,11 @@ namespace GraphicsModule
 		g_pImmediateContext->UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
 		g_pImmediateContext->PSSetShaderResources(0, 1, &g_pTextureRV);
 		g_pImmediateContext->DrawIndexed(36, 0, 0);
-		
+
 		*/
 		//--------------------------------textura 4
 
-		
+
 		g_pImmediateContext.A_ClearRenderTargetView(g_pRenderTargetView, ClearColor);
 		g_pImmediateContext.A_ClearDepthStencilView(g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 		g_pImmediateContext.A_OMSetRenderTargets(1, &g_pRenderTargetView, g_pDepthStencilView);
@@ -723,14 +720,14 @@ namespace GraphicsModule
 		g_pImmediateContext.A_UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
 		g_pImmediateContext.A_PSSetShaderResources(0, 1, &m_Shader4);
 		//g_pImmediateContext->DrawIndexed(36, 0, 0);
-		
-		
+
+
 		cb.mWorld = XMMatrixTranslation(3, 0, 0);
 		cb.mWorld = XMMatrixMultiplyTranspose(g_View, cb.mWorld);
 		g_pImmediateContext.A_UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
 		g_pImmediateContext.A_PSSetShaderResources(0, 1, &m_Shader3);
 		//g_pImmediateContext->DrawIndexed(36, 0, 0);
-		
+
 
 		cb.mWorld = XMMatrixTranslation(-3, 0, 0);
 		cb.mWorld = XMMatrixMultiplyTranspose(g_View, cb.mWorld);
@@ -738,7 +735,7 @@ namespace GraphicsModule
 		g_pImmediateContext.A_PSSetShaderResources(0, 1, &m_Shader2);
 		//g_pImmediateContext->DrawIndexed(36, 0, 0);
 
-		
+
 		//
 		cb.mWorld = XMMatrixTranslation(0, 0, 0);
 		cb.mWorld = XMMatrixMultiplyTranspose(g_View, cb.mWorld);

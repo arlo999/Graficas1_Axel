@@ -113,8 +113,8 @@ enum Camera_Movement {
 // Default camera values
 const float YAW = -90.0f;
 const float PITCH = 0.0f;
-const float SPEED = 2.5f;
-const float SENSITIVITY = 0.1f;
+const float SPEED = 0.5f;
+const float SENSITIVITY = 0.01f;
 const float ZOOM = 45.0f;
 
 
@@ -130,22 +130,26 @@ public:
 	AVector Right;
 	AVector WorldUp;
 	*/
+	
 #if defined(OGL)
+
 	glm::vec3 Position;
 	glm::vec3 Front;
 	glm::vec3 Up;
 	glm::vec3 Right;
 	glm::vec3 WorldUp;
 
-#endif	// euler Angles
+
+#endif	
 	float Yaw;
 	float Pitch;
-	// camera options
+	
 	float MovementSpeed;
 	float MouseSensitivity;
 	float Zoom;
 
-	// constructor with vectors
+	float* m_viewMatrix;
+	
 	/*
 	Camera(AVector position = AVector(0.0f, 0.0f, 0.0f), AVector up = AVector(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : 
 	Front(AVector(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
@@ -157,7 +161,9 @@ public:
 		updateCameraVectors();
 	}
 	*/
+	
 #if defined(OGL)
+
 	Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
 	{
 		Position = position;
@@ -166,8 +172,9 @@ public:
 		Pitch = pitch;
 		updateCameraVectors();
 	}
+
 	#endif
-	// constructor with scalar values
+	
 
 	/*
 	Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch) 
@@ -180,16 +187,51 @@ public:
 		updateCameraVectors();
 	}
 	*/
+	void setviewMLookL(AVector x, AVector y, AVector z)
+	{
+	/*
+		//frot
+		Front = (y - x);
+		Front.normalize();
+		//right
+		Right = (Up.ProductoCruz(Front));
+		Right.normalize();
+		//up
+		Up = (Front.ProductoCruz(Right));
+
+#
+		m_viewMatrix = new float[16]{
+			Right.getX() ,Up.getX(),Front.getX(),0,
+			Right.getY(), Up.getY(), Front.getY(),0,
+			Right.getZ(), Up.getZ(), Front.getZ(),0,
+			-Right.ProductoPunto(x),-Up.ProductoPunto(x),-Front.ProductoPunto(x) ,1
+
+		};
+	*/
+
+
+
+
+	}
 
 	// returns the view matrix calculated using Euler Angles and the LookAt Matrix
+
 #if defined(OGL)
-	glm::mat4 GetViewMatrix()
+	glm::mat4 GetViewMatrixGlm()
 	{
 		return glm::lookAt(Position, Position + Front, Up);
 
 	}
 	#endif
 
+	float* GetViewMatrix()
+	{
+	/*
+		setviewMLookL(Position, Position + Front, Up);
+		return  m_viewMatrix;
+	*/
+
+	}
 
 	float* ViewPerspective(float fov, float aspectRatio, float cerca, float lejos)
 	{
@@ -203,7 +245,7 @@ public:
 		  0.0f, 0.0f, (-lejos / (lejos - cerca)) * cerca, 0.0f
 		};
 	}
-	// processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
+	
 	void ProcessKeyboard(Camera_Movement direction, float deltaTime)
 	{
 #if defined(OGL)
@@ -219,7 +261,7 @@ public:
 			#endif
 	}
 
-	// processes input received from a mouse input system. Expects the offset value in both the x and y direction.
+	
 	void ProcessMouseMovement(float xoffset, float yoffset, bool constrainPitch = true)
 	{
 		xoffset *= MouseSensitivity;
@@ -266,8 +308,10 @@ private:
 		// also re-calculate the Right and Up vector
 		Right = glm::normalize(glm::cross(Front, WorldUp));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
 		Up = glm::normalize(glm::cross(Right, Front));
+
 		#endif
-		/*
+/*
+		
 		// calculate the new Front vector
 		AVector front;
 		front.setX( cos((Yaw)) * cos((Pitch)) );
@@ -275,14 +319,14 @@ private:
 		front.setZ(  sin((Yaw)) * cos((Pitch)) );
 		front.normalize();
 		Front = front;
-		// also re-calculate the Right and Up vector
+		
 		Front.ProductoCruz(WorldUp);
 		Front.normalize();
 
-		Right =Front; // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
+		Right =Front;
 		Right.ProductoCruz(Front);
 		Right.normalize();
 		Up = Right;
-		*/
+	*/	
 	}
 };

@@ -5,7 +5,7 @@ ACamera::ACamera()
 
 }
 /**
-     * @brief   esta 
+     * @brief   esta
      * @param   #float: numero a summar.
      * @param   #float: numero a summar.
      * @bug     si metes negativos vale gorro :C.
@@ -14,26 +14,24 @@ ACamera::ACamera()
 void ACamera::setviewMLookL(AVector x, AVector y, AVector z)
 {
     //frot
-     zaxis= (y-x);
+    zaxis = (y - x);
     zaxis.normalize();
     //right
-    xaxis=(up.ProductoCruz(zaxis));
+    xaxis = (up.ProductoCruz(zaxis));
     xaxis.normalize();
-   //up
-    yaxis =(zaxis.ProductoCruz(xaxis));
-    
-#
-    m_viewMatrix = new float[16]{
-        xaxis.getX() , yaxis.getX(), zaxis.getX(),0,
-        xaxis.getY(), yaxis.getY(), zaxis.getY(),0,
-        xaxis.getZ(), yaxis.getZ(), zaxis.getZ(),0,
-        -xaxis.ProductoPunto(x),- yaxis.ProductoPunto(x),-zaxis.ProductoPunto(x) ,1
+    //up
+    yaxis = (zaxis.ProductoCruz(xaxis));
 
-    };
-    
-   
-    
-    
+#if defined(DX11)
+    XMMATRIX m_View(
+        XMVectorSet(xaxis.getX(), yaxis.getX(), zaxis.getX(), 0),
+        XMVectorSet(xaxis.getY(), yaxis.getY(), zaxis.getY(), 0),
+        XMVectorSet(xaxis.getZ(), yaxis.getZ(), zaxis.getZ(), 0),
+        XMVectorSet(-xaxis.ProductoPunto(x), -yaxis.ProductoPunto(x), -zaxis.ProductoPunto(x), 1));
+    viewMatrix = m_View;
+#endif
+
+
 }
 /**
      * @brief   Esta funcion sumara 2 numeros, e informara del resultado en el return de la funcion.
@@ -48,12 +46,12 @@ float* ACamera::ViewPerspective(float fov, float aspectRatio, float cerca, float
 
     float height = cos(fov * .5) / sin(fov * .5);
     float width = height / aspectRatio;
-	return  new float[16]{
-	  width, 0.0f, 0.0f, 0.0f,
-	  0.0f, height, 0.0f, 0.0f,
-	  0.0f, 0.0f, lejos / (lejos - cerca), 1.0f,
-	  0.0f, 0.0f, (-lejos / (lejos - cerca)) * cerca, 0.0f
-	};
+    return  new float[16]{
+      width, 0.0f, 0.0f, 0.0f,
+      0.0f, height, 0.0f, 0.0f,
+      0.0f, 0.0f, lejos / (lejos - cerca), 1.0f,
+      0.0f, 0.0f, (-lejos / (lejos - cerca)) * cerca, 0.0f
+    };
 }
 
 /**
@@ -70,7 +68,7 @@ float* ACamera::ViewOrtographic(float viewWidth, float viewHeigth, float cerca, 
     (2.0f / viewWidth), 0.0f, 0.0f, 0.0f,
         0.0f, (2.0f / viewHeigth), 0.0f, 0.0f,
         0.0f, 0.0f, (1.0f / (lejos - cerca)), 0.0f,
-        0.0f, 0.0f, (-(1.0f / (lejos - cerca)))* cerca, 1.0f
+        0.0f, 0.0f, (-(1.0f / (lejos - cerca))) * cerca, 1.0f
     };
 }
 
@@ -101,7 +99,7 @@ XMMATRIX ACamera::ViewPerspectiveDirectX(float fov, float aspectRatio, float cer
 }
 XMMATRIX ACamera::ViewOrtographicDirectX(float viewWidth, float viewHeigth, float cerca, float lejos)
 {
-   
+
     XMMATRIX ortographic(
 
         XMVectorSet((2.0 / viewWidth), 0, 0, 0),
@@ -128,19 +126,19 @@ void ACamera::move(float x, float y, float z)
     UPaxis *= z;
     Ataxis *= y;
     Eyeaxis *= x;
-    
+
     AVector resul(0, 0, 0);
     resul += UPaxis;
     resul += Ataxis;
     resul += Eyeaxis;
-    
-   
-    eye= getEye() + resul;
-    at=getAt() + resul;
-   
-    
-    setviewMLookL(eye,at,up);
-   
+
+
+    eye = getEye() + resul;
+    at = getAt() + resul;
+
+
+    setviewMLookL(eye, at, up);
+
 }
 /**
      * @brief   Esta funcion sumara 2 numeros, e informara del resultado en el return de la funcion.
@@ -155,25 +153,26 @@ void ACamera::rotate(float x, float y, float z)
     if (frame == true) {
         x = x - m_fx;
         y = y - m_fy;
-        x /=-100;
+        x /= -100;
         y /= 100;
 
-	    AVector Ataxis(x, y, z);
+        AVector Ataxis(x, y, z);
 
 
-		at = Ataxis + at;
+        at = Ataxis + at;
         setviewMLookL(eye, at, up);
         frame = false;
     }
-    else  {
-    
-		m_fx = x;
-		m_fy = y;
+    else {
+
+        m_fx = x;
+        m_fy = y;
         frame = true;
-    
+
     }
-   
-  
-    
+
+
+
 
 }
+    

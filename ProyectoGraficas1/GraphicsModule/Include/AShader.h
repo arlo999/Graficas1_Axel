@@ -56,6 +56,12 @@ public:
 		glUniformMatrix4fv(glGetUniformLocation(ID,name.c_str()),1,GL_FALSE,glm::value_ptr(value) );
 	}
 #endif
+	void setFloat4(const std::string& name, float* value) const
+	{
+#if defined(OGL)
+		glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, value);
+#endif
+	}
 private:
 		void CheckCompileErrors(unsigned int shader, std::string type);
 };

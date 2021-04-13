@@ -6,6 +6,7 @@ class AModel
 #include <glad/glad.h> 
 #include <stb/stb_image.h>
 #endif
+
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -18,7 +19,8 @@ class AModel
 #include <iostream>
 #include <map>
 #include <vector>
-#include "ATextura.h"
+
+
 
 using namespace std;
 
@@ -34,19 +36,13 @@ public:
 		filename = "C://Graficos1_recursos//ProyectoGraficas1//bin//"  + filename;
 		
 		unsigned int textureID;
-		/*
-
-		ATextura tex;
-		tex.LoadTexture(filename.c_str(),textureID);
-		tex.BindTexture(2);
-		*/
+		
 		
 		glGenTextures(1, &textureID);
 
 		int width, height, nrComponents;
 		
 		unsigned char* data = stbi_load(filename.c_str(), &width, &height, &nrComponents, STBI_rgb);
-		//unsigned char* data = stbi_load("C://Graficos1_recursos//ProyectoGraficas1//bin//normal.jpg", &width, &height, &nrComponents, 0);
 
 		if (data)
 		{
@@ -78,14 +74,14 @@ public:
 		return textureID;
 		#endif
 	};
-	// model data 
+	
 
-	vector<Texture> textures_loaded;	// stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
+	vector<Texture> textures_loaded;	
 	vector<Mesh>    meshes;
 	string directory;
 	bool gammaCorrection = true;
 
-	// constructor, expects a filepath to a 3D model.
+	
 	Model(string const& path, bool gamma = false) : gammaCorrection(gamma)
 	{
 		loadModel(path);
@@ -238,7 +234,14 @@ private:
 		std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
 		textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 		
-
+		if (diffuseMaps.empty()) {
+			Texture texture;
+			texture.id = TextureFromFile("base_albedo.jpg",this->directory,false);
+			texture.type = aiTextureType_DIFFUSE;
+			texture.path = "base_albedo.jpg";
+			textures.push_back(texture);
+			textures_loaded.push_back(texture);
+		}
 		// return a mesh object created from the extracted mesh data
 		return Mesh(vertices, indices, textures);
 	}
@@ -276,14 +279,6 @@ private:
 			}
 			
 		}
-		/*
-		Texture texture;
-		texture.id = TextureFromFile("C://Graficos1_recursos//ProyectoGraficas1//bin//base_albedo.jpg", this->directory, false);
-		texture.type = typeName;
-		texture.path = "C://Graficos1_recursos//ProyectoGraficas1//bin//base_albedo.jpg";
-		textures.push_back(texture);
-		textures_loaded.push_back(texture);  //
-		*/
 
 		return textures;
 	}

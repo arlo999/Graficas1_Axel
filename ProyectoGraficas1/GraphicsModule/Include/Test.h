@@ -1,5 +1,4 @@
 #pragma once
-
 #include <windows.h>
 #include "ABuffer.h"
 #include "Mesh.h"
@@ -7,7 +6,7 @@
 #include "ADeviceContext.h"
 #include "ASwapChain.h"
 #include "ATexture2D.h"
-#include "ATextura.h"
+
 #if defined(OGL)
 
 #include <glad/glad.h>
@@ -67,8 +66,6 @@ namespace GraphicsModule
 	class Test
 	{
 	public:
-
-	
 
 #if defined(DX11)
 		D3D_DRIVER_TYPE                     g_driverType = D3D_DRIVER_TYPE_NULL;
@@ -143,8 +140,8 @@ namespace GraphicsModule
 		HRESULT CompileShaderFromFile(const char* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut);
 #endif
 
-		HRESULT InitDevice(HWND _hwnd);
 		HRESULT InitDeviceOGL(HWND _hwnd);
+		HRESULT InitDevice(HWND _hwnd);
 public:
 		void Render();
 		void Update();

@@ -12,7 +12,6 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #endif
-#include "ATextura.h"
 #include "AModel.h"
 #include "ACamera.h"
 
@@ -39,7 +38,7 @@ bool perspective = false;
 POINT Cursor;
 int cursorx, cursory;
 #if  defined(OGL)
-ATextura tex;
+
 bool firstMouse = true;
 float lastX = 1270 / 2.0f;
 float lastY = 720/ 2.0f;
@@ -47,17 +46,19 @@ float lastY = 720/ 2.0f;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 Model ourModel;
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+
+//Camera camera(AVector(0.0f, 0.0f, 3.0f));
+Camera camera(glm::vec3(0.0f,0.0f,3.0f));
 GLFWwindow* window;
 bool show_demo_window = true;
 bool show_another_window = false;
-ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+ImVec4 clear_color = ImVec4(0.0f, 0.125f, 0.3f, 1.0f);
 #endif
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam);
 
+#if defined(OGL)
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
-#if defined(OGL)
 	if (firstMouse)
 	{
 		lastX = xpos;
@@ -66,28 +67,28 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	}
 
 	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+	float yoffset = lastY - ypos; 
 
 	lastX = xpos;
 	lastY = ypos;
 
 	camera.ProcessMouseMovement(xoffset, yoffset);
-    #endif
 }
+    #endif
 
+#if defined(OGL)
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-#if defined(OGL)
 	camera.ProcessMouseScroll(yoffset);
-#endif
 }
+#endif
 
+#if defined(OGL)
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-#if defined(OGL)
 	glViewport(0, 0, width, height);
-    #endif
 }
+    #endif
 void OnSize(unsigned int width, unsigned int height) {
 #if defined(DX11)
     auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
@@ -108,7 +109,7 @@ void OnSize(unsigned int width, unsigned int height) {
 
 std::string OpenWindowFile(HWND _hwnd)
 {
-	// common dialog box structure, setting all fields to 0 is important
+	
 	OPENFILENAME ofn = { 0 };
 	char szFile[260] = { 0 };
 	// Initialize remaining fields of OPENFILENAME structure
@@ -258,14 +259,14 @@ LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
         PostQuitMessage(0);
         break;
     case WM_LBUTTONUP: {
-    /*
+    
         auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
         
         Cursor.x = GET_X_LPARAM(_wParam);
         Cursor.y = GET_Y_LPARAM(_wParam);
-        #if defined(DX11)
+#if defined(DX11)
        testObj.camera->rotate(cursorx, cursory, 0);
-    */
+#endif 
 
     }
         
@@ -273,12 +274,12 @@ LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
         break;
     case WM_LBUTTONDOWN: {
         auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
-		/*
+		
         Cursor.x = GET_X_LPARAM(_wParam);
 		cursorx = Cursor.x;
 		Cursor.y = GET_Y_LPARAM(_wParam);
 		cursory = Cursor.y;
-        */
+        
 		
 
     }
@@ -407,6 +408,7 @@ HRESULT InitWindow(LONG _width, LONG _height)
     }
     ShowWindow(g_hwnd, SW_SHOWNORMAL);
     auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
+ 
 #endif
     return S_OK;
 }
@@ -429,13 +431,13 @@ HRESULT InitWindow(LONG _width, LONG _height)
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
 
-  ImGuiIO& io = ImGui::GetIO();
   // Setup Dear ImGui style
   ImGui::StyleColorsDark();
 #if  defined(DX11)
    ImGui_ImplWin32_Init(g_hwnd);
 #endif
 #if  defined(OGL)  
+  ImGuiIO& io = ImGui::GetIO();
    ImGui_ImplGlfw_InitForOpenGL(window,true);
    ImGui_ImplOpenGL3_Init(glsl_version);
 #endif  
@@ -525,10 +527,16 @@ HRESULT InitWindow(LONG _width, LONG _height)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	_shader.Use();
+	
+    /*
+	_shader.setFloat4("projection", camera.ViewPerspective(glm::radians(camera.Zoom), 1270.0f / 720.0f, 0.1f, 100.0f));
+	_shader.setFloat4("view", camera.GetViewMatrix());
+    */
+    
 	glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), 1270.0f / 720.0f, 0.1f, 100.0f);
-	glm::mat4 view = camera.GetViewMatrix();
-	_shader.setMat4("projection", projection);
-	_shader.setMat4("view", view);
+	glm::mat4 view = camera.GetViewMatrixGlm();
+    _shader.setMat4("projection",projection);
+    _shader.setMat4("view",view);
 
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
@@ -549,11 +557,18 @@ HRESULT InitWindow(LONG _width, LONG _height)
      testObj.g_pSwapChain.m_swapchain->Present(0, 0);
  #endif
  }
-
+ void RenderDx() {
+#if defined(DX11) 
+	 auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
+	 testObj.Render();
+	 UIRender();
+	 testObj.g_pSwapChain.m_swapchain->Present(0, 0);
+#endif
+ }
  //inputs Opengl
+#if defined(OGL)
  void processInput(GLFWwindow* window)
  {
-#if defined(OGL)
 	 if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		 glfwSetWindowShouldClose(window, true);
 
@@ -565,8 +580,8 @@ HRESULT InitWindow(LONG _width, LONG _height)
 		 camera.ProcessKeyboard(LEFT, deltaTime);
 	 if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		 camera.ProcessKeyboard(RIGHT, deltaTime);
-#endif
  }
+#endif
 
  /**
  * @brief   Entry point.
@@ -577,7 +592,7 @@ HRESULT InitWindow(LONG _width, LONG _height)
 
      auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
      testObj.Update();
-   //  glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+   
  }
 int main()
 {
@@ -626,7 +641,7 @@ int main()
         else
         {
             Update();
-            Render(ourShader);
+            RenderDx();
         }
     }
 #endif    
@@ -650,6 +665,6 @@ int main()
     testObj.CleanupDevice();
     DestroyWindow(g_hwnd);
 
-   // return (int)msg.wParam; 
+   //return (int)msg.wParam; 
     return 0;
 }
