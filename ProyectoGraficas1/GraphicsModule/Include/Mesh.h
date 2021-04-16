@@ -4,10 +4,25 @@
 #include <glad/glad.h>
 #endif
 #include "AShader.h"
+#include "ABuffer.h"
 #include <string>
 #include <vector>
+#if defined(DX11)
+#include <d3d11.h>
+#include <d3dx11.h>
+#include <d3dcompiler.h>
+#endif
+#include "Test.h"
 
 using namespace std;
+struct SimpleVertex
+{
+#if defined(DX11)
+	XMFLOAT3 Pos;
+	XMFLOAT2 Tex;
+	XMFLOAT3 Normal;
+#endif
+};
 
 struct AsimpleVertex {
 
@@ -44,10 +59,6 @@ struct Vertex {
 	float Normal[3];
 	
 	float TexCoords[2];
-
-	float Tanget[3];
-
-	float Bitanget[3];
 };
 class Mesh
 {
@@ -75,12 +86,17 @@ public:
 
 	//opengl
 public:
+	ABuffer  m_pVertexBuffer;
+	ABuffer m_pIndexBuffer;
+	
 	vector<Vertex>       vertices;
 	vector<unsigned int> indices;
 	vector<Texture>      textures;
+	vector<ID3D11ShaderResourceView* >textures_vec;
 	unsigned int VAO;
 
 	Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures);
+	Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures, vector<ID3D11ShaderResourceView* >textures_vec);
 	// render the mesh
 	void Draw(AShader& shader);
 
@@ -89,11 +105,13 @@ private:
 	// render data 
 	unsigned int VBO, EBO;
 	void setupMesh();
-
+	HWND g_hwnd;
 private:
 	AsimpleVertex* buffer;
 	AsimpleVertexV2* m_buffer;
 	AVector m_position;
 	unsigned short* m_Indice;
+
+
 };
 

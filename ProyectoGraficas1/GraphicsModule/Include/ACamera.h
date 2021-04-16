@@ -122,6 +122,13 @@ const float ZOOM = 45.0f;
 class Camera
 {
 public:
+
+	Camera(){
+	
+	
+	
+	
+	};
 	// camera Attributes
 	/*
 	AVector Position;

@@ -1,7 +1,6 @@
 #pragma once
 #include <windows.h>
 #include "ABuffer.h"
-#include "Mesh.h"
 #include "ADevice.h"
 #include "ADeviceContext.h"
 #include "ASwapChain.h"
@@ -32,15 +31,7 @@ namespace GraphicsModule
 	XMFLOAT4 dir;
 	};
 #endif
-	struct SimpleVertex
-	{
-#if defined(DX11)
-		XMFLOAT3 Pos;
-		XMFLOAT2 Tex;
-		XMFLOAT3 Normal;
-	#endif
-	};
-
+	
 	struct CBNeverChanges
 	{
 #if defined(DX11)
@@ -79,33 +70,24 @@ namespace GraphicsModule
 
 		ID3D11DepthStencilView* g_pDepthStencilView = NULL;
 		ID3D11ShaderResourceView* g_pDepthStencilSRV = NULL;
+
 		ID3D11VertexShader* g_pVertexShader = NULL;
 		ID3D11PixelShader* g_pPixelShader = NULL;
 		ID3D11InputLayout* g_pVertexLayout = NULL;
 		
 		
-		ABuffer  m_pVertexBuffer;
-		ABuffer m_pIndexBuffer;
+		
 		ABuffer m_pCBNeverChanges;
 		ABuffer m_pCBChangeOnResize ;
 		ABuffer m_pCBChangesEveryFrame;
 		//DirLight
 		ABuffer  m_LigthBuffer;
 		DirLigth m_LigthBufferStruct;
-		//shaders ResourceView
+	
 
-		ID3D11ShaderResourceView* g_pTextureRV=NULL;
-		ID3D11ShaderResourceView* m_Shader2 = NULL;
-		ID3D11ShaderResourceView* m_Shader3 = NULL;
-		ID3D11ShaderResourceView* m_Shader4 = NULL;
-		
 		//render targets
-
 		ID3D11RenderTargetView* g_pRenderTargetView = NULL;
-		ID3D11RenderTargetView* m_Target2 = NULL;
-		ID3D11RenderTargetView* m_Target3 = NULL;
-		ID3D11RenderTargetView* m_Target4 = NULL;
-
+	
 
 
 		ID3D11SamplerState* g_pSamplerLinear = NULL;
@@ -118,7 +100,7 @@ namespace GraphicsModule
 		ACamera				*camera;
 		CBNeverChanges cbNeverChanges;
 	
-		
+		CBChangesEveryFrame cb;
 		
 		//importans variables
 		D3D11_VIEWPORT vp;
@@ -127,12 +109,7 @@ namespace GraphicsModule
 #endif
 	public:
 		//variables for load model
-		Afloat3 m_pos;
-		Afloat3 m_normal;
-		Afloat2 m_vertex;
 		unsigned int numVertex;
-		std::vector <AsimpleVertexV2> arrSimpleVertex;
-		std::vector<unsigned int> m_indices;
 		
 #if defined(DX11)
 		HRESULT ReloadBuffer(unsigned int width, unsigned int height);
@@ -140,7 +117,6 @@ namespace GraphicsModule
 		HRESULT CompileShaderFromFile(const char* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut);
 #endif
 
-		HRESULT InitDeviceOGL(HWND _hwnd);
 		HRESULT InitDevice(HWND _hwnd);
 public:
 		void Render();

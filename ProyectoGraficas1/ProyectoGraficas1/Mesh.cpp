@@ -1,6 +1,7 @@
 #include "Mesh.h"
 #include <iostream>
 
+
 Mesh::Mesh()
 {
 }
@@ -69,6 +70,7 @@ Mesh::Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture
 
 void Mesh::Draw(AShader& shader)
 {
+	auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
 	// bind appropriate textures
 	unsigned int diffuseNr = 1;
 	unsigned int specularNr = 1;
@@ -77,24 +79,24 @@ void Mesh::Draw(AShader& shader)
 	for (unsigned int i = 0; i < textures.size(); i++)
 	{
 #if defined(OGL)
-		glActiveTexture(GL_TEXTURE0 + i); // active proper texture unit before binding
-		// retrieve texture number (the N in diffuse_textureN)
+		glActiveTexture(GL_TEXTURE0 + i); 
 		string number;
 		string name = textures[i].type;
 		if (name == "texture_diffuse")
 			number = std::to_string(diffuseNr++);
 		else if (name == "texture_specular")
-			number = std::to_string(specularNr++); // transfer unsigned int to stream
+			number = std::to_string(specularNr++); 
 		else if (name == "texture_normal")
-			number = std::to_string(normalNr++); // transfer unsigned int to stream
+			number = std::to_string(normalNr++); 
 		else if (name == "texture_height")
-			number = std::to_string(heightNr++); // transfer unsigned int to stream
+			number = std::to_string(heightNr++); 
 
-		// now set the sampler to the correct texture unit
 		glUniform1i(glGetUniformLocation(shader.ID, (name + number).c_str()), i);
-		// and finally bind the texture
+		
 		glBindTexture(GL_TEXTURE_2D, textures[i].id);
 		#endif
+	
+	//testObj.g_pImmediateContext.A_PSSetShaderResources(0, 1, &textures_vec[i]);
 	}
 
 
@@ -104,9 +106,24 @@ void Mesh::Draw(AShader& shader)
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
 
-	// always good practice to set everything back to defaults once configured.
 	glActiveTexture(GL_TEXTURE0);
 #endif
+#if defined(DX11)
+	
+	UINT stride = sizeof(Vertex);
+	UINT offset = 0;
+
+	
+
+	
+	//testObj.cb.mWorld = XMMatrixMultiplyTranspose(testObj.g_View, testObj.cb.mWorld);
+	
+	testObj.g_pImmediateContext.A_IASetVertexBuffers(0, 1, &m_pVertexBuffer.getBufferDX11(), &stride, &offset);
+	testObj.g_pImmediateContext.A_IASetIndexBuffer(m_pIndexBuffer.getBufferDX11(), DXGI_FORMAT_R32_UINT, 0);
+
+	testObj.g_pImmediateContext.A_DrawIndexed(indices.size(), 0, 0);
+#endif
+
 }
 
 void Mesh::setupMesh()
@@ -138,13 +155,35 @@ void Mesh::setupMesh()
 	// vertex texture coords
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
-	// vertex tangent
-	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Tanget));
-	// vertex bitangent
-	glEnableVertexAttribArray(4);
-	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Bitanget));
+
 
 	glBindVertexArray(0);
 #endif
+#if defined(DX11)
+	
+	auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
+	D3D11_BUFFER_DESC bd;
+	ZeroMemory(&bd, sizeof(bd));
+	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.ByteWidth = sizeof(Vertex) * vertices.size();
+	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	bd.CPUAccessFlags = 0;
+	D3D11_SUBRESOURCE_DATA InitData;
+	ZeroMemory(&InitData, sizeof(InitData));
+	InitData.pSysMem =vertices.data();
+	testObj.g_pd3dDevice.A_CreateBuffer(&bd, &InitData, &m_pVertexBuffer.getBufferDX11());
+	
+	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.ByteWidth = sizeof(unsigned int) * indices.size();
+	bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	bd.CPUAccessFlags = 0;
+	InitData.pSysMem = indices.data();
+	testObj.g_pd3dDevice.A_CreateBuffer(&bd, &InitData, &m_pIndexBuffer.getBufferDX11());
+	
+	
+#endif
+
+
+
+
 }

@@ -14,21 +14,11 @@
 #endif
 #include "AModel.h"
 #include "ACamera.h"
-
-
-/////
 #include "GraphicsModule.h"
-/////  
 
 #if defined(DX11)
 #include "imgui_impl_win32.h"
 #include "imgui_impl_dx11.h"
-
-#include <assimp/Importer.hpp>      // C++ importer interface
-#include <assimp/scene.h>  // Output data structure
-#include <assimp/postprocess.h>     // Post processing flags
-#include <assimp/mesh.h>
-#include <assimp/cimport.h>
 #endif 
 
 // -----------------Global var-----------------------------------------------------------------
@@ -37,23 +27,27 @@ bool first = false;
 bool perspective = false;
 POINT Cursor;
 int cursorx, cursory;
-#if  defined(OGL)
-
 bool firstMouse = true;
 float lastX = 1270 / 2.0f;
-float lastY = 720/ 2.0f;
+float lastY = 720 / 2.0f;
 // timing
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
-Model ourModel;
-
+AModel* ourModel;
 //Camera camera(AVector(0.0f, 0.0f, 3.0f));
-Camera camera(glm::vec3(0.0f,0.0f,3.0f));
-GLFWwindow* window;
+
+
 bool show_demo_window = true;
 bool show_another_window = false;
 ImVec4 clear_color = ImVec4(0.0f, 0.125f, 0.3f, 1.0f);
+vector<AModel*> models;
+#if defined(OGL)
+Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+GLFWwindow* window;
 #endif
+
+
+
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam);
 
 #if defined(OGL)
@@ -134,85 +128,12 @@ std::string OpenWindowFile(HWND _hwnd)
 
 void LoadMesh(const std::string& _Filename)
 {
-#if defined (DX11) 
 
-    auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
-
-    testObj.m_pVertexBuffer.Release();
-    testObj.m_pIndexBuffer.Release();
-    testObj.arrSimpleVertex.clear();
-    testObj.numVertex = 0;
-	Assimp::Importer imp;
-	const aiScene* pScene = imp.ReadFile(_Filename, aiProcess_Triangulate);
-	if (!pScene)
-	{
-		std::cout << "Error to load assimp file" << _Filename << ": " << std::endl;
-
-	}
-	for (std::uint32_t meshIndex = 0u; meshIndex < pScene->mNumMeshes; meshIndex++) {
-
-		aiMesh* mesh = pScene->mMeshes[meshIndex];
-        testObj.numVertex += mesh->mNumVertices;
-
-		for (std::uint32_t vertIndex = 0u; vertIndex < mesh->mNumVertices; vertIndex++) {
-
-
-			aiVector3D vert = mesh->mVertices[vertIndex];
-			aiVector3D tex = mesh->mTextureCoords[0][vertIndex];
-
-
-			aiVector3D norm = mesh->mNormals[vertIndex];
-
-            testObj.m_pos.x = vert.x;
-            testObj.m_pos.y = vert.y;
-            testObj.m_pos.z = vert.z;
-
-            testObj.m_normal.x = norm.x;
-            testObj.m_normal.y = norm.y;
-            testObj.m_normal.z = norm.z;
-
-            testObj.m_vertex.x = tex.x;
-            testObj.m_vertex.y = tex.y;
-
-            testObj.arrSimpleVertex.push_back(AsimpleVertexV2{ testObj.m_pos,testObj.m_vertex,testObj.m_normal });
-
-
-		}
-
-	}
-	for (int i = 0; i < testObj.numVertex; i++)
-	{
-        testObj.m_indices.push_back(i);
-	}
-	// Create vertex buffer
-
-	D3D11_BUFFER_DESC bd;
-	ZeroMemory(&bd, sizeof(bd));
-	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(AsimpleVertexV2) * testObj.numVertex;
-	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	bd.CPUAccessFlags = 0;
-	D3D11_SUBRESOURCE_DATA InitData;
-	ZeroMemory(&InitData, sizeof(InitData));
-	InitData.pSysMem = testObj.arrSimpleVertex.data();
-    testObj.g_pd3dDevice.A_CreateBuffer(&bd, &InitData, &testObj.m_pVertexBuffer.getBufferDX11());
-	//need valid
-
-
-
-
-	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(unsigned int) * testObj.numVertex;
-	bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	bd.CPUAccessFlags = 0;
-	InitData.pSysMem = testObj.m_indices.data();
-    testObj.g_pd3dDevice.A_CreateBuffer(&bd, &InitData, &testObj.m_pIndexBuffer.getBufferDX11());
-
-#endif // 
-#if defined(OGL)
-	 ourModel.loadModel(_Filename);
-
-   #endif
+    ourModel=new AModel;
+	 ourModel->loadModel(_Filename);
+     models.push_back(ourModel);
+     
+    
 }
 
 /**
@@ -373,9 +294,7 @@ HRESULT InitWindow(LONG _width, LONG _height)
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
 	glViewport(0, 0, _width,_height);
-    auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
-    testObj.InitDeviceOGL(g_hwnd);
-    
+  
 #endif
 #if  defined(DX11)
     // Register class
@@ -469,7 +388,7 @@ HRESULT InitWindow(LONG _width, LONG _height)
 
 
    // example window
-   if (ImGui::Begin("Another Window", nullptr))
+   if (ImGui::Begin("Luz", nullptr))
    {
        
    static float dir[3]{};
@@ -485,18 +404,29 @@ HRESULT InitWindow(LONG _width, LONG _height)
         LoadMesh(OpenWindowFile(g_hwnd));
        
         }
-
+        
+        for(int i= 0;i<models.size();i++){
+		
+            if (ImGui::DragFloat3("Scale"+i, models[i]->transform.scale, 0.001, -10, 10)) {}
+            if (ImGui::DragFloat3("Translation" + i, models[i]->transform.traslation, 0.001, -10, 10)) {}
+            if (ImGui::DragFloat3("Rotation" + i, models[i]->transform.rotation, 0.001, -10, 10)) {}
+			
+    }
 #if defined(DX11)
    auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
    float my_tex_w = 256;
    float my_tex_h = 256;
-   ImTextureID my_tex_id = testObj.g_pTextureRV;
+    /*
+   ImTextureID my_tex_id = ourModel.textures_vec[2];
    ImVec2 pos = ImGui::GetCursorScreenPos();
    ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
    ImVec2 uv_max = ImVec2(1.0f, 1.0f);                 // Lower-right
    ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
    ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.5f); // 50% opaque white
    ImGui::Image(my_tex_id, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max, tint_col, border_col);
+   */
+   
+   
 #endif
    
    ImGui::End();
@@ -538,13 +468,15 @@ HRESULT InitWindow(LONG _width, LONG _height)
     _shader.setMat4("projection",projection);
     _shader.setMat4("view",view);
 
-	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-	model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
-	_shader.setMat4("model", model);
+	
 
-	ourModel.Draw(_shader); 
-    
+   
+   // ourModel.Draw(_shader); 
+	for (int i = 0; i < models.size(); i++)
+	{
+        models[i]->Draw(_shader);
+		
+	}
      UIRender();
 	 ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
      glfwSwapBuffers(window);
@@ -553,18 +485,17 @@ HRESULT InitWindow(LONG _width, LONG _height)
 #if defined(DX11) 
 	 auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
 	 testObj.Render();
-    UIRender(); 
+    
+     for (int i =0;i<models.size();i++)
+     {
+         models[i]->Draw(_shader);
+     }
+     UIRender(); 
      testObj.g_pSwapChain.m_swapchain->Present(0, 0);
  #endif
  }
- void RenderDx() {
-#if defined(DX11) 
-	 auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
-	 testObj.Render();
-	 UIRender();
-	 testObj.g_pSwapChain.m_swapchain->Present(0, 0);
-#endif
- }
+
+
  //inputs Opengl
 #if defined(OGL)
  void processInput(GLFWwindow* window)
@@ -641,7 +572,7 @@ int main()
         else
         {
             Update();
-            RenderDx();
+            Render(ourShader);
         }
     }
 #endif    

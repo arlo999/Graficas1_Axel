@@ -232,6 +232,7 @@
     <OutDir>$(SolutionDir)bin\$(Configuration)\$(PlatformTarget)\</OutDir>
     <IntDir>$(SolutionDir)Intermediate\Unused\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
     <TargetName>ProyectoGraficas_d</TargetName>
+    <IncludePath>$(SolutionDir)Externals\Opengl_stuff\Include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -250,6 +251,7 @@
     <OutDir>$(SolutionDir)bin\$(Configuration)\$(PlatformTarget)\</OutDir>
     <IntDir>$(SolutionDir)Intermediate\Unused\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
     <TargetName>ProyectoGraficas_r</TargetName>
+    <IncludePath>$(SolutionDir)Externals\Opengl_stuff\Include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -413,8 +415,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)lib\GraphicsModule\$(Configuration)\$(PlatformTarget)\;$(DXSDK_DIR)Lib\$(PlatformTarget)\;$(DEVLIBS)assimp\Lib;$(DEVLIBS);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxerr.lib;dxguid.lib;assimp-vc142-mtd.lib;d3dx11d.lib;d3dx9d.lib;GraphicsModule_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)lib\GraphicsModule\$(Configuration)\$(PlatformTarget)\;$(DXSDK_DIR)Lib\$(PlatformTarget)\;$(DEVLIBS)assimp\Lib;$(DEVLIBS)FreeImage\Dist\x64\;$(DEVLIBS);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxerr.lib;dxguid.lib;assimp-vc142-mtd.lib;d3dx11d.lib;d3dx9d.lib;FreeImage.lib;GraphicsModule_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
@@ -445,10 +447,10 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>OGL;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(DEVLIBS)GLFW\include\;$(DEVLIBS)gl3w\;$(SolutionDir)include;$(DEVLIBS)imgui-1.8\;$(DEVLIBS)imgui-1.8\backends\;$(DXSDK_DIR)Include\;$(SolutionDir)GraphicsModule\include\;$(DEVLIBS);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -468,7 +470,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>DX11;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(DEVLIBS)GLFW\include\;$(SolutionDir)include;$(DEVLIBS)imgui-1.8\;$(DEVLIBS)imgui-1.8\backends\;$(DXSDK_DIR)Include\;$(SolutionDir)GraphicsModule\include\;$(DEVLIBS);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Externals\Opengl_stuff\Include;$(DEVLIBS)GLFW\include\;$(SolutionDir)include;$(DEVLIBS)imgui-1.8\;$(DEVLIBS)imgui-1.8\backends\;$(DXSDK_DIR)Include\;$(SolutionDir)GraphicsModule\include\;$(DEVLIBS);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -503,7 +505,7 @@
     <ClCompile Include="ProyectoGraficas1.cpp" />
     <ClCompile Include="stb.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Opengl|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_directx|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_directx|x64'">false</ExcludedFromBuild>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

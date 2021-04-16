@@ -1,12 +1,9 @@
 #pragma once
-class AModel
-{
-};
 #if defined(OGL)
 #include <glad/glad.h> 
-#include <stb/stb_image.h>
 #endif
 
+#include <stb/stb_image.h>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -19,30 +16,135 @@ class AModel
 #include <iostream>
 #include <map>
 #include <vector>
-
-
+#if defined(DX11)
+#include <FreeImage/Dist/x64/FreeImage.h>
+#include <d3d11.h>
+#include <d3dx11.h>
+#include <d3dcompiler.h>
+#include "Test.h"
+#endif
 
 using namespace std;
+struct ATransform {
 
+	float scale[3];
+	float rotation[3];
+	float traslation[3];
 
-class Model
+};
+class AModel
 {
 public:
-
+	ATransform transform;
+	#if defined(OGL)
+	glm::mat4 model;
+	#endif
+	vector<ID3D11ShaderResourceView* >textures_vec;
 	unsigned int TextureFromFile(const char* path, const string& directory, bool gamma)
 	{
-#if defined(OGL)
+		unsigned int textureID = 0;
 		string filename = string(path);
-		filename = "C://Graficos1_recursos//ProyectoGraficas1//bin//"  + filename;
+		if (string(path) == "diffuse.jpg"){
+			textureID=0;
+		}else if(string(path) == "specular.jpg"){
+				textureID=1;		
+		}
+		else if (string(path) == "normal.png") {
+			textureID = 2;
+		}
+		filename = "C://Graficos1_recursos//ProyectoGraficas1//bin//" + filename;
+#if defined(DX11)
+
+		/// esto lo saque de internet para obtener los raw datas
+
+		FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
+		//pointer to the image, once loaded
+		FIBITMAP* dib(0);
+		//pointer to the image data
+		BYTE* bits(0);
+		//image width and height
+		unsigned int width(0), height(0);
+
+		//check the file signature and deduce its format
+		fif = FreeImage_GetFileType(filename.c_str(), 0);
+		//if still unknown, try to guess the file format from the file extension
+		if (fif == FIF_UNKNOWN)
+			fif = FreeImage_GetFIFFromFilename(filename.c_str());
+		//if still unkown, return failure
+		if (fif == FIF_UNKNOWN)
+			return false;
+
+		//check that the plugin has reading capabilities and load the file
+		if (FreeImage_FIFSupportsReading(fif))
+		{
+			dib = FreeImage_Load(fif, filename.c_str());
+			dib = FreeImage_ConvertTo32Bits(dib);
+			
+		}
+
+		//if the image failed to load, return failure
+		if (!dib)
+			return 0;
+
+		//retrieve the image data
+		bits = FreeImage_GetBits(dib);
+		//get the image width and height
+		width = FreeImage_GetWidth(dib);
+		height = FreeImage_GetHeight(dib);
+		//if this somehow one of these failed (they shouldn't), return failure
+		if ((bits == 0) || (width == 0) || (height == 0))
+			return 0;
+
+
+
 		
-		unsigned int textureID;
 		
+		auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
+
+		
+			D3D11_TEXTURE2D_DESC tdesc;
+			ZeroMemory(&tdesc, sizeof(tdesc));
+			tdesc.Width= width;
+			tdesc.Height = height;
+			tdesc.MipLevels = 0;
+			tdesc.ArraySize = 1;
+			tdesc.Usage = D3D11_USAGE_DEFAULT;
+			tdesc.BindFlags = D3D11_BIND_SHADER_RESOURCE; 
+			tdesc.SampleDesc.Count=1;
+			tdesc.Format= DXGI_FORMAT_B8G8R8A8_UNORM;
+			tdesc.SampleDesc.Quality=0;
+			tdesc.CPUAccessFlags = 0;
+			tdesc.MiscFlags = 0; 
+
+			
+			ID3D11Texture2D* texture;
+			testObj.g_pd3dDevice.A_CreateTexture2D(&tdesc, NULL, &texture);
+			testObj.g_pImmediateContext.A_UpdateSubresource(texture,0,NULL,bits,FreeImage_GetPitch(dib),0);
+
+			D3D11_SHADER_RESOURCE_VIEW_DESC Sdesc={};
+			Sdesc.Format=tdesc.Format;
+			Sdesc.ViewDimension=D3D11_SRV_DIMENSION_TEXTURE2D;
+			Sdesc.Texture2D.MostDetailedMip=0;
+			Sdesc.Texture2D.MipLevels=1;
+			ID3D11ShaderResourceView* g_pTextureRV;
+			testObj.g_pd3dDevice.A_CreateShaderResourceView(texture,&Sdesc,&g_pTextureRV);
+			testObj.g_pImmediateContext.A_PSSetShaderResources(textureID, 1, &g_pTextureRV);
+			textures_vec.push_back(g_pTextureRV);
+			FreeImage_Unload(dib);
+			g_pTextureRV->Release();
+			texture->Release();
+#endif
+		
+#if defined(OGL)
+		
+		int width, height, nrComponents;
+
+		unsigned char* data = stbi_load(filename.c_str(), &width, &height, &nrComponents, STBI_rgb);
+
 		
 		glGenTextures(1, &textureID);
 
-		int width, height, nrComponents;
-		
-		unsigned char* data = stbi_load(filename.c_str(), &width, &height, &nrComponents, STBI_rgb);
+	
 
 		if (data)
 		{
@@ -73,6 +175,7 @@ public:
 
 		return textureID;
 		#endif
+		return textureID;
 	};
 	
 
@@ -82,53 +185,87 @@ public:
 	bool gammaCorrection = true;
 
 	
-	Model(string const& path, bool gamma = false) : gammaCorrection(gamma)
+	AModel(string const& path, bool gamma = false) : gammaCorrection(gamma)
 	{
 		loadModel(path);
 	}
-	Model(){
+	AModel(){
 
 	}
 
-	// draws the model, and thus all its meshes
+
 	void Draw(AShader& shader)
 	{
+	#if defined(OGL)
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(transform.traslation[0], transform.traslation[1], transform.traslation[2]));
+		model = glm::scale(model, glm::vec3(transform.scale[0], transform.scale[1], transform.scale[2]));
+		
+		model = glm::rotate(model, glm::radians(transform.rotation[0] * 180 / 3.1415f), glm::vec3(1, 0, 0));
+		model = glm::rotate(model, glm::radians(transform.rotation[1] * 180 / 3.1415f), glm::vec3(0, 1, 0));
+		model = glm::rotate(model, glm::radians(transform.rotation[2] * 180 / 3.1415f), glm::vec3(0, 0, 1));
+		shader.setMat4("model", model);
+		#endif
+#if defined(DX11)
+		auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
+		testObj.cb.mWorld = XMMatrixTranslation(transform.traslation[0], transform.traslation[1], transform.traslation[2]);
+		testObj.cb.mWorld=XMMatrixMultiply( XMMatrixScaling(transform.scale[0], transform.scale[1], transform.scale[2]) , testObj.cb.mWorld );
+		testObj.cb.mWorld= XMMatrixMultiplyTranspose(XMMatrixRotationRollPitchYaw(transform.rotation[0], transform.rotation[1], transform.rotation[2]), testObj.cb.mWorld);
+
+		testObj.g_pImmediateContext.A_UpdateSubresource(testObj.m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &testObj.cb, 0, 0);
+#endif	
 		for (unsigned int i = 0; i < meshes.size(); i++)
 			meshes[i].Draw(shader);
 	}
 
-	// loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
+	~AModel(){
+			
+	};
 	void loadModel(string const& path)
 	{
-		// read file via ASSIMP
+		transform.scale[0] = 1.0f;
+		transform.scale[1] = 1.0f;
+		transform.scale[2] = 1.0f;
+
+		transform.traslation[0] = 0.0f;
+		transform.traslation[1] = 0.0f;
+		transform.traslation[2] = 0.0f;
+
+		transform.rotation[0]=0.0f;
+		transform.rotation[1]=0.0f;
+		transform.rotation[2]=0.0f;
+
+		
+		
 		Assimp::Importer importer;
 		const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
-		// check for errors
+		
 		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
 		{
 			cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << endl;
 			return;
 		}
-		// retrieve the directory path of the filepath
+	
 		directory = path.substr(0, path.find_last_of('/'));
 
-		// process ASSIMP's root node recursively
+	
 		processNode(scene->mRootNode, scene);
+
+
 	}
 
 private:
-	// processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
+	HWND g_hwnd;
 	void processNode(aiNode* node, const aiScene* scene)
 	{
-		// process each mesh located at the current node
+	
 		for (unsigned int i = 0; i < node->mNumMeshes; i++)
 		{
-			// the node object only contains indices to index the actual objects in the scene. 
-			// the scene contains all the data, node is just to keep stuff organized (like relations between nodes).
+		
 			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 			meshes.push_back(processMesh(mesh, scene));
 		}
-		// after we've processed all of the meshes (if any) we then recursively process each of the children nodes
+	
 		for (unsigned int i = 0; i < node->mNumChildren; i++)
 		{
 			processNode(node->mChildren[i], scene);
@@ -138,17 +275,17 @@ private:
 
 	Mesh processMesh(aiMesh* mesh, const aiScene* scene)
 	{
-		// data to fill
+	
 		vector<Vertex> vertices;
 		vector<unsigned int> indices;
 		vector<Texture> textures;
 
-		// walk through each of the mesh's vertices
+		
 		for (unsigned int i = 0; i < mesh->mNumVertices; i++)
 		{
 			Vertex vertex;
-			AVector vector; // we declare a placeholder vector since assimp uses its own vector class that doesn't directly convert to glm's vec3 class so we transfer the data to this placeholder glm::vec3 first.
-			// positions
+			AVector vector; 
+
 			vector.setX( mesh->mVertices[i].x);
 			vector.setY(mesh->mVertices[i].y);
 			vector.setZ( mesh->mVertices[i].z);
@@ -166,29 +303,15 @@ private:
 				vertex.Normal[2] = vector.getZ();
 			}
 			// texture coordinates
-			if (mesh->mTextureCoords[0]) // does the mesh contain texture coordinates?
+			if (mesh->mTextureCoords[0]) 
 			{
 				AVector vec;
-				// a vertex can contain up to 8 different texture coordinates. We thus make the assumption that we won't 
-				// use models where a vertex can have multiple texture coordinates so we always take the first set (0).
+			
 				vec.setX( mesh->mTextureCoords[0][i].x);
-				vec.setY( mesh->mTextureCoords[0][i].y);
+				vec.setY( mesh->mTextureCoords[0][i].y );
 				vertex.TexCoords[0] = vec.getX();
 				vertex.TexCoords[1] = vec.getY();
-				// tangent
-				vector.setX(mesh->mTangents[i].x);
-				vector.setY(mesh->mTangents[i].y);
-				vector.setZ(mesh->mTangents[i].z);
-				vertex.Tanget[0] = vector.getX();
-				vertex.Tanget[1] = vector.getY();
-				vertex.Tanget[2] = vector.getZ();
-				// bitangent
-				vector.setX( mesh->mBitangents[i].x);
-				vector.setY( mesh->mBitangents[i].y);
-				vector.setZ( mesh->mBitangents[i].z);
-				vertex.Bitanget[0] = vector.getX();
-				vertex.Bitanget[1] = vector.getY();
-				vertex.Bitanget[2] = vector.getZ();
+			
 			}
 			else {
 
@@ -197,22 +320,17 @@ private:
 			}
 			vertices.push_back(vertex);
 		}
-		// now wak through each of the mesh's faces (a face is a mesh its triangle) and retrieve the corresponding vertex indices.
+		
 		for (unsigned int i = 0; i < mesh->mNumFaces; i++)
 		{
 			aiFace face = mesh->mFaces[i];
-			// retrieve all indices of the face and store them in the indices vector
+		
 			for (unsigned int j = 0; j < face.mNumIndices; j++)
 				indices.push_back(face.mIndices[j]);
 		}
-		// process materials
+	
 		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-		// we assume a convention for sampler names in the shaders. Each diffuse texture should be named
-		// as 'texture_diffuseN' where N is a sequential number ranging from 1 to MAX_SAMPLER_NUMBER. 
-		// Same applies to other texture as the following list summarizes:
-		// diffuse: texture_diffuseN
-		// specular: texture_specularN
-		// normal: texture_normalN
+		
 
 		// 1. diffuse maps
 		vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
@@ -242,12 +360,15 @@ private:
 			textures.push_back(texture);
 			textures_loaded.push_back(texture);
 		}
-		// return a mesh object created from the extracted mesh data
+	#if defined(OGL)
+
+#endif
+
 		return Mesh(vertices, indices, textures);
+		//return Mesh(vertices, indices, textures, textures_vec);
 	}
 
-	// checks all material textures of a given type and loads the textures if they're not loaded yet.
-	// the required info is returned as a Texture struct.
+
 	vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName)
 	{
 		vector<Texture> textures;
