@@ -126,12 +126,38 @@ std::string OpenWindowFile(HWND _hwnd)
 	return NULL;
 }
 
-void LoadMesh(const std::string& _Filename)
+void LoadMesh(const std::string& _Filename, unsigned int type)
 {
+    if (type == 1) {
 
     ourModel=new AModel;
+    ourModel->bgr=true;
 	 ourModel->loadModel(_Filename);
      models.push_back(ourModel);
+    }else if(type ==2){
+		ourModel = new AModel;
+		ourModel->rgb = true;
+		ourModel->loadModel(_Filename);
+		models.push_back(ourModel);
+    }else if(type==3){
+    
+		ourModel = new AModel;
+		ourModel->wire = true;
+		ourModel->loadModel(_Filename);
+		models.push_back(ourModel);
+    }else if(type == 4){
+    
+		ourModel = new AModel;
+		ourModel->point = true;
+		ourModel->loadModel(_Filename);
+		models.push_back(ourModel);
+    }else{
+    
+		ourModel = new AModel;
+		ourModel->rgb = true;
+		ourModel->loadModel(_Filename);
+		models.push_back(ourModel);
+    }
      
     
 }
@@ -368,7 +394,7 @@ HRESULT InitWindow(LONG _width, LONG _height)
    return S_OK;
  }
  //UI Render 
- void UIRender()
+ void UIRender(AShader& _shader)
  {
    // Start the Dear ImGui frame
 #if defined(DX11)
@@ -388,49 +414,84 @@ HRESULT InitWindow(LONG _width, LONG _height)
 
 
    // example window
-   if (ImGui::Begin("Luz", nullptr))
-   {
-       
+    ImGui::Begin("Luz", NULL,0);
    static float dir[3]{};
    if (ImGui::DragFloat3("Direccion de luz", dir,0.001,-1,1)){
        auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
 #if defined(DX11)
             testObj.m_LigthBufferStruct.dir= XMFLOAT4(dir[0],dir[1],dir[2],0.0f);
 #endif
+#if defined(OGL)
+           glUniform4f(glGetUniformLocation(_shader.ID,"adirLight"), dir[0], dir[1], dir[2], 0.0f);
+#endif
         }
-   if (ImGui::Button("open file")) {
+   if (ImGui::BeginCombo("Carga de Modelo", NULL))
+   {
+	   if (ImGui::Button("Tipo BGR")) {
 
-      
-        LoadMesh(OpenWindowFile(g_hwnd));
-       
-        }
+
+		   LoadMesh(OpenWindowFile(g_hwnd),1);
+
+	   }
+       if (ImGui::Button("Tipo RGB")) {
+
+
+		   LoadMesh(OpenWindowFile(g_hwnd), 2);
+
+	   }
+	   if (ImGui::Button("Tipo wire")) {
+
+
+		   LoadMesh(OpenWindowFile(g_hwnd), 3);
+
+	   }
+	   if (ImGui::Button("Tipo Points")) {
+
+
+		   LoadMesh(OpenWindowFile(g_hwnd), 4);
+
+	   }
+        ImGui::EndCombo();
+   }
+  
         
-        for(int i= 0;i<models.size();i++){
-		
-            if (ImGui::DragFloat3("Scale"+i, models[i]->transform.scale, 0.001, -10, 10)) {}
-            if (ImGui::DragFloat3("Translation" + i, models[i]->transform.traslation, 0.001, -10, 10)) {}
-            if (ImGui::DragFloat3("Rotation" + i, models[i]->transform.rotation, 0.001, -10, 10)) {}
-			
-    }
+        for(int i= 0;i < models.size();i++){
+            ImGui::PushID(i);
+            if(ImGui::CollapsingHeader("info"+i, NULL)){
+
+				if (ImGui::DragFloat3("Scale", models[i]->transform.scale, 0.001, -10, 10)) {}
+				if (ImGui::DragFloat3("Translation", models[i]->transform.traslation, 0.001, -10, 10)) {}
+				if (ImGui::DragFloat3("Rotation", models[i]->transform.rotation, 0.001, -10, 10)) {}
+				float my_tex_w = 256;
+				float my_tex_h = 256;
+                
+#if defined(DX11) 
+				ImTextureID my_tex_id = models[i]->g_pTextureRV;
+                #endif
+#if defined(OGL) 
+                ImTextureID my_tex_id = (void*)models[i]->textures_loaded[0].id;
+#endif             
+                ImVec2 pos = ImGui::GetCursorScreenPos();
+				ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
+				ImVec2 uv_max = ImVec2(1.0f, 1.0f);                 // Lower-right
+				ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
+				ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.5f); // 50% opaque white
+				ImGui::Image(my_tex_id, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max, tint_col, border_col);
+                
+            }
+            ImGui::PopID();
+           
+            
+        }
 #if defined(DX11)
-   auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
-   float my_tex_w = 256;
-   float my_tex_h = 256;
-    /*
-   ImTextureID my_tex_id = ourModel.textures_vec[2];
-   ImVec2 pos = ImGui::GetCursorScreenPos();
-   ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
-   ImVec2 uv_max = ImVec2(1.0f, 1.0f);                 // Lower-right
-   ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
-   ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.5f); // 50% opaque white
-   ImGui::Image(my_tex_id, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max, tint_col, border_col);
-   */
+  
+  
    
    
 #endif
+   // ImGui::ShowDemoWindow();  
    
    ImGui::End();
-   }
 
  
    // render UI
@@ -477,7 +538,7 @@ HRESULT InitWindow(LONG _width, LONG _height)
         models[i]->Draw(_shader);
 		
 	}
-     UIRender();
+     UIRender(_shader);
 	 ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
      glfwSwapBuffers(window);
      glfwPollEvents();
@@ -490,7 +551,7 @@ HRESULT InitWindow(LONG _width, LONG _height)
      {
          models[i]->Draw(_shader);
      }
-     UIRender(); 
+     UIRender(_shader); 
      testObj.g_pSwapChain.m_swapchain->Present(0, 0);
  #endif
  }

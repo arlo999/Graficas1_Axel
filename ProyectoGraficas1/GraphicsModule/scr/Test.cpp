@@ -260,9 +260,7 @@ namespace GraphicsModule
 		ZeroMemory(&bd, sizeof(bd));
 		
 
-		// Set primitive topology
-		g_pImmediateContext.A_IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
+		
 		// Create the constant buffers
 		bd.Usage = D3D11_USAGE_DEFAULT;
 		bd.ByteWidth = sizeof(CBNeverChanges);
@@ -377,7 +375,7 @@ namespace GraphicsModule
 		cb.mWorld = XMMatrixTranspose(g_World);
 		cb.vMeshColor = g_vMeshColor;
 
-		//g_pImmediateContext.A_UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
+		
 
 		g_pImmediateContext.A_UpdateSubresource(m_LigthBuffer.getBufferDX11(), 0, NULL, &m_LigthBufferStruct, 0, 0);
 
@@ -397,10 +395,10 @@ namespace GraphicsModule
 		g_pImmediateContext.A_VSSetConstantBuffers(1, 1, &m_pCBChangeOnResize.getBufferDX11());
 		g_pImmediateContext.A_VSSetConstantBuffers(2, 1, &m_pCBChangesEveryFrame.getBufferDX11());
 		g_pImmediateContext.A_UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
-		//light
+		
 		g_pImmediateContext.A_PSSetShader(g_pPixelShader, NULL, 0);
 		g_pImmediateContext.A_VSSetConstantBuffers(3, 1, &m_LigthBuffer.getBufferDX11());
-		//
+		
 		g_pImmediateContext.A_CSSetConstantBuffers(2, 1, &m_pCBChangesEveryFrame.getBufferDX11());
 	
 

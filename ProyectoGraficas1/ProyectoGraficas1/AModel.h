@@ -39,19 +39,14 @@ public:
 	#if defined(OGL)
 	glm::mat4 model;
 	#endif
+	bool rgb, bgr, wire, point, triangles;
 	vector<ID3D11ShaderResourceView* >textures_vec;
+	ID3D11ShaderResourceView* g_pTextureRV;
+
 	unsigned int TextureFromFile(const char* path, const string& directory, bool gamma)
 	{
-		unsigned int textureID = 0;
+	
 		string filename = string(path);
-		if (string(path) == "diffuse.jpg"){
-			textureID=0;
-		}else if(string(path) == "specular.jpg"){
-				textureID=1;		
-		}
-		else if (string(path) == "normal.png") {
-			textureID = 2;
-		}
 		filename = "C://Graficos1_recursos//ProyectoGraficas1//bin//" + filename;
 #if defined(DX11)
 
@@ -96,10 +91,21 @@ public:
 			return 0;
 
 
+		// Set primitive topology
+		
+		auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
+		if(triangles==true){
+		testObj.g_pImmediateContext.A_IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		}else if(wire==true){
+			testObj.g_pImmediateContext.A_IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
+		}else if(point==true){
+			testObj.g_pImmediateContext.A_IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+		}else{
+			testObj.g_pImmediateContext.A_IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		}
 
 		
 		
-		auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
 
 		
 			D3D11_TEXTURE2D_DESC tdesc;
@@ -111,7 +117,16 @@ public:
 			tdesc.Usage = D3D11_USAGE_DEFAULT;
 			tdesc.BindFlags = D3D11_BIND_SHADER_RESOURCE; 
 			tdesc.SampleDesc.Count=1;
-			tdesc.Format= DXGI_FORMAT_B8G8R8A8_UNORM;
+			if (bgr == true) {
+
+				tdesc.Format= DXGI_FORMAT_R8G8B8A8_UNORM;
+			}else if( rgb==true){
+				tdesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+			}
+			else {
+				tdesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+			}
+
 			tdesc.SampleDesc.Quality=0;
 			tdesc.CPUAccessFlags = 0;
 			tdesc.MiscFlags = 0; 
@@ -126,17 +141,15 @@ public:
 			Sdesc.ViewDimension=D3D11_SRV_DIMENSION_TEXTURE2D;
 			Sdesc.Texture2D.MostDetailedMip=0;
 			Sdesc.Texture2D.MipLevels=1;
-			ID3D11ShaderResourceView* g_pTextureRV;
+			
 			testObj.g_pd3dDevice.A_CreateShaderResourceView(texture,&Sdesc,&g_pTextureRV);
-			testObj.g_pImmediateContext.A_PSSetShaderResources(textureID, 1, &g_pTextureRV);
-			textures_vec.push_back(g_pTextureRV);
+			
 			FreeImage_Unload(dib);
-			g_pTextureRV->Release();
-			texture->Release();
+			
 #endif
 		
+		unsigned int textureID=0;
 #if defined(OGL)
-		
 		int width, height, nrComponents;
 
 		unsigned char* data = stbi_load(filename.c_str(), &width, &height, &nrComponents, STBI_rgb);
@@ -157,14 +170,38 @@ public:
 				format = GL_RGBA;
 			
 			glBindTexture(GL_TEXTURE_2D, textureID);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+			if (bgr == true) {
+
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, data);
+			}
+			else if (rgb == true) {
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+			}
+			else {
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+			}
+			
 			glGenerateMipmap(GL_TEXTURE_2D);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-
+			if (triangles == true) {
+				
+				glPolygonMode(GL_FRONT_AND_BACK, GL_TRIANGLES);
+			}
+			else if (wire == true) {
+				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			}
+			else if (point == true) {
+				glPolygonMode(GL_POINTS, GL_FILL);
+			}
+			else {
+				glPolygonMode(GL_FRONT_AND_BACK, GL_TRIANGLES);
+			}
+			
+				
 			stbi_image_free(data);
 		}
 		else
@@ -173,9 +210,9 @@ public:
 			stbi_image_free(data);
 		}
 
-		return textureID;
 		#endif
 		return textureID;
+		
 	};
 	
 
@@ -213,9 +250,12 @@ public:
 		testObj.cb.mWorld= XMMatrixMultiplyTranspose(XMMatrixRotationRollPitchYaw(transform.rotation[0], transform.rotation[1], transform.rotation[2]), testObj.cb.mWorld);
 
 		testObj.g_pImmediateContext.A_UpdateSubresource(testObj.m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &testObj.cb, 0, 0);
+		testObj.g_pImmediateContext.A_PSSetShaderResources(0, 1, &g_pTextureRV);
 #endif	
 		for (unsigned int i = 0; i < meshes.size(); i++)
-			meshes[i].Draw(shader);
+		{
+			meshes[i].Draw(shader,point);
+		}
 	}
 
 	~AModel(){
@@ -335,8 +375,10 @@ private:
 		// 1. diffuse maps
 		vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
 		textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+
+
 		// 2. specular maps
-		
+		/*
 		vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
 		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 		
@@ -351,6 +393,7 @@ private:
 		
 		std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
 		textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
+		*/
 		
 		if (diffuseMaps.empty()) {
 			Texture texture;
@@ -365,7 +408,7 @@ private:
 #endif
 
 		return Mesh(vertices, indices, textures);
-		//return Mesh(vertices, indices, textures, textures_vec);
+		
 	}
 
 

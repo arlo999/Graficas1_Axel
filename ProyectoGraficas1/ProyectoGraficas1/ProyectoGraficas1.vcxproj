@@ -195,6 +195,7 @@
     <OutDir>$(SolutionDir)bin\$(Configuration)\$(PlatformTarget)\</OutDir>
     <IntDir>$(SolutionDir)Intermediate\Unused\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
     <TargetName>ProyectoGraficas_d</TargetName>
+    <IncludePath>$(SolutionDir)Externals\Opengl_stuff\Include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -245,6 +246,7 @@
     <OutDir>$(SolutionDir)bin\$(Configuration)\$(PlatformTarget)\</OutDir>
     <IntDir>$(SolutionDir)Intermediate\Unused\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
     <TargetName>ProyectoGraficas_r</TargetName>
+    <IncludePath>$(SolutionDir)Externals\Opengl_stuff\Include\gl3w;$(SolutionDir)Externals\Opengl_stuff\Include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_DirectX|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -293,14 +295,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>DX11;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(DEVLIBS)imgui-1.8\;$(DEVLIBS)imgui-1.8\backends\;$(DXSDK_DIR)Include\;$(SolutionDir)GraphicsModule\include\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DEVLIBS);$(DEVLIBS)imgui-1.8\;$(DEVLIBS)imgui-1.8\backends\;$(DXSDK_DIR)Include\;$(SolutionDir)GraphicsModule\include\</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)lib\GraphicsModule\$(Configuration)\$(PlatformTarget)\;$(DXSDK_DIR)Lib\$(PlatformTarget)\;$(DEVLIBS);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxerr.lib;dxguid.lib;assimp-vc142-mtd.lib;d3dx11d.lib;d3dx9d.lib;GraphicsModule_d.lib;%(AdditionalDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(DEVLIBS)assimp\Lib;$(DEVLIBS)FreeImage\Dist\x64\;$(SolutionDir)lib\GraphicsModule\$(Configuration)\$(PlatformTarget)\;$(DXSDK_DIR)Lib\$(PlatformTarget)\;$(DEVLIBS);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxerr.lib;dxguid.lib;d3dx11d.lib;d3dx9d.lib;FreeImage.lib;assimp-vc142-mtd.lib;GraphicsModule_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
@@ -416,7 +418,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)lib\GraphicsModule\$(Configuration)\$(PlatformTarget)\;$(DXSDK_DIR)Lib\$(PlatformTarget)\;$(DEVLIBS)assimp\Lib;$(DEVLIBS)FreeImage\Dist\x64\;$(DEVLIBS);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxerr.lib;dxguid.lib;assimp-vc142-mtd.lib;d3dx11d.lib;d3dx9d.lib;FreeImage.lib;GraphicsModule_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxerr.lib;dxguid.lib;d3dx11d.lib;d3dx9d.lib;FreeImage.lib;assimp-vc142-mtd.lib;GraphicsModule_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
@@ -449,7 +451,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>OGL;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(DEVLIBS)GLFW\include\;$(DEVLIBS)gl3w\;$(SolutionDir)include;$(DEVLIBS)imgui-1.8\;$(DEVLIBS)imgui-1.8\backends\;$(DXSDK_DIR)Include\;$(SolutionDir)GraphicsModule\include\;$(DEVLIBS);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)GraphicsModule\include\;$(DEVLIBS)GLFW\include\;$(DEVLIBS)gl3w\;$(SolutionDir)include;$(DEVLIBS)imgui-1.8\;$(DEVLIBS)imgui-1.8\backends\;$(DXSDK_DIR)Include\;$(DEVLIBS);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -457,8 +459,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)lib\GraphicsModule\$(Configuration)\$(PlatformTarget)\;$(DEVLIBS)glfw\lib-vc2010-64\;$(DXSDK_DIR)Lib\$(PlatformTarget)\;$(DEVLIBS);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxerr.lib;dxguid.lib;opengl32.lib;glfw3.lib;d3dx11.lib;d3dx9.lib;GraphicsModule.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(DEVLIBS)assimp\Lib\;$(SolutionDir)Externals\Opengl_stuff\Lib;$(SolutionDir)lib\GraphicsModule\$(Configuration)\$(PlatformTarget)\;$(DEVLIBS)glfw\lib-vc2010-64\;$(DXSDK_DIR)Lib\$(PlatformTarget)\;$(DEVLIBS);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>assimp-vc142-mtd.lib;GraphicsModule.lib;opengl32.lib;glfw3.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
@@ -478,8 +480,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)lib\GraphicsModule\$(Configuration)\$(PlatformTarget)\;$(DXSDK_DIR)Lib\$(PlatformTarget)\;$(DEVLIBS)assimp\Lib;$(DEVLIBS);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxerr.lib;dxguid.lib;assimp-vc142-mtd.lib;assimp-vc142-mtd.lib;d3dx11.lib;d3dx9.lib;GraphicsModule.lib;%(AdditionalDependencies);%(AdditionalDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)lib\GraphicsModule\$(Configuration)\$(PlatformTarget)\;$(DXSDK_DIR)Lib\$(PlatformTarget)\;$(DEVLIBS)assimp\Lib;$(DEVLIBS)FreeImage\Dist\x64\;$(DEVLIBS);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxerr.lib;dxguid.lib;assimp-vc142-mtd.lib;d3dx11.lib;d3dx9.lib;FreeImage.lib;GraphicsModule.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
@@ -493,12 +495,20 @@
     <ClCompile Include="..\..\..\..\..\..\..\DEV-librerias\imgui-1.8\imgui_widgets.cpp" />
     <ClCompile Include="..\..\glad\src\glad.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_directx|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_Opengl|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_DirectX|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_DirectX|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_directx|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\imgui-master\backends\imgui_impl_glfw.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_directx|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_DirectX|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_directx|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\imgui-master\backends\imgui_impl_opengl3.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_directx|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_DirectX|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_directx|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="AModel.cpp" />
     <ClCompile Include="Mesh.cpp" />
@@ -506,6 +516,8 @@
     <ClCompile Include="stb.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Opengl|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_directx|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_DirectX|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_directx|Win32'">true</ExcludedFromBuild>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

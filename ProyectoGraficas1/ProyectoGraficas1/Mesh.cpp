@@ -68,7 +68,7 @@ Mesh::Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture
 	setupMesh();
 }
 
-void Mesh::Draw(AShader& shader)
+void Mesh::Draw(AShader& shader, bool triangles)
 {
 	auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
 	// bind appropriate textures
@@ -96,14 +96,22 @@ void Mesh::Draw(AShader& shader)
 		glBindTexture(GL_TEXTURE_2D, textures[i].id);
 		#endif
 	
-	//testObj.g_pImmediateContext.A_PSSetShaderResources(0, 1, &textures_vec[i]);
+	
 	}
 
 
 #if defined(OGL)
 	// draw mesh
 	glBindVertexArray(VAO);
+	if(triangles){
+		glDrawElements(GL_POINTS, indices.size(), GL_UNSIGNED_INT, 0);
+	}
+	else if (triangles == false) {
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+	}
+	else{
+		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+	}
 	glBindVertexArray(0);
 
 	glActiveTexture(GL_TEXTURE0);
@@ -135,11 +143,9 @@ void Mesh::setupMesh()
 	glGenBuffers(1, &EBO);
 
 	glBindVertexArray(VAO);
-	// load data into vertex buffers
+	
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	// A great thing about structs is that their memory layout is sequential for all its items.
-	// The effect is that we can simply pass a pointer to the struct and it translates perfectly to a glm::vec3/2 array which
-	// again translates to 3/2 floats which translates to a byte array.
+	
 	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
@@ -156,6 +162,7 @@ void Mesh::setupMesh()
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
 
+	
 
 	glBindVertexArray(0);
 #endif

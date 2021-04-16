@@ -59,6 +59,7 @@ struct Vertex {
 	float Normal[3];
 	
 	float TexCoords[2];
+	
 };
 class Mesh
 {
@@ -98,7 +99,7 @@ public:
 	Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures);
 	Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures, vector<ID3D11ShaderResourceView* >textures_vec);
 	// render the mesh
-	void Draw(AShader& shader);
+	void Draw(AShader& shader, bool points);
 
 //opengl
 private:

@@ -66,10 +66,10 @@ Mesh::Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture
 	setupMesh();
 }
 
-void Mesh::Draw(AShader& shader)
+void Mesh::Draw(AShader& shader, bool points)
 {
+	auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
 	// bind appropriate textures
-
 	unsigned int diffuseNr = 1;
 	unsigned int specularNr = 1;
 	unsigned int normalNr = 1;
@@ -77,34 +77,59 @@ void Mesh::Draw(AShader& shader)
 	for (unsigned int i = 0; i < textures.size(); i++)
 	{
 #if defined(OGL)
-		glActiveTexture(GL_TEXTURE0 + i); // active proper texture unit before binding
-		// retrieve texture number (the N in diffuse_textureN)
+		glActiveTexture(GL_TEXTURE0 + i);
 		string number;
 		string name = textures[i].type;
 		if (name == "texture_diffuse")
 			number = std::to_string(diffuseNr++);
 		else if (name == "texture_specular")
-			number = std::to_string(specularNr++); // transfer unsigned int to stream
+			number = std::to_string(specularNr++);
 		else if (name == "texture_normal")
-			number = std::to_string(normalNr++); // transfer unsigned int to stream
+			number = std::to_string(normalNr++);
 		else if (name == "texture_height")
-			number = std::to_string(heightNr++); // transfer unsigned int to stream
+			number = std::to_string(heightNr++);
 
-		// now set the sampler to the correct texture unit
 		glUniform1i(glGetUniformLocation(shader.ID, (name + number).c_str()), i);
-		// and finally bind the texture
+
 		glBindTexture(GL_TEXTURE_2D, textures[i].id);
 #endif
+
+
 	}
+
+
 #if defined(OGL)
 	// draw mesh
 	glBindVertexArray(VAO);
-	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+	if (points) {
+		glDrawElements(GL_POINTS, indices.size(), GL_UNSIGNED_INT, 0);
+	}
+	else if (points == false) {
+		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+	}
+	else {
+		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+	}
 	glBindVertexArray(0);
 
-	// always good practice to set everything back to defaults once configured.
 	glActiveTexture(GL_TEXTURE0);
-	#endif
+#endif
+#if defined(DX11)
+
+	UINT stride = sizeof(Vertex);
+	UINT offset = 0;
+
+
+
+
+	//testObj.cb.mWorld = XMMatrixMultiplyTranspose(testObj.g_View, testObj.cb.mWorld);
+
+	testObj.g_pImmediateContext.A_IASetVertexBuffers(0, 1, &m_pVertexBuffer.getBufferDX11(), &stride, &offset);
+	testObj.g_pImmediateContext.A_IASetIndexBuffer(m_pIndexBuffer.getBufferDX11(), DXGI_FORMAT_R32_UINT, 0);
+
+	testObj.g_pImmediateContext.A_DrawIndexed(indices.size(), 0, 0);
+#endif
+
 }
 
 void Mesh::setupMesh()
@@ -136,6 +161,9 @@ void Mesh::setupMesh()
 	// vertex texture coords
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
+
+	
+
 
 	glBindVertexArray(0);
 #endif
