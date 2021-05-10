@@ -282,7 +282,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(DXSDK_DIR)Include\;$(SolutionDir)GraphicSModule\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -532,7 +532,10 @@
     <ClInclude Include="ADepthStencil.h" />
     <ClInclude Include="AInputLayout.h" />
     <ClInclude Include="AMangerAPI.h" />
+    <ClInclude Include="APase.h" />
+    <ClInclude Include="ATecnicta.h" />
     <ClInclude Include="AVertexShader.h" />
+    <ClInclude Include="AEfecto.h" />
     <ClInclude Include="Include\ABuffer.h" />
     <ClInclude Include="Include\ACamera.h" />
     <ClInclude Include="Include\ADescriptionBuffer.h" />
@@ -550,6 +553,9 @@
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="APase.cpp" />
+    <ClCompile Include="ATecnicta.cpp" />
+    <ClCompile Include="AEfecto.cpp" />
     <ClCompile Include="scr\ABuffer.cpp" />
     <ClCompile Include="scr\ACamera.cpp" />
     <ClCompile Include="scr\ADepthStencil.cpp" />

@@ -72,6 +72,15 @@
     <ClInclude Include="Include\Mesh.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
+    <ClInclude Include="ATecnicta.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
+    <ClInclude Include="AEfecto.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
+    <ClInclude Include="APase.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="scr\Test.cpp">
@@ -117,6 +126,15 @@
       <Filter>Archivos de origen</Filter>
     </ClCompile>
     <ClCompile Include="scr\AVertexShader.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
+    <ClCompile Include="ATecnicta.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
+    <ClCompile Include="AEfecto.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
+    <ClCompile Include="APase.cpp">
       <Filter>Archivos de origen</Filter>
     </ClCompile>
   </ItemGroup>

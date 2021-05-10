@@ -189,6 +189,7 @@
     <OutDir>$(SolutionDir)bin\$(Configuration)\$(PlatformTarget)\</OutDir>
     <IntDir>$(SolutionDir)Intermediate\Unused\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
     <TargetName>ProyectoGraficas_d</TargetName>
+    <IncludePath>$(SolutionDir)Externals\Opengl_stuff\Include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_directx|Win32'">
     <LinkIncremental>true</LinkIncremental>
@@ -208,6 +209,7 @@
     <OutDir>$(SolutionDir)bin\$(Configuration)\$(PlatformTarget)\</OutDir>
     <IntDir>$(SolutionDir)Intermediate\Unused\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
     <TargetName>ProyectoGraficas_r</TargetName>
+    <IncludePath>$(SolutionDir)Externals\Opengl_stuff\Include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_DirectX|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -278,14 +280,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>OGL;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(DEVLIBS)GLFW\include\;$(DEVLIBS)imgui-1.8\;$(DEVLIBS)imgui-1.8\backends\;$(DEVLIBS)gl3w\;$(DXSDK_DIR)Include\;$(SolutionDir)GraphicsModule\include\</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalIncludeDirectories>$(SolutionDir)include;$(DEVLIBS)imgui-1.8\;$(DEVLIBS)imgui-1.8\backends\;$(DEVLIBS);$(SolutionDir)GraphicsModule\include\;$(SolutionDir)Externals\Opengl_stuff\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)lib\GraphicsModule\$(Configuration)\$(PlatformTarget)\;$(DXSDK_DIR)Lib\$(PlatformTarget)\;$(DEVLIBS);$(DEVLIBS)assimp\Lib;$(DEVLIBS)glfw\lib-vc2010-32\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxerr.lib;dxguid.lib;assimp-vc142-mtd.lib;d3dx11d.lib;d3dx9d.lib;GraphicsModule_d.lib;opengl32.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)lib\GraphicsModule\$(Configuration)\$(PlatformTarget)\;$(DEVLIBS);$(DEVLIBS)glfw\lib-vc2010-32\;$(SolutionDir)Externals\Opengl_stuff\Lib;$(DEVLIBS)assimp\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>assimp-vc142-mtd.lib;GraphicsModule_d.lib;opengl32.lib;glfw3.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
@@ -333,10 +335,10 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>OGL;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(DEVLIBS)imgui-1.8\;$(DEVLIBS)imgui-1.8\backends\;$(DXSDK_DIR)Include\;$(SolutionDir)GraphicsModule\include\;$(DEVLIBS)gl3w\;$(DEVLIBS);$(DEVLIBS)GLFW\include\</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -392,13 +394,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>OGL;GLEW_STATIC;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Externals\Opengl_stuff\Include;$(SolutionDir)include;$(DEVLIBS)imgui-1.8\;$(DEVLIBS)imgui-1.8\backends\;$(DXSDK_DIR)Include\;$(SolutionDir)GraphicsModule\include\;$(DEVLIBS);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Externals\Opengl_stuff\Include;$(SolutionDir)include;$(DEVLIBS)imgui-1.8\;$(DEVLIBS)imgui-1.8\backends\;$(SolutionDir)GraphicsModule\include\;$(DEVLIBS);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)lib\GraphicsModule\$(Configuration)\$(PlatformTarget)\;$(DXSDK_DIR)Lib\$(PlatformTarget)\;$(DEVLIBS)glfw\lib-vc2010-64\;$(DEVLIBS)assimp\Lib\;$(SolutionDir)Externals\Opengl_stuff\Lib;$(DEVLIBS);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)lib\GraphicsModule\$(Configuration)\$(PlatformTarget)\;$(DEVLIBS)glfw\lib-vc2010-64\;$(DEVLIBS)assimp\Lib\;$(SolutionDir)Externals\Opengl_stuff\Lib;$(DEVLIBS);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>assimp-vc142-mtd.lib;GraphicsModule_d.lib;opengl32.lib;glfw3.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <IgnoreSpecificDefaultLibraries>

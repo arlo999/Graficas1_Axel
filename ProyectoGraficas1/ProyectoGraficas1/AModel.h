@@ -47,7 +47,7 @@ public:
 	{
 	
 		string filename = string(path);
-		filename = "C://Graficos1_recursos//ProyectoGraficas1//bin//" + filename;
+		filename = directory + "\\" + filename;
 #if defined(DX11)
 
 		/// esto lo saque de internet para obtener los raw datas
@@ -286,7 +286,7 @@ public:
 			return;
 		}
 	
-		directory = path.substr(0, path.find_last_of('/'));
+		directory = path.substr(0, path.find_last_of(92));
 
 	
 		processNode(scene->mRootNode, scene);
