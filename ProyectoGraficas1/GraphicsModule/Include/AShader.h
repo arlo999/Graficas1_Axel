@@ -62,6 +62,12 @@ public:
 		glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, value);
 #endif
 	}
+	void setVec3(const std::string& name, float value,float value2,float value3) const
+	{
+#if defined(OGL)
+		glUniform3f(glGetUniformLocation(ID, name.c_str()),  value,value2,value3);
+#endif
+	}
 private:
 		void CheckCompileErrors(unsigned int shader, std::string type);
 };

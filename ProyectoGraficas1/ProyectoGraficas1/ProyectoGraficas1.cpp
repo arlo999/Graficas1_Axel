@@ -36,7 +36,6 @@ float lastFrame = 0.0f;
 AModel* ourModel;
 //Camera camera(AVector(0.0f, 0.0f, 3.0f));
 
-
 bool show_demo_window = true;
 bool show_another_window = false;
 ImVec4 clear_color = ImVec4(0.0f, 0.125f, 0.3f, 1.0f);
@@ -423,8 +422,35 @@ HRESULT InitWindow(LONG _width, LONG _height)
 #endif
 #if defined(OGL)
            glUniform4f(glGetUniformLocation(_shader.ID,"adirLight"), dir[0], dir[1], dir[2], 0.0f);
+           _shader.setVec3("light.direction", dir[0], dir[1], dir[2]);
 #endif
         }
+////////////////////////////
+/*
+*/
+   if (ImGui::DragFloat3("pointLight", dir, 0.001, -1, 1)) {
+	   auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
+#if defined(DX11)
+	   testObj.m_LigthBufferStruct.dir = XMFLOAT4(dir[0], dir[1], dir[2], 0.0f);
+#endif
+#if defined(OGL)
+	  // glUniform4f(glGetUniformLocation(_shader.ID, "adirLight"), dir[0], dir[1], dir[2], 0.0f);
+      
+#endif
+   }
+   if (ImGui::DragFloat3("attenuation", dir, 0.001, -1, 1)) {
+	   auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
+#if defined(DX11)
+	   testObj.m_LigthBufferStruct.dir = XMFLOAT4(dir[0], dir[1], dir[2], 0.0f);
+#endif
+#if defined(OGL)
+       _shader.setVec3("light.direction", 0, 0, 0);
+
+	 
+#endif
+   }
+   /// ////////////////////////////////////////////////////////
+
    if (ImGui::BeginCombo("Carga de Modelo", NULL))
    {
 	   if (ImGui::Button("Tipo BGR")) {
@@ -523,7 +549,27 @@ HRESULT InitWindow(LONG _width, LONG _height)
 	_shader.setFloat4("projection", camera.ViewPerspective(glm::radians(camera.Zoom), 1270.0f / 720.0f, 0.1f, 100.0f));
 	_shader.setFloat4("view", camera.GetViewMatrix());
     */
+   
     
+    
+    _shader.setVec3("light.position", camera.Position.x, camera.Position.y, camera.Position.z);
+    _shader.setFloat("light.cutOff", glm::cos(glm::radians(12.5f)));
+    _shader.setVec3("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
+
+	// light properties
+    _shader.setVec3("light.ambient", 0.1f, 0.1f, 0.1f);
+	// we configure the diffuse intensity slightly higher; the right lighting conditions differ with each lighting method and environment.
+	// each environment and lighting type requires some tweaking to get the best out of your environment.
+    _shader.setVec3("light.diffuse", 0.8f, 0.8f, 0.8f);
+    _shader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+    _shader.setFloat("light.constant", 1.0f);
+    _shader.setFloat("light.linear", 0.09f);
+    _shader.setFloat("light.quadratic", 0.032f);
+
+	// material properties
+    _shader.setFloat("material.shininess", 32.0f);
+
+
 	glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), 1270.0f / 720.0f, 0.1f, 100.0f);
 	glm::mat4 view = camera.GetViewMatrixGlm();
     _shader.setMat4("projection",projection);
@@ -596,8 +642,9 @@ int main()
 	}
 	first = true;
 	AShader ourShader("C://Graficos1_recursos//ProyectoGraficas1//bin//1.model_loading.vs", "C://Graficos1_recursos//ProyectoGraficas1//bin//1model_loading.fs");
+	AShader spotlight("C://Graficos1_recursos//ProyectoGraficas1//bin//spotlight.vs", "C://Graficos1_recursos//ProyectoGraficas1//bin//spotlight.fs");
 
-     //create UI
+   //create UI
     if (FAILED(InitImgUI()))
     {
 #if  defined(OGL)
@@ -616,8 +663,8 @@ int main()
 	{
         processInput(window);
 		Update();
-        Render(ourShader);
-
+        Render(spotlight);
+        
 	}
     #endif
 #if  defined(DX11)
