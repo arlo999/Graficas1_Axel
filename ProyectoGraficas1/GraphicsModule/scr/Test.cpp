@@ -284,8 +284,14 @@ namespace GraphicsModule
 		hr = g_pd3dDevice.A_CreateBuffer(&bd, NULL, &m_LigthBuffer.getBufferDX11());
 		if (FAILED(hr))
 			return hr;
-
-		
+		bd.ByteWidth = sizeof(PointLight);
+		hr = g_pd3dDevice.A_CreateBuffer(&bd, NULL, &m_PointLightBuffer.getBufferDX11());
+		if (FAILED(hr))
+			return hr;
+		bd.ByteWidth = sizeof(spotLight);
+		hr = g_pd3dDevice.A_CreateBuffer(&bd, NULL, &m_SpotLightBuffer.getBufferDX11());
+		if (FAILED(hr))
+			return hr;
 
 		// Create the sample state
 		D3D11_SAMPLER_DESC sampDesc;
@@ -379,7 +385,8 @@ namespace GraphicsModule
 
 		g_pImmediateContext.A_UpdateSubresource(m_LigthBuffer.getBufferDX11(), 0, NULL, &m_LigthBufferStruct, 0, 0);
 
-		
+		g_pImmediateContext.A_UpdateSubresource(m_PointLightBuffer.getBufferDX11(), 0, NULL, &m_PointLightBufferStruct, 0, 0);
+		g_pImmediateContext.A_UpdateSubresource(m_SpotLightBuffer.getBufferDX11(), 0, NULL, &m_SpotLightBufferStruct, 0, 0);
 
 
 
@@ -398,6 +405,9 @@ namespace GraphicsModule
 		
 		g_pImmediateContext.A_PSSetShader(g_pPixelShader, NULL, 0);
 		g_pImmediateContext.A_VSSetConstantBuffers(3, 1, &m_LigthBuffer.getBufferDX11());
+
+		g_pImmediateContext.A_VSSetConstantBuffers(4, 1, &m_PointLightBuffer.getBufferDX11());
+		g_pImmediateContext.A_VSSetConstantBuffers(5, 1, &m_SpotLightBuffer.getBufferDX11());
 		
 		g_pImmediateContext.A_CSSetConstantBuffers(2, 1, &m_pCBChangesEveryFrame.getBufferDX11());
 	
@@ -422,6 +432,9 @@ namespace GraphicsModule
 		if (g_pSamplerLinear) g_pSamplerLinear->Release();
 		if (m_pCBChangesEveryFrame.getBufferDX11()) m_pCBChangesEveryFrame.Release();
 		if (m_LigthBuffer.getBufferDX11()) m_LigthBuffer.Release();
+		if (m_PointLightBuffer.getBufferDX11()) m_PointLightBuffer.Release();
+		if (m_SpotLightBuffer.getBufferDX11()) m_SpotLightBuffer.Release();
+
 		if (m_pCBChangeOnResize.getBufferDX11()) m_pCBChangeOnResize.Release();
 		if (m_pCBNeverChanges.getBufferDX11()) m_pCBNeverChanges.Release();
 		if (g_pVertexLayout) g_pVertexLayout->Release();

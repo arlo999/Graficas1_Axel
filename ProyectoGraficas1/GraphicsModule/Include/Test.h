@@ -29,11 +29,31 @@ namespace GraphicsModule
 	struct DirLigth {
 	
 	XMFLOAT4 dir;
+	XMFLOAT4 lightDirColor;
 	};
 #endif
-	
-	struct CBNeverChanges
-	{
+
+#if defined(DX11)
+	struct PointLight {
+
+		XMFLOAT4 pointLightColor;
+		XMFLOAT3 pointLightPos;
+		FLOAT  pointLightAtt;
+	};
+#endif
+#if defined(DX11)
+	struct spotLight {
+
+		XMFLOAT4 spotLightColor;
+		XMFLOAT4 spotLightPos;
+		XMFLOAT4 spotLightDir;
+		FLOAT  SpotlightAtt;
+		FLOAT  spotLightInner;
+		FLOAT  spotLightOutner;
+		FLOAT  n=0;
+	};
+#endif
+	struct CBNeverChanges{
 #if defined(DX11)
 		XMMATRIX mView;
 #endif
@@ -83,8 +103,12 @@ namespace GraphicsModule
 		//DirLight
 		ABuffer  m_LigthBuffer;
 		DirLigth m_LigthBufferStruct;
-	
-
+		//point Light
+		ABuffer m_PointLightBuffer;
+		PointLight m_PointLightBufferStruct;
+		//SpotLight
+		ABuffer m_SpotLightBuffer;
+		spotLight m_SpotLightBufferStruct;
 		//render targets
 		ID3D11RenderTargetView* g_pRenderTargetView = NULL;
 	
