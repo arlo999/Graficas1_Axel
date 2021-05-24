@@ -422,8 +422,8 @@ HRESULT InitWindow(LONG _width, LONG _height)
             testObj.m_LigthBufferStruct.dir= XMFLOAT4(dir[0],dir[1],dir[2],0.0f);
 #endif
 #if defined(OGL)
-           glUniform4f(glGetUniformLocation(_shader.ID,"adirLight"), dir[0], dir[1], dir[2], 0.0f);
-           _shader.setVec3("light.direction", dir[0], dir[1], dir[2]);
+           glUniform4f(glGetUniformLocation(_shader.ID,"dir"), dir[0], dir[1], dir[2], 0.0f);
+          
 #endif
         }
    if (ImGui::DragFloat3("RGB",color , 0.001, -1, 1)) {
@@ -432,8 +432,8 @@ HRESULT InitWindow(LONG _width, LONG _height)
 	   testObj.m_LigthBufferStruct.lightDirColor = XMFLOAT4(color[0], color[1], color[2], 0.0f);
 #endif
 #if defined(OGL)
-	   glUniform4f(glGetUniformLocation(_shader.ID, "adirLight"), dir[0], dir[1], dir[2], 0.0f);
-	   _shader.setVec3("light.direction", dir[0], dir[1], dir[2]);
+	   glUniform4f(glGetUniformLocation(_shader.ID, "lightDirColor"), color[0], color[1], color[2], 0.0f);
+	 
 #endif
    }
    if (ImGui::BeginCombo("Carga de Modelo", NULL))
@@ -515,8 +515,9 @@ HRESULT InitWindow(LONG _width, LONG _height)
 	  testObj.m_PointLightBufferStruct.pointLightPos = XMFLOAT3(pointLightPos[0], pointLightPos[1], pointLightPos[2]);
 #endif
 #if defined(OGL)
-	   glUniform4f(glGetUniformLocation(_shader.ID, "adirLight"), dir[0], dir[1], dir[2], 0.0f);
-	   _shader.setVec3("light.direction", dir[0], dir[1], dir[2]);
+      _shader.setVec3("pointLightPos", pointLightPos[0], pointLightPos[1], pointLightPos[2]);
+	 
+	 
 #endif
    }
    if (ImGui::DragFloat3("Color Light", pointLightColor, 0.001, -1, 1)) {
@@ -525,18 +526,16 @@ HRESULT InitWindow(LONG _width, LONG _height)
        testObj.m_PointLightBufferStruct.pointLightColor = XMFLOAT4(pointLightColor[0], pointLightColor[1], pointLightColor[2], 0.0f);
 #endif
 #if defined(OGL)
-	   glUniform4f(glGetUniformLocation(_shader.ID, "adirLight"), dir[0], dir[1], dir[2], 0.0f);
-	   _shader.setVec3("light.direction", dir[0], dir[1], dir[2]);
-#endif
+       glUniform4f(glGetUniformLocation(_shader.ID, "pointLightColor"), pointLightColor[0], pointLightColor[1], pointLightColor[2], 0.0f);
+	  #endif
    }
-   if (ImGui::DragFloat("Attenaution", &pointLightAtt, 0.001, 1, 1000)) {
+   if (ImGui::DragFloat("pointLightAtt", &pointLightAtt, 0.001, 1, 1000)) {
 	   auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
 #if defined(DX11)
        testObj.m_PointLightBufferStruct.pointLightAtt = FLOAT(pointLightAtt);
 #endif
 #if defined(OGL)
-	   glUniform4f(glGetUniformLocation(_shader.ID, "adirLight"), dir[0], dir[1], dir[2], 0.0f);
-	   _shader.setVec3("light.direction", dir[0], dir[1], dir[2]);
+       _shader.setFloat("pointLightAtt", pointLightAtt);
 #endif
    }
    ImGui::End();
@@ -556,8 +555,8 @@ HRESULT InitWindow(LONG _width, LONG _height)
 	   testObj.m_SpotLightBufferStruct.spotLightPos = XMFLOAT4(spotLightPos[0], spotLightPos[1], spotLightPos[2],0.0f);
 #endif
 #if defined(OGL)
-	   glUniform4f(glGetUniformLocation(_shader.ID, "adirLight"), dir[0], dir[1], dir[2], 0.0f);
-	   _shader.setVec3("light.direction", dir[0], dir[1], dir[2]);
+	   glUniform4f(glGetUniformLocation(_shader.ID, "spotLightPos"), spotLightPos[0], spotLightPos[1], spotLightPos[2], 0.0f);
+	  
 #endif
    }
    if (ImGui::DragFloat3("Color Light", spotLightColor, 0.001, -1, 1)) {
@@ -566,8 +565,8 @@ HRESULT InitWindow(LONG _width, LONG _height)
        testObj.m_SpotLightBufferStruct.spotLightColor = XMFLOAT4(spotLightColor[0], spotLightColor[1], spotLightColor[2], 0.0f);
 #endif
 #if defined(OGL)
-	   glUniform4f(glGetUniformLocation(_shader.ID, "adirLight"), dir[0], dir[1], dir[2], 0.0f);
-	   _shader.setVec3("light.direction", dir[0], dir[1], dir[2]);
+	   glUniform4f(glGetUniformLocation(_shader.ID, "spotLightColor"), spotLightColor[0], spotLightColor[1], spotLightColor[2], 0.0f);
+
 #endif
    }
    if (ImGui::DragFloat3("Dir Light", spotLightDir, 0.001, -1, 1)) {
@@ -576,8 +575,8 @@ HRESULT InitWindow(LONG _width, LONG _height)
 	   testObj.m_SpotLightBufferStruct.spotLightDir = XMFLOAT4(spotLightDir[0], spotLightDir[1], spotLightDir[2], 0.0f);
 #endif
 #if defined(OGL)
-	   glUniform4f(glGetUniformLocation(_shader.ID, "adirLight"), dir[0], dir[1], dir[2], 0.0f);
-	   _shader.setVec3("light.direction", dir[0], dir[1], dir[2]);
+	   glUniform4f(glGetUniformLocation(_shader.ID, "spotLightDir"), spotLightDir[0], spotLightDir[1], spotLightDir[2], 0.0f);
+	  
 #endif
    }
    if (ImGui::DragFloat("Attenaution", &SpotlightAtt,1)) {
@@ -586,8 +585,7 @@ HRESULT InitWindow(LONG _width, LONG _height)
 	   testObj.m_SpotLightBufferStruct.SpotlightAtt = FLOAT(SpotlightAtt);
 #endif
 #if defined(OGL)
-	   glUniform4f(glGetUniformLocation(_shader.ID, "adirLight"), dir[0], dir[1], dir[2], 0.0f);
-	   _shader.setVec3("light.direction", dir[0], dir[1], dir[2]);
+       _shader.setFloat("SpotlightAtt", SpotlightAtt);
 #endif
    }
    if (ImGui::DragFloat("Inner", &spotLightInner, 1)) {
@@ -596,8 +594,7 @@ HRESULT InitWindow(LONG _width, LONG _height)
 	   testObj.m_SpotLightBufferStruct.spotLightInner = FLOAT(spotLightInner);
 #endif
 #if defined(OGL)
-	   glUniform4f(glGetUniformLocation(_shader.ID, "adirLight"), dir[0], dir[1], dir[2], 0.0f);
-	   _shader.setVec3("light.direction", dir[0], dir[1], dir[2]);
+       _shader.setFloat("spotLightInner", spotLightInner);
 #endif
    }
    if (ImGui::DragFloat("Outner", &spotLightOutner, 1)) {
@@ -606,8 +603,7 @@ HRESULT InitWindow(LONG _width, LONG _height)
        testObj.m_SpotLightBufferStruct.spotLightOutner = FLOAT(spotLightOutner);
 #endif
 #if defined(OGL)
-	   glUniform4f(glGetUniformLocation(_shader.ID, "adirLight"), dir[0], dir[1], dir[2], 0.0f);
-	   _shader.setVec3("light.direction", dir[0], dir[1], dir[2]);
+       _shader.setFloat("spotLightOutner", spotLightOutner);
 #endif
    }
    ImGui::End();
@@ -642,30 +638,21 @@ HRESULT InitWindow(LONG _width, LONG _height)
     */
    
     
-    
-    _shader.setVec3("light.position", camera.Position.x, camera.Position.y, camera.Position.z);
-    _shader.setVec3("light.direction",camera.Front.x,camera.Front.y,camera.Front.z);
-    _shader.setFloat("light.cutOff", glm::cos(glm::radians(12.5f)));
-    _shader.setVec3("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
+  
 
 	// light properties
     _shader.setVec3("light.ambient", 0.1f, 0.1f, 0.1f);
 	// we configure the diffuse intensity slightly higher; the right lighting conditions differ with each lighting method and environment.
 	// each environment and lighting type requires some tweaking to get the best out of your environment.
-    _shader.setVec3("light.diffuse", 0.8f, 0.8f, 0.8f);
-    _shader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
-    _shader.setFloat("light.constant", 1.0f);
-    _shader.setFloat("light.linear", 0.09f);
-    _shader.setFloat("light.quadratic", 0.032f);
 
-	// material properties
-    _shader.setFloat("material.shininess", 32.0f);
 
 
 	glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), 1270.0f / 720.0f, 0.1f, 100.0f);
 	glm::mat4 view = camera.GetViewMatrixGlm();
     _shader.setMat4("projection",projection);
     _shader.setMat4("view",view);
+    glm::mat4 wordl= glm::mat4(1.0f);
+    _shader.setMat4("World",wordl);
 
 	
 
@@ -755,7 +742,7 @@ int main()
 	{
         processInput(window);
 		Update();
-        Render(spotlight);
+        Render(ourShader);
         
 	}
     #endif

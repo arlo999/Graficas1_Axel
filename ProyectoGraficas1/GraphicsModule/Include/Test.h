@@ -25,13 +25,44 @@
 
 namespace GraphicsModule
 {
+	struct Shinies
+	{
 #if defined(DX11)
+		FLOAT shininess;
+#endif
+	};
+	
+	struct Diffuse
+	{
+#if defined(DX11)
+		FLOAT kDiffuse;
+#endif
+	};
+
+	struct Specular
+	{
+#if defined(DX11)
+		FLOAT kSpecular;
+#endif
+	};
+
+	struct Ambient {
+#if defined(DX11)
+		XMFLOAT4 ambientColor;
+		FLOAT kAmbient;
+#endif
+
+	};
+
+
 	struct DirLigth {
 	
+#if defined(DX11)
 	XMFLOAT4 dir;
 	XMFLOAT4 lightDirColor;
-	};
 #endif
+	
+	};
 
 #if defined(DX11)
 	struct PointLight {
@@ -109,6 +140,18 @@ namespace GraphicsModule
 		//SpotLight
 		ABuffer m_SpotLightBuffer;
 		spotLight m_SpotLightBufferStruct;
+		//Ambient 
+		ABuffer m_AmbientBuffer;
+		Ambient m_AmbientBufferStruct;
+		//Specular
+		ABuffer m_SpecularBuffer;
+		Ambient m_SpecularBufferStruct;
+		//Shinies
+		ABuffer m_ShiniesBuffer;
+		Ambient m_ShiniesBufferStruct;
+		//Diffuse
+		ABuffer m_DiffuseBuffer;
+		Ambient m_DiffuseBufferStruct;
 		//render targets
 		ID3D11RenderTargetView* g_pRenderTargetView = NULL;
 	

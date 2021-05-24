@@ -292,7 +292,22 @@ namespace GraphicsModule
 		hr = g_pd3dDevice.A_CreateBuffer(&bd, NULL, &m_SpotLightBuffer.getBufferDX11());
 		if (FAILED(hr))
 			return hr;
-
+		bd.ByteWidth = sizeof(Ambient);
+		hr = g_pd3dDevice.A_CreateBuffer(&bd, NULL, &m_AmbientBuffer.getBufferDX11());
+		if (FAILED(hr))
+			return hr;
+		bd.ByteWidth = sizeof(Specular);
+		hr = g_pd3dDevice.A_CreateBuffer(&bd, NULL, &m_AmbientBuffer.getBufferDX11());
+		if (FAILED(hr))
+			return hr;
+		bd.ByteWidth = sizeof(Shinies);
+		hr = g_pd3dDevice.A_CreateBuffer(&bd, NULL, &m_AmbientBuffer.getBufferDX11());
+		if (FAILED(hr))
+			return hr;
+		bd.ByteWidth = sizeof(Diffuse);
+		hr = g_pd3dDevice.A_CreateBuffer(&bd, NULL, &m_AmbientBuffer.getBufferDX11());
+		if (FAILED(hr))
+			return hr;
 		// Create the sample state
 		D3D11_SAMPLER_DESC sampDesc;
 		ZeroMemory(&sampDesc, sizeof(sampDesc));
@@ -382,11 +397,14 @@ namespace GraphicsModule
 		cb.vMeshColor = g_vMeshColor;
 
 		
-
+		//DirLight
 		g_pImmediateContext.A_UpdateSubresource(m_LigthBuffer.getBufferDX11(), 0, NULL, &m_LigthBufferStruct, 0, 0);
-
+		//Point Light
 		g_pImmediateContext.A_UpdateSubresource(m_PointLightBuffer.getBufferDX11(), 0, NULL, &m_PointLightBufferStruct, 0, 0);
+		//SpotLight
 		g_pImmediateContext.A_UpdateSubresource(m_SpotLightBuffer.getBufferDX11(), 0, NULL, &m_SpotLightBufferStruct, 0, 0);
+		//Ambient
+		g_pImmediateContext.A_UpdateSubresource(m_AmbientBuffer.getBufferDX11(), 0, NULL, &m_AmbientBufferStruct, 0, 0);
 
 
 
@@ -402,16 +420,19 @@ namespace GraphicsModule
 		g_pImmediateContext.A_VSSetConstantBuffers(1, 1, &m_pCBChangeOnResize.getBufferDX11());
 		g_pImmediateContext.A_VSSetConstantBuffers(2, 1, &m_pCBChangesEveryFrame.getBufferDX11());
 		g_pImmediateContext.A_UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
-		
 		g_pImmediateContext.A_PSSetShader(g_pPixelShader, NULL, 0);
+		//dirLight
 		g_pImmediateContext.A_VSSetConstantBuffers(3, 1, &m_LigthBuffer.getBufferDX11());
-
+		//PointLight
 		g_pImmediateContext.A_VSSetConstantBuffers(4, 1, &m_PointLightBuffer.getBufferDX11());
+		//SpotLight
 		g_pImmediateContext.A_VSSetConstantBuffers(5, 1, &m_SpotLightBuffer.getBufferDX11());
+		//Ambient
+		g_pImmediateContext.A_VSSetConstantBuffers(6, 1, &m_AmbientBuffer.getBufferDX11());
 		
-		g_pImmediateContext.A_CSSetConstantBuffers(2, 1, &m_pCBChangesEveryFrame.getBufferDX11());
-	
 
+
+		g_pImmediateContext.A_CSSetConstantBuffers(2, 1, &m_pCBChangesEveryFrame.getBufferDX11());
 		g_pImmediateContext.A_PSSetSamplers(0, 1, &g_pSamplerLinear);
 		//-------------------------
 	
@@ -434,7 +455,7 @@ namespace GraphicsModule
 		if (m_LigthBuffer.getBufferDX11()) m_LigthBuffer.Release();
 		if (m_PointLightBuffer.getBufferDX11()) m_PointLightBuffer.Release();
 		if (m_SpotLightBuffer.getBufferDX11()) m_SpotLightBuffer.Release();
-
+		if (m_AmbientBuffer.getBufferDX11()) m_AmbientBuffer.Release();
 		if (m_pCBChangeOnResize.getBufferDX11()) m_pCBChangeOnResize.Release();
 		if (m_pCBNeverChanges.getBufferDX11()) m_pCBNeverChanges.Release();
 		if (g_pVertexLayout) g_pVertexLayout->Release();
