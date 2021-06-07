@@ -11,8 +11,9 @@ public:
 	AEfecto();
 	~AEfecto();
 	void Init();
-	void Render(std::vector<AModel*>& _ModelList);
-
+	void Render();
+	void InitForward();
+	void InitDefered();
 private:
 	std::vector<ATecnica*>m_TecnicaList;
 

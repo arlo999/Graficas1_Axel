@@ -19,12 +19,19 @@ class APase
 {
 public:
 	APase();
+	APase(bool _PostProceso);
+	APase(int _typePase);
 	~APase();
 
 	HRESULT Init();
-	void Render(std::vector<AModel*>& _ModelList);
-	void ApplyGbuffer();
-	void ApplySimpleLight();
+	void Render();
+	HRESULT InitGBuffer();
+	HRESULT InitCopy();
+	HRESULT InitLight();
+	HRESULT InitSao();
+	HRESULT InitTooneMap();
+	HRESULT InitSkybox();
+
 
 	HRESULT CompileShaderFromFile(const char* szFileName, const D3D10_SHADER_MACRO* _Macros, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut);
 private:
@@ -32,8 +39,11 @@ private:
 	ID3D11VertexShader* g_pVertexShader = NULL;
 	ID3D11PixelShader* g_pPixelShader = NULL;
 	ID3D11InputLayout* g_pVertexLayout = NULL;
+	ID3D11RasterizerState* m_Rasterizador = NULL;
+	bool m_PostProceso = false;
 	std::vector<AModel*>m_ModelList;
-
+	int m_TypePase;
+	
 };
 
 

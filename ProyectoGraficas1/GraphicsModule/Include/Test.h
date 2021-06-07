@@ -25,6 +25,16 @@
 
 namespace GraphicsModule
 {
+	struct Sao
+	{
+		XMFLOAT2 sampleIterations;
+		XMFLOAT2 exposur;
+		FLOAT  sampleRadius;
+		FLOAT  scale;
+		FLOAT  bias;
+		FLOAT  intensity;
+		
+	};
 
 	struct DirLigth {
 
@@ -130,7 +140,8 @@ todo esto necesita abstra
 */
 		ID3D11DepthStencilView* g_pDepthStencilView = NULL;
 		ID3D11ShaderResourceView* g_pDepthStencilSRV = NULL;
-
+		UINT width;
+		UINT height;
 	
 		///////////////////////////////////////////
 	//----------------------constanst buffer------------------//
@@ -161,7 +172,9 @@ todo esto necesita abstra
 		//Diffuse
 		ABuffer m_DiffuseBuffer;
 		Diffuse m_DiffuseBufferStruct;
-
+		//SAO
+		ABuffer m_SaoBuffer;
+		Sao m_SaoBufferStruct;
 	
 
 		//----------------------------------render targets----------------------//

@@ -68,7 +68,7 @@ public:
 
 	void Draw(AShader& shader);
 	void Render();
-
+	void Rendersaq();
 	~AModel(){
 			
 	};

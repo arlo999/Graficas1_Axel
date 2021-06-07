@@ -20,8 +20,8 @@ namespace GraphicsModule
 
 		RECT rc;
 		GetClientRect(m_hwnd, &rc);
-		UINT width = rc.right - rc.left;
-		UINT height = rc.bottom - rc.top;
+	 width = rc.right - rc.left;
+	height = rc.bottom - rc.top;
 
 		UINT createDeviceFlags = 0;
 #ifdef _DEBUG
@@ -181,23 +181,31 @@ namespace GraphicsModule
 		hr = g_pd3dDevice.A_CreateBuffer(&bd, NULL, &m_DiffuseBuffer.getBufferDX11());
 		if (FAILED(hr))
 			return hr;
+		bd.ByteWidth = sizeof(Sao);
+		hr = g_pd3dDevice.A_CreateBuffer(&bd, NULL, &m_SaoBuffer.getBufferDX11());
+		if (FAILED(hr))
+			return hr;
 		// Create the sample state
-		D3D11_SAMPLER_DESC sampDesc;
-		ZeroMemory(&sampDesc, sizeof(sampDesc));
-		sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-		sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-		sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-		sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-		sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-		sampDesc.MinLOD = 0;
-		sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
-		hr = g_pd3dDevice.A_CreateSamplerState(&sampDesc, &g_normalMapSampler);
+
+		D3D11_SAMPLER_DESC samplerDesc;
+		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+		samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerDesc.MipLODBias = 0.0f;
+		samplerDesc.MaxAnisotropy = 1;
+		samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+		samplerDesc.MinLOD = -FLT_MAX;
+		samplerDesc.MaxLOD = FLT_MAX;
+
+
+		hr = g_pd3dDevice.A_CreateSamplerState(&samplerDesc, &g_normalMapSampler);
 		if (FAILED(hr))
 			return hr;
-		hr = g_pd3dDevice.A_CreateSamplerState(&sampDesc, &g_SpecularSampler);
+		hr = g_pd3dDevice.A_CreateSamplerState(&samplerDesc, &g_SpecularSampler);
 		if (FAILED(hr))
 			return hr;
-		hr = g_pd3dDevice.A_CreateSamplerState(&sampDesc, &g_DiffuseSampler);
+		hr = g_pd3dDevice.A_CreateSamplerState(&samplerDesc, &g_DiffuseSampler);
 		if (FAILED(hr))
 			return hr;
 
@@ -224,10 +232,7 @@ namespace GraphicsModule
 		
 		g_Projection = XMMatrixPerspectiveFovLH(XM_PIDIV4, width / (FLOAT)height, 0.01f, 1000.0f);
 
-		CBChangeOnResize cbChangesOnResize;
-		cbChangesOnResize.mProjection = XMMatrixTranspose(g_Projection);
-		
-		g_pImmediateContext.A_UpdateSubresource(m_pCBChangeOnResize.getBufferDX11(), 0, NULL, &cbChangesOnResize, 0, 0);
+	
 
 	
 
@@ -251,7 +256,11 @@ namespace GraphicsModule
 		g_View = camera->getviewMLookLDirectX();
 		cbNeverChanges.mView = XMMatrixTranspose(g_View);
 		cb.mWorld = XMMatrixTranspose(g_World);
+		g_pImmediateContext.A_IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		CBChangeOnResize cbChangesOnResize;
+		cbChangesOnResize.mProjection = XMMatrixTranspose(g_Projection);
 
+		g_pImmediateContext.A_UpdateSubresource(m_pCBChangeOnResize.getBufferDX11(), 0, NULL, &cbChangesOnResize, 0, 0);
 		//DirLight
 		g_pImmediateContext.A_UpdateSubresource(m_LigthBuffer.getBufferDX11(), 0, NULL, &m_LigthBufferStruct, 0, 0);
 		//Point Light
@@ -266,6 +275,10 @@ namespace GraphicsModule
 		g_pImmediateContext.A_UpdateSubresource(m_ShiniesBuffer.getBufferDX11(), 0, NULL, &m_ShiniesBufferStruct, 0, 0);
 		//diffuse
 		g_pImmediateContext.A_UpdateSubresource(m_DiffuseBuffer.getBufferDX11(), 0, NULL, &m_DiffuseBufferStruct, 0, 0);
+		//sao
+		g_pImmediateContext.A_UpdateSubresource(m_SaoBuffer.getBufferDX11(), 0, NULL, &m_SaoBufferStruct, 0, 0);
+		//camara
+
 
 		//dirLight
 		g_pImmediateContext.A_VSSetConstantBuffers(3, 1, &m_LigthBuffer.getBufferDX11());
@@ -281,21 +294,25 @@ namespace GraphicsModule
 		g_pImmediateContext.A_VSSetConstantBuffers(8, 1, &m_ShiniesBuffer.getBufferDX11());
 		//diffuse
 		g_pImmediateContext.A_VSSetConstantBuffers(9, 1, &m_DiffuseBuffer.getBufferDX11());
+		//sao
+		g_pImmediateContext.A_VSSetConstantBuffers(10, 1, &m_SaoBuffer.getBufferDX11());
 
 		//dirLight
-		g_pImmediateContext.PSSetConstantBuffers(3, 1, &m_LigthBuffer.getBufferDX11());
+		g_pImmediateContext.PSSetConstantBuffers(4, 1, &m_LigthBuffer.getBufferDX11());
 		//PointLight
-		g_pImmediateContext.PSSetConstantBuffers(4, 1, &m_PointLightBuffer.getBufferDX11());
+		g_pImmediateContext.PSSetConstantBuffers(5, 1, &m_PointLightBuffer.getBufferDX11());
 		//SpotLight
-		g_pImmediateContext.PSSetConstantBuffers(5, 1, &m_SpotLightBuffer.getBufferDX11());
+		g_pImmediateContext.PSSetConstantBuffers(6, 1, &m_SpotLightBuffer.getBufferDX11());
 		//Ambient
-		g_pImmediateContext.PSSetConstantBuffers(6, 1, &m_AmbientBuffer.getBufferDX11());
+		g_pImmediateContext.PSSetConstantBuffers(7, 1, &m_AmbientBuffer.getBufferDX11());
 		//specular
-		g_pImmediateContext.PSSetConstantBuffers(7, 1, &m_SpecularBuffer.getBufferDX11());
+		g_pImmediateContext.PSSetConstantBuffers(8, 1, &m_SpecularBuffer.getBufferDX11());
 		//shinies
-		g_pImmediateContext.PSSetConstantBuffers(8, 1, &m_ShiniesBuffer.getBufferDX11());
+		g_pImmediateContext.PSSetConstantBuffers(9, 1, &m_ShiniesBuffer.getBufferDX11());
 		//diffuse
-		g_pImmediateContext.PSSetConstantBuffers(9, 1, &m_DiffuseBuffer.getBufferDX11());
+		g_pImmediateContext.PSSetConstantBuffers(10, 1, &m_DiffuseBuffer.getBufferDX11());
+		//sao
+		g_pImmediateContext.PSSetConstantBuffers(11, 1, &m_SaoBuffer.getBufferDX11());
 
 
 		g_pImmediateContext.A_PSSetSamplers(0, 1, &g_DiffuseSampler);
@@ -315,8 +332,10 @@ namespace GraphicsModule
 		
 		
 		//-------------------------back buffer-------------------------------///
+	
+
 		g_pImmediateContext.A_ClearRenderTargetView(g_pRenderTargetView, ClearColor);
-		g_pImmediateContext.A_ClearDepthStencilView(g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+		g_pImmediateContext.A_ClearDepthStencilView(g_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 		g_pImmediateContext.A_OMSetRenderTargets(1, &g_pRenderTargetView, g_pDepthStencilView);
 
 		
@@ -340,7 +359,7 @@ namespace GraphicsModule
 		if(m_SpecularBuffer.getBufferDX11())m_SpecularBuffer.Release();
 		if(m_ShiniesBuffer.getBufferDX11())m_ShiniesBuffer.Release();
 		if(m_DiffuseBuffer.getBufferDX11())m_DiffuseBuffer.Release();
-		
+		if(m_SaoBuffer.getBufferDX11())m_SaoBuffer.Release();
 		if (g_pDepthStencilView) g_pDepthStencilView->Release();
 		if (g_pRenderTargetView) g_pRenderTargetView->Release();
 		if (g_pSwapChain.m_swapchain) g_pSwapChain.A_Release();

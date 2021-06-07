@@ -2,11 +2,12 @@
 #include "ARenderManager.h"
 ATecnica::ATecnica()
 {
-	Init();
+	
 }
 
 ATecnica::~ATecnica()
 {
+	
 }
 
 void ATecnica::Init()
@@ -36,12 +37,14 @@ void ATecnica::Init()
 	m_PaseList.push_back(pase);
 }
 
-void ATecnica::Render(std::vector<AModel*>& _ModelList)
+void ATecnica::Render()
 {
 	for (int i = 0; i < m_PaseList.size(); i++)
 	{
-		m_PaseList[i]->Render(_ModelList);
+		m_PaseList[i]->Render();
 	}
+	
+
 }
 
 void ATecnica::InitVertex()
@@ -397,5 +400,91 @@ void ATecnica::InitPixelMapSpec_BlinnPhong()
 	APase* pase = new APase;
 	pase->Init();
 	m_PaseList.push_back(pase);
+}
+
+void ATecnica::InitGbuffer_NormSpec()
+{
+
+	auto& RM = RManager::SingletonRM();
+	RM.m_macros.clear();
+	D3D10_SHADER_MACRO  normalMap;
+	normalMap.Name = "NORMAL_MAP";
+	normalMap.Definition = "TRUE";
+	RM.m_macros.push_back(normalMap);
+
+
+	D3D10_SHADER_MACRO  specMap;
+	specMap.Name = "SPECULAR_MAP";
+	specMap.Definition = "TRUE";
+	RM.m_macros.push_back(specMap);
+
+	D3D10_SHADER_MACRO Terminate;
+	Terminate.Definition = NULL;
+	Terminate.Name = NULL;
+
+	RM.m_macros.push_back(Terminate);
+
+
+	APase* pase = new APase;
+	pase->InitGBuffer();
+	m_PaseList.push_back(pase);
+
+
+
+	//post procesos
+	
+	RM.m_macros.clear();
+	
+
+	D3D10_SHADER_MACRO  Phong;
+	Phong.Name = "BLINN";
+	Phong.Definition = "TRUE";
+	RM.m_macros.push_back(Phong);
+	
+	Terminate.Definition = NULL;
+	Terminate.Name = NULL;
+	RM.m_macros.push_back(Terminate);
+	
+	
+	/*
+	APase* paseSkyBox = new APase(true);
+	paseSkyBox->InitSkybox();
+	m_PaseList.push_back(paseSkyBox);
+	*/
+	
+
+
+/*
+APase* paseLSao = new APase(true);
+paseLSao->InitSao();
+m_PaseList.push_back(paseLSao);
+*/
+
+	
+	
+	APase* paseLight = new APase(true);
+	paseLight->InitLight();
+	m_PaseList.push_back(paseLight);
+	
+
+
+
+	
+	
+	
+	APase* paseToonMap = new APase(true);
+	paseToonMap->InitTooneMap();
+	m_PaseList.push_back(paseToonMap);
+	
+	
+	
+	
+
+	APase* paseCopy = new APase(true);
+	paseCopy->InitCopy();
+	m_PaseList.push_back(paseCopy);
+	
+	
+
 }
 

@@ -10,7 +10,7 @@ public:
 	~ATecnica();
 
 	void Init();
-	void Render(std::vector<AModel*>& _ModelList);
+	void Render();
 	//vertex
 	void InitVertex();
 	void InitVertex_Phong();
@@ -27,6 +27,10 @@ public:
 	void InitPixelMapSpec();
 	void InitPixelMapSpec_Phong();
 	void InitPixelMapSpec_BlinnPhong();
+
+	//Gbuffer Tecnicas
+	void InitGbuffer_NormSpec();
+
 private:
 	
 	std::vector<APase*> m_PaseList;

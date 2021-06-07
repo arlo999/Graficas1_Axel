@@ -2,7 +2,7 @@
 #include "ARenderManager.h"
 AEfecto::AEfecto()
 {
-	Init();
+	
 }
 
 AEfecto::~AEfecto()
@@ -12,20 +12,34 @@ AEfecto::~AEfecto()
 void AEfecto::Init()
 {
 
+	InitDefered();
 
-//vertex
-	ATecnica *m_vertex= new ATecnica;
+}
+
+void AEfecto::Render()
+{
+	auto& RM = RManager::SingletonRM();
+
+	m_TecnicaList[RM.m_typeTecnicaRender]->Render();
+	
+}
+
+void AEfecto::InitForward()
+{
+
+	//vertex
+	ATecnica* m_vertex = new ATecnica;
 	m_vertex->Init();
 	m_TecnicaList.push_back(m_vertex);
 
-	ATecnica* m_vertexPHONG= new ATecnica;
+	ATecnica* m_vertexPHONG = new ATecnica;
 	m_vertexPHONG->InitVertex_Phong();
 	m_TecnicaList.push_back(m_vertexPHONG);
 
 	ATecnica* m_vertexBlinn = new ATecnica;
 	m_vertexBlinn->InitVertex_BlinnPhong();
 	m_TecnicaList.push_back(m_vertexBlinn);
-//pixel
+	//pixel
 	ATecnica* m_pixel = new ATecnica;
 	m_pixel->InitPixel();
 	m_TecnicaList.push_back(m_pixel);
@@ -65,15 +79,18 @@ void AEfecto::Init()
 	ATecnica* m_pixelmapSpecularBlinnPhong = new ATecnica;
 	m_pixelmapSpecularBlinnPhong->InitPixelMap_BlinnPhong();
 	m_TecnicaList.push_back(m_pixelmapSpecularBlinnPhong);
-
-
-
 }
 
-void AEfecto::Render(std::vector<AModel*>& _ModelList)
+void AEfecto::InitDefered()
 {
-	auto& RM = RManager::SingletonRM();
-
-	m_TecnicaList[RM.m_typeTecnicaRender]->Render(_ModelList);
 	
+	ATecnica* m_Gbuffer = new ATecnica;
+	m_Gbuffer->InitGbuffer_NormSpec();
+	m_TecnicaList.push_back(m_Gbuffer);
+
+
+
+
+
+
 }

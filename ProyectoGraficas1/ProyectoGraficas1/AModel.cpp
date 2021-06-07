@@ -102,14 +102,14 @@ unsigned int AModel::TextureFromFile(const char* path, const string& directory, 
 	Sdesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 	Sdesc.Texture2D.MostDetailedMip = 0;
 	Sdesc.Texture2D.MipLevels = 1;
-	if (nameOfFile == "diffuse.jpg") {
+	if (nameOfFile == "diffuse.jpg"|| nameOfFile=="base_albedo.jpg") {
 		testObj.g_pd3dDevice.A_CreateShaderResourceView(texture, &Sdesc, &g_pTextureRV);
 	}
-	else if (nameOfFile == "normal.png") {
+	else if (nameOfFile == "normal.png"|| nameOfFile == "base_normal.jpg") {
 
 		testObj.g_pd3dDevice.A_CreateShaderResourceView(texture, &Sdesc, &g_NormalMap);
 	}
-	else if (nameOfFile == "specular.jpg") {
+	else if (nameOfFile == "specular.jpg"|| nameOfFile == "base_AO.jpg") {
 		testObj.g_pd3dDevice.A_CreateShaderResourceView(texture, &Sdesc, &g_Specular);
 
 	}
@@ -240,6 +240,21 @@ void AModel::Render()
 	}
 }
 
+void AModel::Rendersaq()
+{
+	auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
+
+	testObj.cb.mWorld = XMMatrixTranslation(transform.traslation[0], transform.traslation[1], transform.traslation[2]);
+	testObj.cb.mWorld = XMMatrixMultiply(XMMatrixScaling(transform.scale[0], transform.scale[1], transform.scale[2]), testObj.cb.mWorld);
+	testObj.cb.mWorld = XMMatrixMultiplyTranspose(XMMatrixRotationRollPitchYaw(transform.rotation[0], transform.rotation[1], transform.rotation[2]), testObj.cb.mWorld);
+
+	testObj.g_pImmediateContext.A_UpdateSubresource(testObj.m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &testObj.cb, 0, 0);
+	for (unsigned int i = 0; i < meshes.size(); i++)
+	{
+		meshes[i].Render();
+	}
+}
+
 void AModel::loadModel(string const& path)
 {
 
@@ -325,7 +340,7 @@ Mesh AModel::processMesh(aiMesh* mesh, const aiScene* scene)
 			vec.setX(mesh->mTextureCoords[0][i].x);
 			vec.setY(mesh->mTextureCoords[0][i].y);
 			vertex.TexCoords[0] = vec.getX();
-			vertex.TexCoords[1] = vec.getY();
+			vertex.TexCoords[1] =1- vec.getY();
 
 		}
 		if(mesh->HasTangentsAndBitangents()){
@@ -350,7 +365,7 @@ Mesh AModel::processMesh(aiMesh* mesh, const aiScene* scene)
 		else {
 
 			vertex.TexCoords[0] = 0.0f;
-			vertex.TexCoords[1] = 0.0f;
+			vertex.TexCoords[1] =1- 0.0f;
 		}
 		vertices.push_back(vertex);
 	}

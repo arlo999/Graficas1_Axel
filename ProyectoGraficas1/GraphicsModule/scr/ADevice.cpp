@@ -102,6 +102,16 @@ HRESULT ADevice::A_CreateSamplerState(const D3D11_SAMPLER_DESC* pSamplerDesc, ID
     return m_device->CreateSamplerState(pSamplerDesc, ppSamplerState);;
 }
 
+HRESULT ADevice::A_CreateRasterizerState(
+    /* [annotation] */
+    _In_  const D3D11_RASTERIZER_DESC* pRasterizerDesc,
+    /* [annotation] */
+    _COM_Outptr_opt_  ID3D11RasterizerState** ppRasterizerState) {
+
+    return m_device->CreateRasterizerState(pRasterizerDesc, ppRasterizerState);
+}
+
+
 HRESULT ADevice::A_CreateShaderResourceView(ID3D11Resource* pResource,const D3D11_SHADER_RESOURCE_VIEW_DESC* pDesc, ID3D11ShaderResourceView** ppSRView)
 {
   return m_device->CreateShaderResourceView(pResource,pDesc, ppSRView);

@@ -73,6 +73,12 @@ public:
 		/* [annotation] */
 		__out_opt  ID3D11Buffer** ppBuffer);
 	
+	HRESULT  A_CreateRasterizerState(
+		/* [annotation] */
+		_In_  const D3D11_RASTERIZER_DESC* pRasterizerDesc,
+		/* [annotation] */
+		_COM_Outptr_opt_  ID3D11RasterizerState** ppRasterizerState);
+
 	HRESULT A_CreateSamplerState(
 		/* [annotation] */
 		__in  const D3D11_SAMPLER_DESC* pSamplerDesc,
@@ -85,6 +91,7 @@ public:
 		__in_opt  const D3D11_SHADER_RESOURCE_VIEW_DESC* pDesc,
 		/* [annotation] */
 		__out_opt  ID3D11ShaderResourceView** ppSRView);
+
 	HRESULT A_Release();
 	ID3D11Device* m_device=NULL;
 private:

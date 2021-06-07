@@ -470,7 +470,7 @@ HRESULT InitWindow(LONG _width, LONG _height)
    }
         for(int i= 0;i < models.size();i++){
             ImGui::PushID(i);
-            if(ImGui::CollapsingHeader("info"+i, NULL)){
+            if(ImGui::CollapsingHeader("Mesh Info", NULL)){
 
 				if (ImGui::DragFloat3("Scale", models[i]->transform.scale, 0.001, -10, 10)) {}
 				if (ImGui::DragFloat3("Translation", models[i]->transform.traslation, 0.001, -10, 10)) {}
@@ -479,8 +479,11 @@ HRESULT InitWindow(LONG _width, LONG _height)
 				float my_tex_h = 256;
                 
 #if defined(DX11) 
-				ImTextureID my_tex_id = models[i]->g_pTextureRV;
-				ImTextureID my_tex_id2 = models[i]->g_NormalMap;
+				ImTextureID my_tex_id = (void*)RM.m_AlbedoSRV;
+				ImTextureID my_tex_id2 = (void*)RM.m_NormalSRV;
+				ImTextureID my_tex_id3 = (void*)RM.m_SpecularSRV;
+				ImTextureID my_tex_id4 = (void*)RM.m_PositionSRV;
+				ImTextureID my_tex_id5 = (void*)RM.m_SSaoSRV;
 
                 #endif
 #if defined(OGL) 
@@ -491,11 +494,12 @@ HRESULT InitWindow(LONG _width, LONG _height)
 				ImVec2 uv_max = ImVec2(1.0f, 1.0f);                 // Lower-right
 				ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
 				ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.5f); // 50% opaque white
-				ImGui::Image(my_tex_id, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max, tint_col, border_col);
-
-
-
-				ImGui::Image(my_tex_id2, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max, tint_col, border_col);
+				ImGui::ImageButton(my_tex_id, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max);
+				ImGui::ImageButton(my_tex_id2, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max);
+				ImGui::ImageButton(my_tex_id3, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max);
+				ImGui::ImageButton(my_tex_id4, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max);
+				ImGui::ImageButton(my_tex_id5, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max);
+				
 
 
 
@@ -762,6 +766,77 @@ HRESULT InitWindow(LONG _width, LONG _height)
    }
    ImGui::End();
 
+
+   /// ////////////////////////////////////
+   /*
+   * SSAo
+   */
+   
+   ImGui::Begin("SSAO", NULL, 0);
+   static float sampleIterations[3]{};
+   static float sampleRadius;
+   static float scale;
+   static float bias;
+   static float intensity;
+   static float exposure[3]{};
+   if (ImGui::DragFloat("Sample Iteration", sampleIterations, 1)) {
+
+#if defined(DX11)
+	   testObj.m_SaoBufferStruct.sampleIterations = XMFLOAT2(sampleIterations[0], 0);
+#endif
+#if defined(OGL)
+	   glUniform4f(glGetUniformLocation(_shader.ID, "spotLightPos"), spotLightPos[0], spotLightPos[1], spotLightPos[2], 0.0f);
+
+#endif
+   }
+   if (ImGui::DragFloat("exposure", exposure, 1)) {
+
+#if defined(DX11)
+	   testObj.m_SaoBufferStruct.exposur = XMFLOAT2(exposure[0], 0);
+#endif
+#if defined(OGL)
+	   glUniform4f(glGetUniformLocation(_shader.ID, "spotLightPos"), spotLightPos[0], spotLightPos[1], spotLightPos[2], 0.0f);
+
+#endif
+   }
+   if (ImGui::DragFloat("sampleRadius", &sampleRadius, 1)) {
+
+#if defined(DX11)
+	   testObj.m_SaoBufferStruct.sampleRadius = FLOAT(sampleRadius);
+#endif
+#if defined(OGL)
+	   _shader.setFloat("spotLightOutner", spotLightOutner);
+#endif
+   }
+   if (ImGui::DragFloat("scale", &scale, 1)) {
+
+#if defined(DX11)
+	   testObj.m_SaoBufferStruct.scale = FLOAT(scale);
+#endif
+#if defined(OGL)
+	   _shader.setFloat("spotLightOutner", spotLightOutner);
+#endif
+   }
+   if (ImGui::DragFloat("bias", &bias, 1)) {
+
+#if defined(DX11)
+	   testObj.m_SaoBufferStruct.bias = FLOAT(bias);
+#endif
+#if defined(OGL)
+	   _shader.setFloat("spotLightOutner", spotLightOutner);
+#endif
+   }
+   if (ImGui::DragFloat("intensity", &intensity, 1)) {
+
+#if defined(DX11)
+	   testObj.m_SaoBufferStruct.intensity = FLOAT(intensity);
+#endif
+#if defined(OGL)
+	   _shader.setFloat("spotLightOutner", spotLightOutner);
+#endif
+   }
+   ImGui::End();
+
    ImGui::Render();
   
   
@@ -821,14 +896,15 @@ HRESULT InitWindow(LONG _width, LONG _height)
 #if defined(DX11) 
 	 auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
      auto& RM = RManager::SingletonRM();
+
      testObj.Render();
     //render manager
   
     RM.Render(models);
-
+	
    
      UIRender(_shader);
-     
+	
      testObj.g_pSwapChain.m_swapchain->Present(0, 0);
  #endif
  }
