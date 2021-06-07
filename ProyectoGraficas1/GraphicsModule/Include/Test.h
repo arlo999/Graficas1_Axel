@@ -25,43 +25,14 @@
 
 namespace GraphicsModule
 {
-	struct Shinies
-	{
-#if defined(DX11)
-		FLOAT shininess;
-#endif
-	};
-	
-	struct Diffuse
-	{
-#if defined(DX11)
-		FLOAT kDiffuse;
-#endif
-	};
-
-	struct Specular
-	{
-#if defined(DX11)
-		FLOAT kSpecular;
-#endif
-	};
-
-	struct Ambient {
-#if defined(DX11)
-		XMFLOAT4 ambientColor;
-		FLOAT kAmbient;
-#endif
-
-	};
-
 
 	struct DirLigth {
-	
+
 #if defined(DX11)
-	XMFLOAT4 dir;
-	XMFLOAT4 lightDirColor;
+		XMFLOAT4 dir;
+		XMFLOAT4 lightDirColor;
 #endif
-	
+
 	};
 
 #if defined(DX11)
@@ -81,9 +52,45 @@ namespace GraphicsModule
 		FLOAT  SpotlightAtt;
 		FLOAT  spotLightInner;
 		FLOAT  spotLightOutner;
-		FLOAT  n=0;
+		FLOAT  n = 0;
 	};
 #endif
+
+	struct Shinies
+	{
+#if defined(DX11)
+		XMFLOAT3 n;
+		FLOAT shininess;
+#endif
+	};
+
+	struct Diffuse
+	{
+#if defined(DX11)
+		XMFLOAT3 n;
+		FLOAT kDiffuse;
+#endif
+	};
+
+	struct Specular
+	{
+#if defined(DX11)
+		XMFLOAT3 n;
+		FLOAT kSpecular;
+#endif
+	};
+
+	struct Ambient {
+#if defined(DX11)
+		XMFLOAT4 ambientColor;
+		XMFLOAT3 n;
+		FLOAT kAmbient;
+#endif
+
+	};
+
+
+
 	struct CBNeverChanges{
 #if defined(DX11)
 		XMMATRIX mView;
@@ -118,19 +125,21 @@ namespace GraphicsModule
 		ASwapChain		g_pSwapChain;
 		ATexture2D		g_pDepthStencil;
 		
-
+/*
+todo esto necesita abstra
+*/
 		ID3D11DepthStencilView* g_pDepthStencilView = NULL;
 		ID3D11ShaderResourceView* g_pDepthStencilSRV = NULL;
 
-		ID3D11VertexShader* g_pVertexShader = NULL;
-		ID3D11PixelShader* g_pPixelShader = NULL;
-		ID3D11InputLayout* g_pVertexLayout = NULL;
-		
-		
-		
+	
+		///////////////////////////////////////////
+	//----------------------constanst buffer------------------//
 		ABuffer m_pCBNeverChanges;
 		ABuffer m_pCBChangeOnResize ;
 		ABuffer m_pCBChangesEveryFrame;
+		CBNeverChanges cbNeverChanges;//--------------------view matrix
+		CBChangesEveryFrame cb;//--------------------------world matrix
+
 		//DirLight
 		ABuffer  m_LigthBuffer;
 		DirLigth m_LigthBufferStruct;
@@ -145,47 +154,51 @@ namespace GraphicsModule
 		Ambient m_AmbientBufferStruct;
 		//Specular
 		ABuffer m_SpecularBuffer;
-		Ambient m_SpecularBufferStruct;
+		Specular m_SpecularBufferStruct;
 		//Shinies
 		ABuffer m_ShiniesBuffer;
-		Ambient m_ShiniesBufferStruct;
+		Shinies m_ShiniesBufferStruct;
 		//Diffuse
 		ABuffer m_DiffuseBuffer;
-		Ambient m_DiffuseBufferStruct;
-		//render targets
-		ID3D11RenderTargetView* g_pRenderTargetView = NULL;
+		Diffuse m_DiffuseBufferStruct;
+
 	
 
+		//----------------------------------render targets----------------------//
+		ID3D11RenderTargetView* g_pRenderTargetView = NULL;
+	
+	//-----------------------samplers-------------------------------------//
 
-		ID3D11SamplerState* g_pSamplerLinear = NULL;
-		
+		ID3D11SamplerState* g_normalMapSampler = NULL;
+		ID3D11SamplerState* g_SpecularSampler = NULL;
+		ID3D11SamplerState* g_DiffuseSampler = NULL;
+
+		//-------------------------------------------- cambiar a mis variables ----------///
 		XMMATRIX                            g_World;
 		XMMATRIX                            g_View;
 		XMMATRIX                            g_Projection;
 		XMFLOAT4                            g_vMeshColor;
-		//camara axel
+		//-----------------camarera-----------------------//
 		ACamera				*camera;
-		CBNeverChanges cbNeverChanges;
-	
-		CBChangesEveryFrame cb;
 		
-		//importans variables
+		//-------------------------------------- viewport ---------------------//
 		D3D11_VIEWPORT vp;
+		//-------------------------------el gran general----------------------------//
 		HWND m_hwnd;
 		
 #endif
 	public:
-		//variables for load model
-		unsigned int numVertex;
+	
 		
 #if defined(DX11)
+
 		HRESULT ReloadBuffer(unsigned int width, unsigned int height);
 		
-		HRESULT CompileShaderFromFile(const char* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut);
+	//	HRESULT CompileShaderFromFile(const char* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut);
 #endif
-
 		HRESULT InitDevice(HWND _hwnd);
 public:
+
 		void Render();
 		void Update();
 		void CleanupDevice();

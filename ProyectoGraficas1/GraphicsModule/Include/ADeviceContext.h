@@ -17,6 +17,13 @@ public:
 		__in_ecount_opt(NumViews)  ID3D11RenderTargetView* const* ppRenderTargetViews,
 		/* [annotation] */
 		__in_opt  ID3D11DepthStencilView* pDepthStencilView);
+	 void STDMETHODCALLTYPE PSSetConstantBuffers(
+		/* [annotation] */
+		__in_range(0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - 1)  UINT StartSlot,
+		/* [annotation] */
+		__in_range(0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - StartSlot)  UINT NumBuffers,
+		/* [annotation] */
+		__in_ecount(NumBuffers)  ID3D11Buffer* const* ppConstantBuffers);
 
 	void A_RSSetViewports(
 		/* [annotation] */

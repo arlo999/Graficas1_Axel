@@ -529,33 +529,26 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="ADepthStencil.h" />
-    <ClInclude Include="AInputLayout.h" />
-    <ClInclude Include="AMangerAPI.h" />
-    <ClInclude Include="APase.h" />
-    <ClInclude Include="ATecnicta.h" />
-    <ClInclude Include="AVertexShader.h" />
-    <ClInclude Include="AEfecto.h" />
     <ClInclude Include="Include\ABuffer.h" />
     <ClInclude Include="Include\ACamera.h" />
+    <ClInclude Include="Include\ADepthStencil.h" />
     <ClInclude Include="Include\ADescriptionBuffer.h" />
     <ClInclude Include="Include\ADevice.h" />
     <ClInclude Include="Include\ADeviceContext.h" />
+    <ClInclude Include="Include\AInputLayout.h" />
+    <ClInclude Include="Include\AMangerAPI.h" />
     <ClInclude Include="Include\AMatriz4.h" />
     <ClInclude Include="Include\AShader.h" />
     <ClInclude Include="Include\ASwapChain.h" />
     <ClInclude Include="Include\ATextura.h" />
     <ClInclude Include="Include\ATexture2D.h" />
     <ClInclude Include="Include\AVector.h" />
+    <ClInclude Include="Include\AVertexShader.h" />
     <ClInclude Include="Include\GraphicsModule.h" />
-    <ClInclude Include="Include\Mesh.h" />
     <ClInclude Include="Include\Test.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="APase.cpp" />
-    <ClCompile Include="ATecnicta.cpp" />
-    <ClCompile Include="AEfecto.cpp" />
     <ClCompile Include="scr\ABuffer.cpp" />
     <ClCompile Include="scr\ACamera.cpp" />
     <ClCompile Include="scr\ADepthStencil.cpp" />
@@ -569,7 +562,6 @@
     <ClCompile Include="scr\ATextura.cpp" />
     <ClCompile Include="scr\AVector.cpp" />
     <ClCompile Include="scr\AVertexShader.cpp" />
-    <ClCompile Include="scr\Mesh.cpp" />
     <ClCompile Include="scr\Test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

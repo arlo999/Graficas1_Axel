@@ -15,6 +15,11 @@ void ADeviceContext::A_OMSetRenderTargets(__in_range(0, D3D11_SIMULTANEOUS_RENDE
 	 m_devicecontext->OMSetRenderTargets(NumViews,ppRenderTargetViews,pDepthStencilView);
 }
 
+void __stdcall ADeviceContext::PSSetConstantBuffers(__in_range(0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - 1)UINT StartSlot, __in_range(0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - StartSlot)UINT NumBuffers, ID3D11Buffer* const* ppConstantBuffers)
+{
+	m_devicecontext->PSSetConstantBuffers(StartSlot, NumBuffers, ppConstantBuffers);
+}
+
 void ADeviceContext::A_RSSetViewports(__in_range(0, D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE)UINT NumViewports, const D3D11_VIEWPORT* pViewports)
 {
 	 m_devicecontext->RSSetViewports(NumViewports,pViewports);

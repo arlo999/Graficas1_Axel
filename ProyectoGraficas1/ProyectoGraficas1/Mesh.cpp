@@ -1,5 +1,6 @@
 #include "Mesh.h"
 #include <iostream>
+#include "Mesh.h"
 
 
 Mesh::Mesh()
@@ -122,16 +123,26 @@ void Mesh::Draw(AShader& shader, bool triangles)
 	UINT offset = 0;
 
 	
-
-	
-	//testObj.cb.mWorld = XMMatrixMultiplyTranspose(testObj.g_View, testObj.cb.mWorld);
-	
 	testObj.g_pImmediateContext.A_IASetVertexBuffers(0, 1, &m_pVertexBuffer.getBufferDX11(), &stride, &offset);
 	testObj.g_pImmediateContext.A_IASetIndexBuffer(m_pIndexBuffer.getBufferDX11(), DXGI_FORMAT_R32_UINT, 0);
 
 	testObj.g_pImmediateContext.A_DrawIndexed(indices.size(), 0, 0);
 #endif
 
+}
+
+void Mesh::Render()
+{
+	auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
+
+	UINT stride = sizeof(Vertex);
+	UINT offset = 0;
+
+
+	testObj.g_pImmediateContext.A_IASetVertexBuffers(0, 1, &m_pVertexBuffer.getBufferDX11(), &stride, &offset);
+	testObj.g_pImmediateContext.A_IASetIndexBuffer(m_pIndexBuffer.getBufferDX11(), DXGI_FORMAT_R32_UINT, 0);
+
+	testObj.g_pImmediateContext.A_DrawIndexed(indices.size(), 0, 0);
 }
 
 void Mesh::setupMesh()
@@ -186,6 +197,9 @@ void Mesh::setupMesh()
 	bd.CPUAccessFlags = 0;
 	InitData.pSysMem = indices.data();
 	testObj.g_pd3dDevice.A_CreateBuffer(&bd, &InitData, &m_pIndexBuffer.getBufferDX11());
+
+
+
 	
 	
 #endif

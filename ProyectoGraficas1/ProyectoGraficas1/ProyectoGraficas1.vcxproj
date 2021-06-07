@@ -512,7 +512,12 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_DirectX|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_directx|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="AEfecto.cpp" />
+    <ClCompile Include="AMaterial.cpp" />
     <ClCompile Include="AModel.cpp" />
+    <ClCompile Include="APase.cpp" />
+    <ClCompile Include="ARenderManager.cpp" />
+    <ClCompile Include="ATecnica.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="ProyectoGraficas1.cpp" />
     <ClCompile Include="stb.cpp">
@@ -523,7 +528,13 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AEfecto.h" />
+    <ClInclude Include="AMaterial.h" />
     <ClInclude Include="AModel.h" />
+    <ClInclude Include="APase.h" />
+    <ClInclude Include="ARenderManager.h" />
+    <ClInclude Include="ATecnica.h" />
+    <ClInclude Include="Mesh.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

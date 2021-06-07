@@ -4,7 +4,7 @@
 #include "imgui.h"
 #include <iostream>
 #include <stdio.h>
-
+#include "ARenderManager.h"
 #if  defined(OGL)
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
@@ -21,25 +21,32 @@
 #include "imgui_impl_dx11.h"
 #endif 
 
-// -----------------Global var-----------------------------------------------------------------
+// -----------------Global var-----------------------//
 HWND g_hwnd;
 bool first = false;
 bool perspective = false;
+
+AModel* ourModel;
+vector<AModel*> models;
+
+
+//---------------Mosuse variables------------------//
 POINT Cursor;
 int cursorx, cursory;
 bool firstMouse = true;
 float lastX = 1270 / 2.0f;
 float lastY = 720 / 2.0f;
-// timing
-float deltaTime = 0.0f;
-float lastFrame = 0.0f;
-AModel* ourModel;
-//Camera camera(AVector(0.0f, 0.0f, 3.0f));
-
+//-------------Screen variables-------------------//
 bool show_demo_window = true;
 bool show_another_window = false;
 ImVec4 clear_color = ImVec4(0.0f, 0.125f, 0.3f, 1.0f);
-vector<AModel*> models;
+
+//-------------------------- timing------------------//
+
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
+
+
 #if defined(OGL)
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 GLFWwindow* window;
@@ -48,7 +55,7 @@ GLFWwindow* window;
 
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam);
-
+//------Mouse Function Opgl--------------------------//
 #if defined(OGL)
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
@@ -68,20 +75,22 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
     #endif
-
+//--------Mouse Function Opngl----------------------//
 #if defined(OGL)
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	camera.ProcessMouseScroll(yoffset);
 }
 #endif
-
+//----------------------Screen function frame buffer----------------//
 #if defined(OGL)
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
 }
     #endif
+
+//-------------------resize function ---------------------------//
 void OnSize(unsigned int width, unsigned int height) {
 #if defined(DX11)
     auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
@@ -100,6 +109,7 @@ void OnSize(unsigned int width, unsigned int height) {
     #endif
 }
 
+//----------------------Open file to create model------------// 
 std::string OpenWindowFile(HWND _hwnd)
 {
 	
@@ -124,8 +134,8 @@ std::string OpenWindowFile(HWND _hwnd)
 	}
 	return NULL;
 }
-
-void LoadMesh(const std::string& _Filename, unsigned int type)
+//--------------------------load model---------------------//
+void LoadModel(const std::string& _Filename, unsigned int type)
 {
     if (type == 1) {
 
@@ -133,6 +143,7 @@ void LoadMesh(const std::string& _Filename, unsigned int type)
     ourModel->bgr=true;
 	 ourModel->loadModel(_Filename);
      models.push_back(ourModel);
+     
     }else if(type ==2){
 		ourModel = new AModel;
 		ourModel->rgb = true;
@@ -160,7 +171,7 @@ void LoadMesh(const std::string& _Filename, unsigned int type)
      
     
 }
-
+//-------------------------windows proc-------------------//
 /**
  * @brief   Message bomb.
  * @param   #HWND: A handle to the window.
@@ -265,7 +276,7 @@ LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
 		case 9:
 			if (perspective == true)
 			{
-				testObj.g_Projection = testObj.camera->ViewPerspective(XM_PIDIV4, 640 / (FLOAT)480, 0.01f, 100.0f);
+				testObj.g_Projection = testObj.camera->ViewPerspective(XM_PIDIV4, 1264 / (FLOAT)681, 0.01f, 1000.0f);
 				perspective = false;
 			}
 	    		else {
@@ -284,7 +295,7 @@ LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
     }
     return ::DefWindowProc(_hwnd, _msg, _wParam, _lParam);
 }
-
+//-----------------------Function to init window---------------//
 /**
  * @brief   Set the style for the main window and init it.
  * @param   #unsigned int: First window width.
@@ -356,7 +367,7 @@ HRESULT InitWindow(LONG _width, LONG _height)
 #endif
     return S_OK;
 }
-
+//-----------------------Function to init Imgui---------------//
 /**
  * @brief   Init the UI.
  * @bug     No know Bugs.
@@ -392,7 +403,21 @@ HRESULT InitWindow(LONG _width, LONG _height)
    #endif
    return S_OK;
  }
- //UI Render 
+ 
+ //-------------------Update Data function-------------------//
+ /**
+ * @brief   Entry point.
+ * @bug     No know Bugs.
+ * @return  #int: Status code.
+ */
+ void Update() {
+
+     auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
+     testObj.Update();
+     // camera thing add 
+ }
+
+ //--------------------render ui----------------------------//
  void UIRender(AShader& _shader)
  {
    // Start the Dear ImGui frame
@@ -410,62 +435,39 @@ HRESULT InitWindow(LONG _width, LONG _height)
    #endif
    ImGui::NewFrame();
 
-
-
-   // example window
-    ImGui::Begin("Luz Dir", NULL,0);
-   static float dir[3]{};
-   static float color[3]{};
-   if (ImGui::DragFloat3("Direccion de luz", dir,0.001,-1,1)){
-       auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
-#if defined(DX11)
-            testObj.m_LigthBufferStruct.dir= XMFLOAT4(dir[0],dir[1],dir[2],0.0f);
-#endif
-#if defined(OGL)
-           glUniform4f(glGetUniformLocation(_shader.ID,"dir"), dir[0], dir[1], dir[2], 0.0f);
-          
-#endif
-        }
-   if (ImGui::DragFloat3("RGB",color , 0.001, -1, 1)) {
-	   auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
-#if defined(DX11)
-	   testObj.m_LigthBufferStruct.lightDirColor = XMFLOAT4(color[0], color[1], color[2], 0.0f);
-#endif
-#if defined(OGL)
-	   glUniform4f(glGetUniformLocation(_shader.ID, "lightDirColor"), color[0], color[1], color[2], 0.0f);
-	 
-#endif
-   }
+   auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
+   auto& RM = RManager::SingletonRM();
+  // ImGui::ShowDemoWindow();
+  
+   ImGui::Begin("Modelo", NULL, 0);
    if (ImGui::BeginCombo("Carga de Modelo", NULL))
    {
 	   if (ImGui::Button("Tipo BGR")) {
 
 
-		   LoadMesh(OpenWindowFile(g_hwnd),1);
+           LoadModel(OpenWindowFile(g_hwnd),1);
 
 	   }
        if (ImGui::Button("Tipo RGB")) {
 
 
-		   LoadMesh(OpenWindowFile(g_hwnd), 2);
+           LoadModel(OpenWindowFile(g_hwnd), 2);
 
 	   }
 	   if (ImGui::Button("Tipo wire")) {
 
 
-		   LoadMesh(OpenWindowFile(g_hwnd), 3);
+           LoadModel(OpenWindowFile(g_hwnd), 3);
 
 	   }
 	   if (ImGui::Button("Tipo Points")) {
 
 
-		   LoadMesh(OpenWindowFile(g_hwnd), 4);
+           LoadModel(OpenWindowFile(g_hwnd), 4);
 
 	   }
         ImGui::EndCombo();
    }
-  
-        
         for(int i= 0;i < models.size();i++){
             ImGui::PushID(i);
             if(ImGui::CollapsingHeader("info"+i, NULL)){
@@ -478,6 +480,8 @@ HRESULT InitWindow(LONG _width, LONG _height)
                 
 #if defined(DX11) 
 				ImTextureID my_tex_id = models[i]->g_pTextureRV;
+				ImTextureID my_tex_id2 = models[i]->g_NormalMap;
+
                 #endif
 #if defined(OGL) 
                 ImTextureID my_tex_id = (void*)models[i]->textures_loaded[0].id;
@@ -488,6 +492,13 @@ HRESULT InitWindow(LONG _width, LONG _height)
 				ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
 				ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.5f); // 50% opaque white
 				ImGui::Image(my_tex_id, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max, tint_col, border_col);
+
+
+
+				ImGui::Image(my_tex_id2, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max, tint_col, border_col);
+
+
+
                 
             }
             ImGui::PopID();
@@ -501,41 +512,130 @@ HRESULT InitWindow(LONG _width, LONG _height)
    
 #endif
    // ImGui::ShowDemoWindow();  
-   
+
+        if (ImGui::BeginCombo("Vertex", NULL)) {
+
+       
+		if (ImGui::RadioButton("Vertex", RM.m_typeTecnicaRender == RManager::TypeTecnicas::VERTEX)) {
+			RM.m_typeTecnicaRender = RManager::TypeTecnicas::VERTEX;
+		} ImGui::SameLine();
+		if (ImGui::RadioButton("Vertex Blinn", RM.m_typeTecnicaRender == RManager::TypeTecnicas::VERTEX_AND_BLINN)) {
+			RM.m_typeTecnicaRender = RManager::TypeTecnicas::VERTEX_AND_BLINN;
+		} ImGui::SameLine();
+		if (ImGui::RadioButton("Vertex Blinn Phong", RM.m_typeTecnicaRender == RManager::TypeTecnicas::VERTEX_AND_PHONG)) {
+			RM.m_typeTecnicaRender = RManager::TypeTecnicas::VERTEX_AND_PHONG;
+		} ImGui::SameLine();
+
+            ImGui::EndCombo();
+        }
+
+		if (ImGui::BeginCombo("Pixel", NULL)) {
+
+
+			if (ImGui::RadioButton("Pixel", RM.m_typeTecnicaRender == RManager::TypeTecnicas::PIXEL)) {
+				RM.m_typeTecnicaRender = RManager::TypeTecnicas::PIXEL;
+			} ImGui::SameLine();
+			if (ImGui::RadioButton("Pixel Blinn", RM.m_typeTecnicaRender == RManager::TypeTecnicas::PIXEL_AND_BLINN)) {
+				RM.m_typeTecnicaRender = RManager::TypeTecnicas::PIXEL_AND_BLINN;
+			} ImGui::SameLine();
+			if (ImGui::RadioButton("Pixel Blinn Phong", RM.m_typeTecnicaRender == RManager::TypeTecnicas::PIXEL_AND_PHONG)) {
+				RM.m_typeTecnicaRender = RManager::TypeTecnicas::PIXEL_AND_PHONG;
+			} ImGui::SameLine();
+
+			ImGui::EndCombo();
+		}
+
+		if (ImGui::BeginCombo("PixelMap", NULL)) {
+
+
+			if (ImGui::RadioButton("PixelMap", RM.m_typeTecnicaRender == RManager::TypeTecnicas::NORMALMAP)) {
+				RM.m_typeTecnicaRender = RManager::TypeTecnicas::NORMALMAP;
+			} ImGui::SameLine();
+			if (ImGui::RadioButton("PixelMap Blinn", RM.m_typeTecnicaRender == RManager::TypeTecnicas::NORMALMAP_AND_BLINN)) {
+				RM.m_typeTecnicaRender = RManager::TypeTecnicas::NORMALMAP_AND_BLINN;
+			} ImGui::SameLine();
+			if (ImGui::RadioButton("PixelMap Blinn Phong", RM.m_typeTecnicaRender == RManager::TypeTecnicas::NORMALMAP_AND_PHONG)) {
+				RM.m_typeTecnicaRender = RManager::TypeTecnicas::NORMALMAP_AND_PHONG;
+			} ImGui::SameLine();
+
+			ImGui::EndCombo();
+		}
+
+		if (ImGui::BeginCombo("Specular", NULL)) {
+
+
+			if (ImGui::RadioButton("Specular and Pixel", RM.m_typeTecnicaRender == RManager::TypeTecnicas::NORMAL_SPECULAR)) {
+				RM.m_typeTecnicaRender = RManager::TypeTecnicas::NORMAL_SPECULAR;
+			} ImGui::SameLine();
+			if (ImGui::RadioButton("Specular and Pixel Blinn", RM.m_typeTecnicaRender == RManager::TypeTecnicas::NORMAL_SPECULAR_AND_BLINN)) {
+				RM.m_typeTecnicaRender = RManager::TypeTecnicas::NORMAL_SPECULAR_AND_BLINN;
+			} ImGui::SameLine();
+			if (ImGui::RadioButton("Specular and Pixel Blinn Phong", RM.m_typeTecnicaRender == RManager::TypeTecnicas::NORMAL_SPECULAR_AND_PHONG)) {
+				RM.m_typeTecnicaRender = RManager::TypeTecnicas::NORMAL_SPECULAR_AND_PHONG;
+			} ImGui::SameLine();
+
+			ImGui::EndCombo();
+		}
    ImGui::End();
-/////////////////////////////////////
+   //dir
+   ImGui::Begin("Luz Dir", NULL, 0);
+   static float dir[3]{};
+   static float color[3]{};
+   if (ImGui::DragFloat3("Direccion de luz", dir, 0.001, -1, 1)) {
+
+
+#if defined(DX11)
+	   testObj.m_LigthBufferStruct.dir = XMFLOAT4(dir[0], dir[1], dir[2], 0.0f);
+#endif
+#if defined(OGL)
+	   glUniform4f(glGetUniformLocation(_shader.ID, "dir"), dir[0], dir[1], dir[2], 0.0f);
+
+#endif
+   }
+   if (ImGui::DragFloat3("RGB", color, 0.001, -1, 1)) {
+
+#if defined(DX11)
+	   testObj.m_LigthBufferStruct.lightDirColor = XMFLOAT4(color[0], color[1], color[2], 0.0f);
+#endif
+#if defined(OGL)
+	   glUniform4f(glGetUniformLocation(_shader.ID, "lightDirColor"), color[0], color[1], color[2], 0.0f);
+
+#endif
+   }
+   ImGui::End();
+   /////////////////////////////////////
 //----------------------------------------Point lIGHT
    ImGui::Begin("PointLight", NULL, 0);
    static float pointLightColor[3]{};
    static float pointLightPos[3]{};
    static float pointLightAtt;
    if (ImGui::DragFloat3("Direccion de PointLight", pointLightPos, 1)) {
-	   auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
+	  
 #if defined(DX11)
-	  testObj.m_PointLightBufferStruct.pointLightPos = XMFLOAT3(pointLightPos[0], pointLightPos[1], pointLightPos[2]);
+	   testObj.m_PointLightBufferStruct.pointLightPos = XMFLOAT3(pointLightPos[0], pointLightPos[1], pointLightPos[2]);
 #endif
 #if defined(OGL)
-      _shader.setVec3("pointLightPos", pointLightPos[0], pointLightPos[1], pointLightPos[2]);
-	 
-	 
+	   _shader.setVec3("pointLightPos", pointLightPos[0], pointLightPos[1], pointLightPos[2]);
+
+
 #endif
    }
    if (ImGui::DragFloat3("Color Light", pointLightColor, 0.001, -1, 1)) {
-	   auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
+	   
 #if defined(DX11)
-       testObj.m_PointLightBufferStruct.pointLightColor = XMFLOAT4(pointLightColor[0], pointLightColor[1], pointLightColor[2], 0.0f);
+	   testObj.m_PointLightBufferStruct.pointLightColor = XMFLOAT4(pointLightColor[0], pointLightColor[1], pointLightColor[2], 0.0f);
 #endif
 #if defined(OGL)
-       glUniform4f(glGetUniformLocation(_shader.ID, "pointLightColor"), pointLightColor[0], pointLightColor[1], pointLightColor[2], 0.0f);
-	  #endif
+	   glUniform4f(glGetUniformLocation(_shader.ID, "pointLightColor"), pointLightColor[0], pointLightColor[1], pointLightColor[2], 0.0f);
+#endif
    }
    if (ImGui::DragFloat("pointLightAtt", &pointLightAtt, 0.001, 1, 1000)) {
-	   auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
+	   
 #if defined(DX11)
-       testObj.m_PointLightBufferStruct.pointLightAtt = FLOAT(pointLightAtt);
+	   testObj.m_PointLightBufferStruct.pointLightAtt = FLOAT(pointLightAtt);
 #endif
 #if defined(OGL)
-       _shader.setFloat("pointLightAtt", pointLightAtt);
+	   _shader.setFloat("pointLightAtt", pointLightAtt);
 #endif
    }
    ImGui::End();
@@ -550,19 +650,19 @@ HRESULT InitWindow(LONG _width, LONG _height)
    static float spotLightInner;
    static float spotLightOutner;
    if (ImGui::DragFloat3("Position de PointLight", spotLightPos, 1)) {
-	   auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
+	  
 #if defined(DX11)
-	   testObj.m_SpotLightBufferStruct.spotLightPos = XMFLOAT4(spotLightPos[0], spotLightPos[1], spotLightPos[2],0.0f);
+	   testObj.m_SpotLightBufferStruct.spotLightPos = XMFLOAT4(spotLightPos[0], spotLightPos[1], spotLightPos[2], 0.0f);
 #endif
 #if defined(OGL)
 	   glUniform4f(glGetUniformLocation(_shader.ID, "spotLightPos"), spotLightPos[0], spotLightPos[1], spotLightPos[2], 0.0f);
-	  
+
 #endif
    }
    if (ImGui::DragFloat3("Color Light", spotLightColor, 0.001, -1, 1)) {
-	   auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
+	  
 #if defined(DX11)
-       testObj.m_SpotLightBufferStruct.spotLightColor = XMFLOAT4(spotLightColor[0], spotLightColor[1], spotLightColor[2], 0.0f);
+	   testObj.m_SpotLightBufferStruct.spotLightColor = XMFLOAT4(spotLightColor[0], spotLightColor[1], spotLightColor[2], 0.0f);
 #endif
 #if defined(OGL)
 	   glUniform4f(glGetUniformLocation(_shader.ID, "spotLightColor"), spotLightColor[0], spotLightColor[1], spotLightColor[2], 0.0f);
@@ -570,47 +670,100 @@ HRESULT InitWindow(LONG _width, LONG _height)
 #endif
    }
    if (ImGui::DragFloat3("Dir Light", spotLightDir, 0.001, -1, 1)) {
-	   auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
+	   
 #if defined(DX11)
 	   testObj.m_SpotLightBufferStruct.spotLightDir = XMFLOAT4(spotLightDir[0], spotLightDir[1], spotLightDir[2], 0.0f);
 #endif
 #if defined(OGL)
 	   glUniform4f(glGetUniformLocation(_shader.ID, "spotLightDir"), spotLightDir[0], spotLightDir[1], spotLightDir[2], 0.0f);
-	  
+
 #endif
    }
-   if (ImGui::DragFloat("Attenaution", &SpotlightAtt,1)) {
-	   auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
+   if (ImGui::DragFloat("Attenaution", &SpotlightAtt, 1)) {
+	  
 #if defined(DX11)
 	   testObj.m_SpotLightBufferStruct.SpotlightAtt = FLOAT(SpotlightAtt);
 #endif
 #if defined(OGL)
-       _shader.setFloat("SpotlightAtt", SpotlightAtt);
+	   _shader.setFloat("SpotlightAtt", SpotlightAtt);
 #endif
    }
    if (ImGui::DragFloat("Inner", &spotLightInner, 1)) {
-	   auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
+	  
 #if defined(DX11)
 	   testObj.m_SpotLightBufferStruct.spotLightInner = FLOAT(spotLightInner);
 #endif
 #if defined(OGL)
-       _shader.setFloat("spotLightInner", spotLightInner);
+	   _shader.setFloat("spotLightInner", spotLightInner);
 #endif
    }
    if (ImGui::DragFloat("Outner", &spotLightOutner, 1)) {
-	   auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
+	  
 #if defined(DX11)
-       testObj.m_SpotLightBufferStruct.spotLightOutner = FLOAT(spotLightOutner);
+	   testObj.m_SpotLightBufferStruct.spotLightOutner = FLOAT(spotLightOutner);
 #endif
 #if defined(OGL)
-       _shader.setFloat("spotLightOutner", spotLightOutner);
+	   _shader.setFloat("spotLightOutner", spotLightOutner);
 #endif
    }
    ImGui::End();
    // render UI
+   ImGui::Begin("Ambient", NULL, 0);
+   static float ambientColor[3]{};
+   static float kAmbient;
+   static float kSpecular;
+   static float shininess;
+   static float kDiffuse;
+   if (ImGui::DragFloat3("Ambient Color", ambientColor, 1)) {
+	   
+#if defined(DX11)
+	   testObj.m_AmbientBufferStruct.ambientColor = XMFLOAT4(ambientColor[0], ambientColor[1], ambientColor[2], 0.0f);
+#endif
+#if defined(OGL)
+	   glUniform4f(glGetUniformLocation(_shader.ID, "spotLightPos"), spotLightPos[0], spotLightPos[1], spotLightPos[2], 0.0f);
+
+#endif
+   }
+   if (ImGui::DragFloat("kAmbient", &kAmbient, 1)) {
+	   
+#if defined(DX11)
+	   testObj.m_AmbientBufferStruct.kAmbient = FLOAT(kAmbient);
+#endif
+#if defined(OGL)
+	   _shader.setFloat("spotLightOutner", spotLightOutner);
+#endif
+   }
+   if (ImGui::DragFloat("kSpecular", &kSpecular, 1)) {
+	   
+#if defined(DX11)
+	   testObj.m_SpecularBufferStruct.kSpecular = FLOAT(kSpecular);
+#endif
+#if defined(OGL)
+	   _shader.setFloat("spotLightOutner", spotLightOutner);
+#endif
+   }
+   if (ImGui::DragFloat("shininess", &shininess, 1)) {
+	   
+#if defined(DX11)
+	   testObj.m_ShiniesBufferStruct.shininess = FLOAT(shininess);
+#endif
+#if defined(OGL)
+	   _shader.setFloat("spotLightOutner", spotLightOutner);
+#endif
+   }
+   if (ImGui::DragFloat("kDiffuse", &kDiffuse, 1)) {
+	   
+#if defined(DX11)
+	   testObj.m_DiffuseBufferStruct.kDiffuse = FLOAT(kDiffuse);
+#endif
+#if defined(OGL)
+	   _shader.setFloat("spotLightOutner", spotLightOutner);
+#endif
+   }
+   ImGui::End();
+
    ImGui::Render();
   
-
   
 #if defined(DX11)
    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
@@ -618,7 +771,7 @@ HRESULT InitWindow(LONG _width, LONG _height)
  #endif
  }
 
-
+//--------------------render function ----------------------//
  void Render(AShader& _shader) {
 #if  defined(OGL)
      auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
@@ -655,9 +808,6 @@ HRESULT InitWindow(LONG _width, LONG _height)
     _shader.setMat4("World",wordl);
 
 	
-
-   
-   // ourModel.Draw(_shader); 
 	for (int i = 0; i < models.size(); i++)
 	{
         models[i]->Draw(_shader);
@@ -670,13 +820,15 @@ HRESULT InitWindow(LONG _width, LONG _height)
 #endif
 #if defined(DX11) 
 	 auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
-	 testObj.Render();
-    
-     for (int i =0;i<models.size();i++)
-     {
-         models[i]->Draw(_shader);
-     }
-     UIRender(_shader); 
+     auto& RM = RManager::SingletonRM();
+     testObj.Render();
+    //render manager
+  
+    RM.Render(models);
+
+   
+     UIRender(_shader);
+     
      testObj.g_pSwapChain.m_swapchain->Present(0, 0);
  #endif
  }
@@ -699,21 +851,11 @@ HRESULT InitWindow(LONG _width, LONG _height)
 		 camera.ProcessKeyboard(RIGHT, deltaTime);
  }
 #endif
-
- /**
- * @brief   Entry point.
- * @bug     No know Bugs.
- * @return  #int: Status code.
- */
- void Update() {
-
-     auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
-     testObj.Update();
-   
- }
+//-----main-----------------------------------//
 int main()
 {
     // create the window and console
+  
     if (FAILED(InitWindow(1280, 720)))
 	{
 		DestroyWindow(g_hwnd);
@@ -721,8 +863,7 @@ int main()
 	}
 	first = true;
 	AShader ourShader("C://Graficos1_recursos//ProyectoGraficas1//bin//1.model_loading.vs", "C://Graficos1_recursos//ProyectoGraficas1//bin//1model_loading.fs");
-	AShader spotlight("C://Graficos1_recursos//ProyectoGraficas1//bin//spotlight.vs", "C://Graficos1_recursos//ProyectoGraficas1//bin//spotlight.fs");
-
+  
    //create UI
     if (FAILED(InitImgUI()))
     {
@@ -783,6 +924,6 @@ int main()
     testObj.CleanupDevice();
     DestroyWindow(g_hwnd);
 
-   //return (int)msg.wParam; 
+  
     return 0;
 }

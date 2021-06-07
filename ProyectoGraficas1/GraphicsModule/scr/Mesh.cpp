@@ -122,7 +122,7 @@ void Mesh::Draw(AShader& shader, bool points)
 
 
 
-	//testObj.cb.mWorld = XMMatrixMultiplyTranspose(testObj.g_View, testObj.cb.mWorld);
+	testObj.cb.mWorld = XMMatrixMultiplyTranspose(testObj.g_View, testObj.cb.mWorld);
 
 	testObj.g_pImmediateContext.A_IASetVertexBuffers(0, 1, &m_pVertexBuffer.getBufferDX11(), &stride, &offset);
 	testObj.g_pImmediateContext.A_IASetIndexBuffer(m_pIndexBuffer.getBufferDX11(), DXGI_FORMAT_R32_UINT, 0);
