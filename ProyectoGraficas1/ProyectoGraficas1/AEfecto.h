@@ -16,6 +16,7 @@ public:
 	void InitDefered();
 private:
 	std::vector<ATecnica*>m_TecnicaList;
+	std::vector<ATecnica*>m_TecnicaListDefferd;
 
 };
 

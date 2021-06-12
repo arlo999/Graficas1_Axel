@@ -25,15 +25,22 @@
 
 namespace GraphicsModule
 {
+	struct TooneMap
+	{
+#if defined(DX11)
+		XMFLOAT3 n;
+		FLOAT exposur;
+	#endif
+	};
 	struct Sao
 	{
-		XMFLOAT2 sampleIterations;
-		XMFLOAT2 exposur;
+#if defined(DX11)
 		FLOAT  sampleRadius;
 		FLOAT  scale;
 		FLOAT  bias;
 		FLOAT  intensity;
-		
+		XMFLOAT4 sampleIterations;
+	#endif	
 	};
 
 	struct DirLigth {
@@ -175,8 +182,9 @@ todo esto necesita abstra
 		//SAO
 		ABuffer m_SaoBuffer;
 		Sao m_SaoBufferStruct;
-	
-
+	//toone map
+		ABuffer m_TooneMaBuffer;
+		TooneMap m_TooneMaBufferStruct;
 		//----------------------------------render targets----------------------//
 		ID3D11RenderTargetView* g_pRenderTargetView = NULL;
 	

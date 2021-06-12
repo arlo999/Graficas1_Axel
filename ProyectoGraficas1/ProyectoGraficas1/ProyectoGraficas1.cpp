@@ -483,7 +483,7 @@ HRESULT InitWindow(LONG _width, LONG _height)
 				ImTextureID my_tex_id2 = (void*)RM.m_NormalSRV;
 				ImTextureID my_tex_id3 = (void*)RM.m_SpecularSRV;
 				ImTextureID my_tex_id4 = (void*)RM.m_PositionSRV;
-				ImTextureID my_tex_id5 = (void*)RM.m_SSaoSRV;
+				ImTextureID my_tex_id5 = (void*)RM.m_SkyboxMapSRV;
 
                 #endif
 #if defined(OGL) 
@@ -494,13 +494,15 @@ HRESULT InitWindow(LONG _width, LONG _height)
 				ImVec2 uv_max = ImVec2(1.0f, 1.0f);                 // Lower-right
 				ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
 				ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.5f); // 50% opaque white
+				
 				ImGui::ImageButton(my_tex_id, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max);
+#if defined(DX11)
 				ImGui::ImageButton(my_tex_id2, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max);
 				ImGui::ImageButton(my_tex_id3, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max);
 				ImGui::ImageButton(my_tex_id4, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max);
 				ImGui::ImageButton(my_tex_id5, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max);
 				
-
+#endif
 
 
                 
@@ -516,6 +518,17 @@ HRESULT InitWindow(LONG _width, LONG _height)
    
 #endif
    // ImGui::ShowDemoWindow();  
+		if (ImGui::BeginCombo("Forward", NULL)) {
+
+
+			if (ImGui::RadioButton("Forward", RM.m_Forward == true)) {
+				RM.m_Forward =true;
+			} ImGui::SameLine();
+			if (ImGui::RadioButton("Deffered", RM.m_Forward == false)) {
+				RM.m_Forward = false;
+			} ImGui::SameLine();
+			ImGui::EndCombo();
+		}
 
         if (ImGui::BeginCombo("Vertex", NULL)) {
 
@@ -779,10 +792,10 @@ HRESULT InitWindow(LONG _width, LONG _height)
    static float bias;
    static float intensity;
    static float exposure[3]{};
-   if (ImGui::DragFloat("Sample Iteration", sampleIterations, 1)) {
+   if (ImGui::DragFloat("Sample Iteration", sampleIterations, 0.001, 0, 5)) {
 
 #if defined(DX11)
-	   testObj.m_SaoBufferStruct.sampleIterations = XMFLOAT2(sampleIterations[0], 0);
+	   testObj.m_SaoBufferStruct.sampleIterations = XMFLOAT4(sampleIterations[0], 0,0,0);
 #endif
 #if defined(OGL)
 	   glUniform4f(glGetUniformLocation(_shader.ID, "spotLightPos"), spotLightPos[0], spotLightPos[1], spotLightPos[2], 0.0f);
@@ -792,7 +805,7 @@ HRESULT InitWindow(LONG _width, LONG _height)
    if (ImGui::DragFloat("exposure", exposure, 1)) {
 
 #if defined(DX11)
-	   testObj.m_SaoBufferStruct.exposur = XMFLOAT2(exposure[0], 0);
+	   testObj.m_TooneMaBufferStruct.exposur = FLOAT(exposure[0]);
 #endif
 #if defined(OGL)
 	   glUniform4f(glGetUniformLocation(_shader.ID, "spotLightPos"), spotLightPos[0], spotLightPos[1], spotLightPos[2], 0.0f);

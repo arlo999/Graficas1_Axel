@@ -17,9 +17,8 @@ bool ARenderManager::Init()
 {
 	std::cout<<"Init render manager"<<std::endl;
 	
-	//ForwardInit();
 	LoadDependences();
-
+	ForwardInit();
 	DefferedInit();
 	return true;
 	
@@ -35,7 +34,7 @@ void ARenderManager::LoadDependences()
 
 HRESULT ARenderManager::ApplyEfects()
 {
-
+#if defined(DX11)
 	auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
 	HRESULT hr = S_OK;
 	ID3D11Texture2D* _position;
@@ -43,8 +42,11 @@ HRESULT ARenderManager::ApplyEfects()
 	ID3D11Texture2D* _specular;
 	ID3D11Texture2D* _albedo;
 	ID3D11Texture2D* _Ssao;
+	ID3D11Texture2D* _Light;
+	ID3D11Texture2D* _ToonMap;
 	ID3D11Texture2D* _Final;
 	ID3D11Texture2D* _Skybox;
+	ID3D11Texture2D* _Skyboxnormal;
 
 
 	// Create rt texture
@@ -54,7 +56,7 @@ HRESULT ARenderManager::ApplyEfects()
 	descTextRT.Height = (FLOAT)testObj.height;
 	descTextRT.MipLevels = 1;
 	descTextRT.ArraySize = 1;
-	descTextRT.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	descTextRT.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
 	descTextRT.SampleDesc.Count = 1;
 	descTextRT.SampleDesc.Quality = 0;
 	descTextRT.Usage = D3D11_USAGE_DEFAULT;
@@ -74,19 +76,22 @@ HRESULT ARenderManager::ApplyEfects()
 	hr = testObj.g_pd3dDevice.A_CreateTexture2D(&descTextRT, NULL, &_albedo);
 	if (FAILED(hr))
 		return hr;
+	hr = testObj.g_pd3dDevice.A_CreateTexture2D(&descTextRT, NULL, &_Light);
+	if (FAILED(hr))
+		return hr;
 	hr = testObj.g_pd3dDevice.A_CreateTexture2D(&descTextRT, NULL, &_Ssao);
+	if (FAILED(hr))
+		return hr;
+	hr = testObj.g_pd3dDevice.A_CreateTexture2D(&descTextRT, NULL, &_ToonMap);
 	if (FAILED(hr))
 		return hr;
 	hr = testObj.g_pd3dDevice.A_CreateTexture2D(&descTextRT, NULL, &_Final);
 	if (FAILED(hr))
 		return hr;
-	hr = testObj.g_pd3dDevice.A_CreateTexture2D(&descTextRT, NULL, &_Skybox);
-	if (FAILED(hr))
-		return hr;
 	// create the rt Shader resource view
 	D3D11_SHADER_RESOURCE_VIEW_DESC descViewRT;
 	ZeroMemory(&descViewRT, sizeof(descViewRT));
-	descViewRT.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	descViewRT.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
 	descViewRT.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 	descViewRT.Texture2D.MostDetailedMip = 0;
 	descViewRT.Texture2D.MipLevels = 1;
@@ -111,11 +116,51 @@ HRESULT ARenderManager::ApplyEfects()
 	hr = testObj.g_pd3dDevice.A_CreateShaderResourceView(_Ssao, &descViewRT, &m_SSaoSRV);
 	if (FAILED(hr))
 		return hr;
-
-	//create the texture cube map
-	hr = D3DX11CreateShaderResourceViewFromFile(testObj.g_pd3dDevice.m_device, "Earth.dds", NULL, NULL, &m_SkyboxMapSRV, NULL);
+	hr = testObj.g_pd3dDevice.A_CreateShaderResourceView(_Light, &descViewRT, &m_LightSRV);
 	if (FAILED(hr))
 		return hr;
+	hr = testObj.g_pd3dDevice.A_CreateShaderResourceView(_ToonMap, &descViewRT, &m_ToonMapSRV);
+	if (FAILED(hr))
+		return hr;
+
+	//create the texture cube map
+	hr = D3DX11CreateTextureFromFile(testObj.g_pd3dDevice.m_device, "Mars.dds", NULL, NULL, (ID3D11Resource**)&_Skybox, NULL);
+	if (FAILED(hr))
+		return hr;
+	hr = D3DX11CreateTextureFromFile(testObj.g_pd3dDevice.m_device, "Diffuse_Mars.dds", NULL, NULL, (ID3D11Resource**)&_Skyboxnormal, NULL);
+	if (FAILED(hr))
+		return hr;
+	D3D11_TEXTURE2D_DESC texture2dEmpty;
+	_Skybox->GetDesc(&texture2dEmpty);
+	
+	D3D11_SHADER_RESOURCE_VIEW_DESC cubedesc;
+	ZeroMemory(&cubedesc, sizeof(cubedesc));
+	cubedesc.Format = texture2dEmpty.Format;
+	cubedesc.ViewDimension = D3D_SRV_DIMENSION_TEXTURECUBE;
+	cubedesc.Texture2D.MostDetailedMip = 0;
+	cubedesc.Texture2D.MipLevels = texture2dEmpty.MipLevels;
+
+
+	D3D11_TEXTURE2D_DESC texture2dEmpty2;
+	_Skyboxnormal->GetDesc(&texture2dEmpty2);
+	D3D11_SHADER_RESOURCE_VIEW_DESC cubedesc2;
+	ZeroMemory(&cubedesc2, sizeof(cubedesc2));
+	cubedesc2.Format = texture2dEmpty2.Format;
+	cubedesc2.ViewDimension = D3D_SRV_DIMENSION_TEXTURECUBE;
+	cubedesc2.Texture2D.MostDetailedMip = 0;
+	cubedesc2.Texture2D.MipLevels = texture2dEmpty2.MipLevels;
+
+	
+	hr = testObj.g_pd3dDevice.A_CreateShaderResourceView(_Skybox, &cubedesc, &m_SkyboxMapSRV);
+	if (FAILED(hr))
+		return hr;
+
+
+	hr = testObj.g_pd3dDevice.A_CreateShaderResourceView(_Skyboxnormal, &cubedesc2, &m_SkyboxNormalMapSRV);
+	if (FAILED(hr))
+		return hr;
+
+
 
 	// Create the render target view	
 	hr = testObj.g_pd3dDevice.A_CreateRenderTargetView(_albedo, NULL, &m_AlbedoRT);
@@ -140,32 +185,38 @@ HRESULT ARenderManager::ApplyEfects()
 	m_RTVList.push_back(m_PositionRT);
 	
 //////
+	hr = testObj.g_pd3dDevice.A_CreateRenderTargetView(_Light, NULL, &m_LightRT);
+	if (FAILED(hr))
+		return hr;
+	m_RTVList.push_back(m_LightRT);
+
 	hr = testObj.g_pd3dDevice.A_CreateRenderTargetView(_Ssao, NULL, &m_SsaoRT);
 	if (FAILED(hr))
 		return hr;
 	m_RTVList.push_back(m_SsaoRT);
-	
+
+	hr = testObj.g_pd3dDevice.A_CreateRenderTargetView(_ToonMap, NULL, &m_ToonRT);
+	if (FAILED(hr))
+		return hr;
+	m_RTVList.push_back(m_SsaoRT);
 ////////
 	hr = testObj.g_pd3dDevice.A_CreateRenderTargetView(_Final, NULL, &m_FinalRT);
 	if (FAILED(hr))
 		return hr;
 	m_RTVList.push_back(m_FinalRT);
 /////
-	hr = testObj.g_pd3dDevice.A_CreateRenderTargetView(_Skybox, NULL, &m_SkyboxRT);
-	if (FAILED(hr))
-		return hr;
-	m_RTVList.push_back(m_SkyboxRT);
+
 
 
 	D3D11_SAMPLER_DESC samplerDesc;
 	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
-	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
-	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerDesc.MipLODBias = 0.0f;
-	samplerDesc.MaxAnisotropy = 1;
+	samplerDesc.MaxAnisotropy = 0.0f;
 	samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-	samplerDesc.MinLOD = -FLT_MAX;
+	samplerDesc.MinLOD = 0.0f;
 	samplerDesc.MaxLOD = FLT_MAX;
 
 
@@ -173,8 +224,8 @@ HRESULT ARenderManager::ApplyEfects()
 	if (FAILED(hr))
 		return hr;
 
+#endif
 	return S_OK;
-
 }
 
 
@@ -184,37 +235,42 @@ void ARenderManager::Render(std::vector<AModel*>& _ModelList)
 
 	
 	m_ModelList=_ModelList;
-	//Forward();
-	Deferred();
+	if (m_Forward) {
+
+	Forward();
+	}
+	else {
+		Deferred();
+
+	}
+	
+	
 
 }
 
 void ARenderManager::Forward()
 {
 	
-	for (int i = 0; i < m_EfectoList.size(); i++)
-	{
-		m_EfectoList[i]->Render();
-	}
+	
+		m_EfectoList[0]->Render();
+	
 
 }
 
 void ARenderManager::Deferred()
 {
-	float ClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f };
-	auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
+	
 
-	for (int i = 0; i < m_EfectoList.size(); i++)
-	{
-		m_EfectoList[i]->Render();
-	}
+	
+		m_EfectoList[1]->Render();
+	
 
 }
 
 bool ARenderManager::ForwardInit()
 {
 	AEfecto* forward= new AEfecto;
-	forward->Init();
+	forward->InitForward();
 	m_EfectoList.push_back(forward);
 
 	return true;

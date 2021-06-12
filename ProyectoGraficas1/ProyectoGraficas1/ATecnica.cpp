@@ -16,6 +16,7 @@ void ATecnica::Init()
 
 
 	auto& RM = RManager::SingletonRM();
+	
 	D3D10_SHADER_MACRO  vertex_Light;
 	vertex_Light.Name= "VERTEX_LIGHT";
 	vertex_Light.Definition="TRUE" ;
@@ -35,14 +36,34 @@ void ATecnica::Init()
 	APase* pase = new APase;
 	pase->Init();
 	m_PaseList.push_back(pase);
+
+
 }
 
 void ATecnica::Render()
 {
-	for (int i = 0; i < m_PaseList.size(); i++)
-	{
-		m_PaseList[i]->Render();
+	auto& RM = RManager::SingletonRM();
+
+	if (RM.m_Forward) {
+	
+	
+		for (int i = 0; i < m_PaseList.size(); i++)
+		{
+			m_PaseList[i]->Render();
+		}
+	
+	
+	}else {
+
+		for (int i = 0; i < m_PaseListDefferd.size(); i++)
+		{
+			m_PaseListDefferd[i]->Render();
+		}
+	
 	}
+	
+
+
 	
 
 }
@@ -427,7 +448,7 @@ void ATecnica::InitGbuffer_NormSpec()
 
 	APase* pase = new APase;
 	pase->InitGBuffer();
-	m_PaseList.push_back(pase);
+	m_PaseListDefferd.push_back(pase);
 
 
 
@@ -446,43 +467,34 @@ void ATecnica::InitGbuffer_NormSpec()
 	RM.m_macros.push_back(Terminate);
 	
 	
-	/*
-	APase* paseSkyBox = new APase(true);
+	APase* paseSkyBox = new APase(RManager::SKYBOX);
 	paseSkyBox->InitSkybox();
-	m_PaseList.push_back(paseSkyBox);
-	*/
-	
-
-
-/*
-APase* paseLSao = new APase(true);
-paseLSao->InitSao();
-m_PaseList.push_back(paseLSao);
-*/
-
+	m_PaseListDefferd.push_back(paseSkyBox);
 	
 	
-	APase* paseLight = new APase(true);
+	
+
+	APase* paseLight = new APase(RManager::LIGHT);
 	paseLight->InitLight();
-	m_PaseList.push_back(paseLight);
-	
-
-
+	m_PaseListDefferd.push_back(paseLight);
 
 	
+	APase* paseLSao = new APase(RManager::AO);
+	paseLSao->InitSao();
+	m_PaseListDefferd.push_back(paseLSao);
 	
 	
-	APase* paseToonMap = new APase(true);
+	
+	APase* paseToonMap = new APase(RManager::TONEMAP);
 	paseToonMap->InitTooneMap();
-	m_PaseList.push_back(paseToonMap);
-	
+	m_PaseListDefferd.push_back(paseToonMap);
 	
 	
 	
 
-	APase* paseCopy = new APase(true);
+	APase* paseCopy = new APase(RManager::COPY);
 	paseCopy->InitCopy();
-	m_PaseList.push_back(paseCopy);
+	m_PaseListDefferd.push_back(paseCopy);
 	
 	
 

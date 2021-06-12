@@ -224,6 +224,8 @@ void AModel::Draw(AShader& shader)
 
 void AModel::Render()
 {
+
+#if defined(DX11)
 	auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
 	testObj.cb.mWorld = XMMatrixTranslation(transform.traslation[0], transform.traslation[1], transform.traslation[2]);
 	testObj.cb.mWorld = XMMatrixMultiply(XMMatrixScaling(transform.scale[0], transform.scale[1], transform.scale[2]), testObj.cb.mWorld);
@@ -238,21 +240,27 @@ void AModel::Render()
 	{
 		meshes[i].Render();
 	}
+
+#endif	
 }
 
 void AModel::Rendersaq()
 {
+#if defined(DX11)
 	auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
 
 	testObj.cb.mWorld = XMMatrixTranslation(transform.traslation[0], transform.traslation[1], transform.traslation[2]);
 	testObj.cb.mWorld = XMMatrixMultiply(XMMatrixScaling(transform.scale[0], transform.scale[1], transform.scale[2]), testObj.cb.mWorld);
 	testObj.cb.mWorld = XMMatrixMultiplyTranspose(XMMatrixRotationRollPitchYaw(transform.rotation[0], transform.rotation[1], transform.rotation[2]), testObj.cb.mWorld);
 
-	testObj.g_pImmediateContext.A_UpdateSubresource(testObj.m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &testObj.cb, 0, 0);
+	//testObj.g_pImmediateContext.A_UpdateSubresource(testObj.m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &testObj.cb, 0, 0);
+
+
 	for (unsigned int i = 0; i < meshes.size(); i++)
 	{
 		meshes[i].Render();
 	}
+	#endif
 }
 
 void AModel::loadModel(string const& path)

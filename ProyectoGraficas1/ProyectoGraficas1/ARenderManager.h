@@ -23,7 +23,15 @@ namespace RManager {
 
 	};
 
+	enum TypePase {
 
+		GBUFFER=0,
+		SKYBOX,
+		LIGHT,
+		AO,
+		TONEMAP,
+		COPY
+	};
 class ARenderManager
 {
 public:
@@ -49,27 +57,33 @@ public:
 	AModel m_ScreenAlignedQuad;
 	AModel m_Skybox;
 
-
+	//todo usar abstraccion
 	//SHADER RESOURCE
 	ID3D11ShaderResourceView* m_PositionSRV = NULL;
 	ID3D11ShaderResourceView* m_NormalSRV = NULL;
 	ID3D11ShaderResourceView* m_SpecularSRV = NULL;
 	ID3D11ShaderResourceView* m_AlbedoSRV = NULL;
+	ID3D11ShaderResourceView* m_LightSRV = NULL;
 	ID3D11ShaderResourceView* m_SSaoSRV = NULL;
+	ID3D11ShaderResourceView* m_ToonMapSRV = NULL;
 	ID3D11ShaderResourceView* m_FinalSRV = NULL;
 	ID3D11ShaderResourceView* m_SkyboxMapSRV=NULL;
+	ID3D11ShaderResourceView* m_SkyboxNormalMapSRV=NULL;
 	//RENDER TARGETS
 	ID3D11RenderTargetView* m_PositionRT = NULL;
 	ID3D11RenderTargetView* m_NormalRT = NULL;
 	ID3D11RenderTargetView* m_SpecularRT = NULL;
 	ID3D11RenderTargetView* m_AlbedoRT = NULL;
+	ID3D11RenderTargetView* m_LightRT = NULL;
 	ID3D11RenderTargetView* m_SsaoRT = NULL;
+	ID3D11RenderTargetView* m_ToonRT = NULL;
 	ID3D11RenderTargetView* m_FinalRT = NULL;
 	ID3D11RenderTargetView* m_SkyboxRT = NULL;
 	//SAMPLERS
 	ID3D11SamplerState* m_generico = NULL;
 
-
+	//
+	bool m_Forward=false;
 private:
 	
 

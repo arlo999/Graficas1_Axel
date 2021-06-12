@@ -40,6 +40,8 @@ private:
 	ID3D11PixelShader* g_pPixelShader = NULL;
 	ID3D11InputLayout* g_pVertexLayout = NULL;
 	ID3D11RasterizerState* m_Rasterizador = NULL;
+	std::vector<ID3D11RenderTargetView*>m_ListRenderTV;
+
 	bool m_PostProceso = false;
 	std::vector<AModel*>m_ModelList;
 	int m_TypePase;

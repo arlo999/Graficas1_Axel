@@ -34,6 +34,7 @@ public:
 private:
 	
 	std::vector<APase*> m_PaseList;
+	std::vector<APase*> m_PaseListDefferd;
 	
 };
 

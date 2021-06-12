@@ -185,6 +185,10 @@ namespace GraphicsModule
 		hr = g_pd3dDevice.A_CreateBuffer(&bd, NULL, &m_SaoBuffer.getBufferDX11());
 		if (FAILED(hr))
 			return hr;
+		bd.ByteWidth = sizeof(TooneMap);
+		hr = g_pd3dDevice.A_CreateBuffer(&bd, NULL, &m_TooneMaBuffer.getBufferDX11());
+		if (FAILED(hr))
+			return hr;
 		// Create the sample state
 
 		D3D11_SAMPLER_DESC samplerDesc;
@@ -250,7 +254,7 @@ namespace GraphicsModule
 
 		// Clear the back buffer
 
-		float ClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f }; // red, green, blue, alpha
+		float ClearColor[4] = { 0.0f, 1.125f, 0.3f, 1.0f }; // red, green, blue, alpha
 
 
 		g_View = camera->getviewMLookLDirectX();
@@ -277,6 +281,8 @@ namespace GraphicsModule
 		g_pImmediateContext.A_UpdateSubresource(m_DiffuseBuffer.getBufferDX11(), 0, NULL, &m_DiffuseBufferStruct, 0, 0);
 		//sao
 		g_pImmediateContext.A_UpdateSubresource(m_SaoBuffer.getBufferDX11(), 0, NULL, &m_SaoBufferStruct, 0, 0);
+		//toone
+		g_pImmediateContext.A_UpdateSubresource(m_TooneMaBuffer.getBufferDX11(), 0, NULL, &m_TooneMaBufferStruct, 0, 0);
 		//camara
 
 
@@ -314,6 +320,8 @@ namespace GraphicsModule
 		//sao
 		g_pImmediateContext.PSSetConstantBuffers(11, 1, &m_SaoBuffer.getBufferDX11());
 
+		g_pImmediateContext.PSSetConstantBuffers(12, 1, &m_TooneMaBuffer.getBufferDX11());
+
 
 		g_pImmediateContext.A_PSSetSamplers(0, 1, &g_DiffuseSampler);
 
@@ -335,8 +343,8 @@ namespace GraphicsModule
 	
 
 		g_pImmediateContext.A_ClearRenderTargetView(g_pRenderTargetView, ClearColor);
-		g_pImmediateContext.A_ClearDepthStencilView(g_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-		g_pImmediateContext.A_OMSetRenderTargets(1, &g_pRenderTargetView, g_pDepthStencilView);
+		g_pImmediateContext.A_ClearDepthStencilView(g_pDepthStencilView,1 , 1.0f, 0);
+		//g_pImmediateContext.A_OMSetRenderTargets(1, &g_pRenderTargetView, g_pDepthStencilView);
 
 		
 		
@@ -360,6 +368,7 @@ namespace GraphicsModule
 		if(m_ShiniesBuffer.getBufferDX11())m_ShiniesBuffer.Release();
 		if(m_DiffuseBuffer.getBufferDX11())m_DiffuseBuffer.Release();
 		if(m_SaoBuffer.getBufferDX11())m_SaoBuffer.Release();
+		if(m_TooneMaBuffer.getBufferDX11())m_TooneMaBuffer.Release();
 		if (g_pDepthStencilView) g_pDepthStencilView->Release();
 		if (g_pRenderTargetView) g_pRenderTargetView->Release();
 		if (g_pSwapChain.m_swapchain) g_pSwapChain.A_Release();

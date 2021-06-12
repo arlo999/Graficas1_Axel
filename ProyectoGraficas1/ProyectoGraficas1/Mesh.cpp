@@ -133,6 +133,7 @@ void Mesh::Draw(AShader& shader, bool triangles)
 
 void Mesh::Render()
 {
+#if defined(DX11)
 	auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
 
 	UINT stride = sizeof(Vertex);
@@ -143,6 +144,7 @@ void Mesh::Render()
 	testObj.g_pImmediateContext.A_IASetIndexBuffer(m_pIndexBuffer.getBufferDX11(), DXGI_FORMAT_R32_UINT, 0);
 
 	testObj.g_pImmediateContext.A_DrawIndexed(indices.size(), 0, 0);
+#endif	
 }
 
 void Mesh::setupMesh()

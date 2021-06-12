@@ -26,7 +26,7 @@ HRESULT APase::Init()
 	* 1- paso cargar shader
 	* 2-create render targets
 	*/
-	
+#if defined(DX11)
 	auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
 	auto& RM= RManager::SingletonRM();
 	HRESULT hr = S_OK;
@@ -132,97 +132,153 @@ HRESULT APase::Init()
 		return hr;
 	}
 
+#endif
 
-
-
+return S_OK;
 
 }
 
 void APase::Render()
 {
 
+#if defined(DX11)
 	float ClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f }; // red, green, blue, alpha
+	float red[4] = { 1.0f, 0.125f, 0.3f, 1.0f }; // red, green, blue, alpha
 	auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
 	auto& RM = RManager::SingletonRM();
 	m_ModelList	=	RM.m_ModelList;
+
 	testObj.g_pImmediateContext.A_RSSetState(m_Rasterizador);
 	testObj.g_pImmediateContext.A_IASetInputLayout(g_pVertexLayout);
 	testObj.g_pImmediateContext.A_VSSetShader(g_pVertexShader, NULL, 0);
 	testObj.g_pImmediateContext.A_PSSetShader(g_pPixelShader, NULL, 0);
 
-
-	testObj.g_pImmediateContext.A_PSSetSamplers(0, 1, &RM.m_generico);
-	testObj.g_pImmediateContext.A_PSSetSamplers(1, 1, &RM.m_generico);
-	testObj.g_pImmediateContext.A_PSSetSamplers(2, 1, &RM.m_generico);
-	testObj.g_pImmediateContext.A_PSSetSamplers(3, 1, &RM.m_generico);
-	testObj.g_pImmediateContext.A_PSSetSamplers(4, 1, &RM.m_generico);
-	testObj.g_pImmediateContext.A_PSSetSamplers(5, 1, &RM.m_generico);
-	testObj.g_pImmediateContext.A_PSSetSamplers(6, 1, &RM.m_generico);
+	if (RM.m_Forward) {
 	
-	if (m_PostProceso) {
-		
-		
-		
-		
-		testObj.g_pImmediateContext.A_PSSetShaderResources(0, 1, &RM.m_AlbedoSRV);
-		testObj.g_pImmediateContext.A_PSSetShaderResources(1, 1, &RM.m_NormalSRV);
-		testObj.g_pImmediateContext.A_PSSetShaderResources(2, 1, &RM.m_SpecularSRV);
-		testObj.g_pImmediateContext.A_PSSetShaderResources(3, 1, &RM.m_PositionSRV);
-		//testObj.g_pImmediateContext.A_PSSetShaderResources(4, 1, &RM.m_SSaoSRV);
-
-		//testObj.g_pImmediateContext.A_PSSetShaderResources(5, 1, &RM.m_FinalSRV);
-		//testObj.g_pImmediateContext.A_PSSetShaderResources(6, 1, &RM.m_SkyboxMapSRV);
-		
-		//testObj.g_pImmediateContext.A_OMSetRenderTargets(1, &testObj.g_pRenderTargetView, NULL);
-
-		RM.m_ScreenAlignedQuad.Rendersaq();
-
-		
-		
-
-
-
-
-	}else if(m_TypePase==1){
-	/*
-		testObj.g_pImmediateContext.A_PSSetShaderResources(0, 1, &RM.m_AlbedoSRV);
-		testObj.g_pImmediateContext.A_PSSetShaderResources(1, 1, &RM.m_NormalSRV);
-		testObj.g_pImmediateContext.A_PSSetShaderResources(2, 1, &RM.m_SpecularSRV);
-		testObj.g_pImmediateContext.A_PSSetShaderResources(3, 1, &RM.m_PositionSRV);
-		testObj.g_pImmediateContext.A_PSSetShaderResources(5, 1, &RM.m_FinalSRV);
-		testObj.g_pImmediateContext.A_PSSetShaderResources(4, 1, &RM.m_SSaoSRV);
-		testObj.g_pImmediateContext.A_PSSetShaderResources(6, 1, &RM.m_SkyboxMapSRV);
-
-		//testObj.g_pImmediateContext.A_OMSetRenderTargets(1, &testObj.g_pRenderTargetView, NULL);
-
-		RM.m_ScreenAlignedQuad.Rendersaq();
-		
-	*/
-	}else{
 	
-		
-		for (int i = 0; i < RM.m_RTVList.size(); i++)
-		{
-
-			testObj.g_pImmediateContext.A_ClearRenderTargetView(RM.m_RTVList[i], ClearColor);
-		}
-
-
-		
-		//testObj.g_pImmediateContext.A_ClearDepthStencilView(testObj.g_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-		testObj.g_pImmediateContext.A_OMSetRenderTargets(RM.m_RTVList.size(), RM.m_RTVList.data(), testObj.g_pDepthStencilView);
-
+	
 		for (int i = 0; i < m_ModelList.size(); i++)
 		{
 			m_ModelList[i]->Render();
 		}
 	
-		testObj.g_pImmediateContext.A_OMSetRenderTargets(1, &testObj.g_pRenderTargetView, testObj.g_pDepthStencilView);
+	
+	
+	}
+	else
+	{ 
 
+
+		testObj.g_pImmediateContext.A_PSSetSamplers(0, 1, &RM.m_generico);
+		testObj.g_pImmediateContext.A_PSSetSamplers(1, 1, &RM.m_generico);
+		testObj.g_pImmediateContext.A_PSSetSamplers(2, 1, &RM.m_generico);
+		testObj.g_pImmediateContext.A_PSSetSamplers(3, 1, &RM.m_generico);
+		testObj.g_pImmediateContext.A_PSSetSamplers(4, 1, &RM.m_generico);
+		testObj.g_pImmediateContext.A_PSSetSamplers(5, 1, &RM.m_generico);
+		testObj.g_pImmediateContext.A_PSSetSamplers(6, 1, &RM.m_generico);
+		testObj.g_pImmediateContext.A_PSSetSamplers(7, 1, &RM.m_generico);
+		testObj.g_pImmediateContext.A_PSSetSamplers(8, 1, &RM.m_generico);
+
+		if (m_TypePase==RManager::LIGHT) {
+
+			//testObj.g_pImmediateContext.A_ClearRenderTargetView(m_ListRenderTV[0], red);
+			//testObj.g_pImmediateContext.A_ClearDepthStencilView(testObj.g_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0.0f);
+			testObj.g_pImmediateContext.A_OMSetRenderTargets(1, &m_ListRenderTV[0], NULL);
+
+			testObj.g_pImmediateContext.A_PSSetShaderResources(0, 1, &RM.m_AlbedoSRV);
+			testObj.g_pImmediateContext.A_PSSetShaderResources(1, 1, &RM.m_NormalSRV);
+			testObj.g_pImmediateContext.A_PSSetShaderResources(2, 1, &RM.m_SpecularSRV);
+			testObj.g_pImmediateContext.A_PSSetShaderResources(3, 1, &RM.m_PositionSRV);
+			testObj.g_pImmediateContext.A_PSSetShaderResources(7, 1, &RM.m_SkyboxMapSRV);
+			testObj.g_pImmediateContext.A_PSSetShaderResources(8, 1, &RM.m_SkyboxNormalMapSRV);
+		
+			
+	
+
+			RM.m_ScreenAlignedQuad.Rendersaq();
+
+
+		}
+		else if (m_TypePase == RManager::SKYBOX) {
+
+
+
+			testObj.g_pImmediateContext.A_ClearRenderTargetView(m_ListRenderTV[0], red);
+
+			testObj.g_pImmediateContext.A_OMSetRenderTargets(1, &m_ListRenderTV[0], NULL);
+
+			testObj.g_pImmediateContext.A_PSSetShaderResources(7, 1, &RM.m_SkyboxMapSRV);
+
+			RM.m_Skybox.Rendersaq();
+		
+		
+		
+		}
+		else if (m_TypePase == RManager::AO) {
+
+			testObj.g_pImmediateContext.A_ClearRenderTargetView(m_ListRenderTV[0], red);
+
+			testObj.g_pImmediateContext.A_OMSetRenderTargets(1, &m_ListRenderTV[0], NULL);
+
+			testObj.g_pImmediateContext.A_PSSetShaderResources(1, 1, &RM.m_NormalSRV);
+			testObj.g_pImmediateContext.A_PSSetShaderResources(3, 1, &RM.m_PositionSRV);
+
+			RM.m_ScreenAlignedQuad.Rendersaq();
+
+
+		}
+		else if (m_TypePase == RManager::TONEMAP) {
+			testObj.g_pImmediateContext.A_ClearRenderTargetView(m_ListRenderTV[0], red);
+
+			testObj.g_pImmediateContext.A_OMSetRenderTargets(1, &m_ListRenderTV[0], NULL);
+
+
+
+			testObj.g_pImmediateContext.A_PSSetShaderResources(4, 1, &RM.m_LightSRV);
+			testObj.g_pImmediateContext.A_PSSetShaderResources(5, 1, &RM.m_SSaoSRV);
+
+
+			RM.m_ScreenAlignedQuad.Rendersaq();
+
+		}
+		else if (m_TypePase == RManager::COPY) {
+			
+			testObj.g_pImmediateContext.A_OMSetRenderTargets(1, &testObj.g_pRenderTargetView, NULL);
+			
+			testObj.g_pImmediateContext.A_PSSetShaderResources(6, 1, &RM.m_ToonMapSRV);
+
+			
+
+			RM.m_ScreenAlignedQuad.Rendersaq();
+
+
+			
+
+		}else {
+
+		
+
+
+			for (int i = 0; i < m_ListRenderTV.size(); i++)
+			{
+
+				testObj.g_pImmediateContext.A_ClearRenderTargetView(m_ListRenderTV[i], ClearColor);
+			}
+
+			testObj.g_pImmediateContext.A_ClearDepthStencilView(testObj.g_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0.0f);
+			testObj.g_pImmediateContext.A_OMSetRenderTargets(m_ListRenderTV.size(), m_ListRenderTV.data(), testObj.g_pDepthStencilView);
+
+			for (int i = 0; i < m_ModelList.size(); i++)
+			{
+				m_ModelList[i]->Render();
+			}
+			
+			
+		}
 	}
 
+	
 
-	/*
 	ID3D11ShaderResourceView* const pSRV[1] = { NULL };
 
 	testObj.g_pImmediateContext.A_PSSetShaderResources(0, 1, pSRV);
@@ -232,15 +288,15 @@ void APase::Render()
 	testObj.g_pImmediateContext.A_PSSetShaderResources(4, 1, pSRV);
 	testObj.g_pImmediateContext.A_PSSetShaderResources(5, 1, pSRV);
 	testObj.g_pImmediateContext.A_PSSetShaderResources(6, 1, pSRV);
-	*/
 
+	#endif
 
 	
 }
 
 HRESULT APase::InitGBuffer()
 {
-
+#if defined(DX11)
 	/*
 	* 1- paso cargar shader
 	* 2-create render targets
@@ -248,7 +304,10 @@ HRESULT APase::InitGBuffer()
 
 	auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
 	auto& RM = RManager::SingletonRM();
-	
+	m_ListRenderTV.push_back(RM.m_AlbedoRT);
+	m_ListRenderTV.push_back(RM.m_NormalRT);
+	m_ListRenderTV.push_back(RM.m_SpecularRT);
+	m_ListRenderTV.push_back(RM.m_PositionRT);
 	
 	
 	HRESULT hr = S_OK;
@@ -378,8 +437,9 @@ HRESULT APase::InitGBuffer()
 
 	return S_OK;
 
+	#endif
 
-
+	return S_OK;
 
 }
 
@@ -389,10 +449,11 @@ HRESULT APase::InitCopy()
 	* 1- paso cargar shader
 	* 2-create render targets
 	*/
-
+#if defined(DX11)
 	auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
 	auto& RM = RManager::SingletonRM();
 
+	m_ListRenderTV.push_back(RM.m_ToonRT);
 
 
 	HRESULT hr = S_OK;
@@ -401,7 +462,7 @@ HRESULT APase::InitCopy()
 	D3D11_RASTERIZER_DESC dr;
 	dr.CullMode = D3D11_CULL_NONE;
 	dr.FillMode = D3D11_FILL_SOLID;
-	dr.FrontCounterClockwise = true;
+	dr.FrontCounterClockwise = false;
 	dr.DepthBiasClamp = 0;
 	dr.DepthClipEnable = 0;
 	dr.SlopeScaledDepthBias = 0;
@@ -520,7 +581,7 @@ HRESULT APase::InitCopy()
 		return hr;
 	}
 
-
+	#endif
 
 	return S_OK;
 
@@ -530,7 +591,7 @@ HRESULT APase::InitCopy()
 
 HRESULT APase::InitLight()
 {
-
+#if defined(DX11)
 	/*
 	* 1- paso cargar shader
 	* 2-create render targets
@@ -540,13 +601,15 @@ HRESULT APase::InitLight()
 	auto& RM = RManager::SingletonRM();
 
 
+	m_ListRenderTV.push_back(RM.m_LightRT);
+
 
 	HRESULT hr = S_OK;
 
 	D3D11_RASTERIZER_DESC dr;
 	dr.CullMode = D3D11_CULL_NONE;
 	dr.FillMode = D3D11_FILL_SOLID;
-	dr.FrontCounterClockwise = true;
+	dr.FrontCounterClockwise = false;
 	dr.DepthBiasClamp = 0;
 	dr.DepthClipEnable = 0;
 	dr.SlopeScaledDepthBias = 0;
@@ -668,15 +731,15 @@ HRESULT APase::InitLight()
 
 
 
+
+	#endif
 	return S_OK;
-
-
 
 }
 
 HRESULT APase::InitSao()
 {
-
+#if defined(DX11)
 	/*
 	* 1- paso cargar shader
 	* 2-create render targets
@@ -685,7 +748,7 @@ HRESULT APase::InitSao()
 	auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
 	auto& RM = RManager::SingletonRM();
 
-
+	m_ListRenderTV.push_back(RM.m_SsaoRT);
 
 	HRESULT hr = S_OK;
 
@@ -814,8 +877,8 @@ HRESULT APase::InitSao()
 
 
 
+	#endif
 	return S_OK;
-
 }
 
 HRESULT APase::InitTooneMap()
@@ -824,12 +887,11 @@ HRESULT APase::InitTooneMap()
 	* 1- paso cargar shader
 	* 2-create render targets
 	*/
-
+#if defined(DX11)
 	auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
 	auto& RM = RManager::SingletonRM();
 
-
-
+	m_ListRenderTV.push_back(RM.m_ToonRT);
 	HRESULT hr = S_OK;
 
 	D3D11_RASTERIZER_DESC dr;
@@ -956,7 +1018,7 @@ HRESULT APase::InitTooneMap()
 	}
 
 
-
+	#endif
 	return S_OK;
 }
 
@@ -966,11 +1028,11 @@ HRESULT APase::InitSkybox()
 	* 1- paso cargar shader
 	* 2-create render targets
 	*/
-
+#if defined(DX11)
 	auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
 	auto& RM = RManager::SingletonRM();
 
-
+	m_ListRenderTV.push_back(RM.m_LightRT);
 
 	HRESULT hr = S_OK;
 
@@ -978,7 +1040,7 @@ HRESULT APase::InitSkybox()
 	D3D11_RASTERIZER_DESC dr;
 	dr.CullMode = D3D11_CULL_NONE;
 	dr.FillMode = D3D11_FILL_SOLID;
-	dr.FrontCounterClockwise = true;
+	dr.FrontCounterClockwise = false;
 	dr.DepthBiasClamp = 0;
 	dr.DepthClipEnable = 0;
 	dr.SlopeScaledDepthBias = 0;
@@ -1099,7 +1161,7 @@ HRESULT APase::InitSkybox()
 	RM.m_Skybox.transform.scale[1]=1;
 	RM.m_Skybox.transform.scale[2]=1;
 
-
+	#endif
 	return S_OK;
 }
 
@@ -1108,6 +1170,7 @@ HRESULT APase::InitSkybox()
 
 HRESULT APase::CompileShaderFromFile(const char* szFileName,const D3D10_SHADER_MACRO* _Macros, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut)
 {
+#if defined(DX11)
 	HRESULT hr = S_OK;
 	DWORD dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
 #if defined( DEBUG ) || defined( _DEBUG )
@@ -1125,6 +1188,7 @@ HRESULT APase::CompileShaderFromFile(const char* szFileName,const D3D10_SHADER_M
 		return hr;
 	}
 	if (pErrorBlob) pErrorBlob->Release();
+	#endif
 	return S_OK;
 
 }

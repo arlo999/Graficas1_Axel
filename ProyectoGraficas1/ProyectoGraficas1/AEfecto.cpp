@@ -19,8 +19,18 @@ void AEfecto::Init()
 void AEfecto::Render()
 {
 	auto& RM = RManager::SingletonRM();
+	if (RM.m_Forward) {
 
-	m_TecnicaList[RM.m_typeTecnicaRender]->Render();
+		m_TecnicaList[RM.m_typeTecnicaRender]->Render();
+	}
+	else {
+
+
+		for (int i = 0; i < m_TecnicaListDefferd.size(); i++)
+		{
+			m_TecnicaListDefferd[i]->Render();
+		}
+	}
 	
 }
 
@@ -86,7 +96,7 @@ void AEfecto::InitDefered()
 	
 	ATecnica* m_Gbuffer = new ATecnica;
 	m_Gbuffer->InitGbuffer_NormSpec();
-	m_TecnicaList.push_back(m_Gbuffer);
+	m_TecnicaListDefferd.push_back(m_Gbuffer);
 
 
 

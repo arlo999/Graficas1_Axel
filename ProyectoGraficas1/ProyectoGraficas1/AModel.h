@@ -41,7 +41,7 @@ public:
 	glm::mat4 model;
 	#endif
 	bool rgb, bgr, wire, point, triangles;
-	vector<ID3D11ShaderResourceView* >textures_vec;
+
 	ID3D11ShaderResourceView* g_pTextureRV;
 	ID3D11ShaderResourceView* g_NormalMap;
 	ID3D11ShaderResourceView* g_Specular;

@@ -1,6 +1,6 @@
 #include "AShader.h"
 
-AShader::AShader(const char* vertexPath, const char* fragmentPath)
+AShader::AShader(std::string vertexPath, std::string fragmentPath)
 {
 	
 	// 1. retrieve the vertex/fragment source code from filePath
