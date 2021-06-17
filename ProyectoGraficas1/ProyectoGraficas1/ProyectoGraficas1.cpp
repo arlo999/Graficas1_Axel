@@ -605,7 +605,7 @@ HRESULT InitWindow(LONG _width, LONG _height)
 	   testObj.m_LigthBufferStruct.dir = XMFLOAT4(dir[0], dir[1], dir[2], 0.0f);
 #endif
 #if defined(OGL)
-	   glUniform4f(glGetUniformLocation(_shader.ID, "dir"), dir[0], dir[1], dir[2], 0.0f);
+
 
 #endif
    }
@@ -615,7 +615,7 @@ HRESULT InitWindow(LONG _width, LONG _height)
 	   testObj.m_LigthBufferStruct.lightDirColor = XMFLOAT4(color[0], color[1], color[2], 0.0f);
 #endif
 #if defined(OGL)
-	   glUniform4f(glGetUniformLocation(_shader.ID, "lightDirColor"), color[0], color[1], color[2], 0.0f);
+	
 
 #endif
    }
@@ -632,7 +632,7 @@ HRESULT InitWindow(LONG _width, LONG _height)
 	   testObj.m_PointLightBufferStruct.pointLightPos = XMFLOAT3(pointLightPos[0], pointLightPos[1], pointLightPos[2]);
 #endif
 #if defined(OGL)
-	   _shader.setVec3("pointLightPos", pointLightPos[0], pointLightPos[1], pointLightPos[2]);
+	   
 
 
 #endif
@@ -652,7 +652,7 @@ HRESULT InitWindow(LONG _width, LONG _height)
 	   testObj.m_PointLightBufferStruct.pointLightAtt = FLOAT(pointLightAtt);
 #endif
 #if defined(OGL)
-	   _shader.setFloat("pointLightAtt", pointLightAtt);
+	
 #endif
    }
    ImGui::End();
@@ -672,7 +672,7 @@ HRESULT InitWindow(LONG _width, LONG _height)
 	   testObj.m_SpotLightBufferStruct.spotLightPos = XMFLOAT4(spotLightPos[0], spotLightPos[1], spotLightPos[2], 0.0f);
 #endif
 #if defined(OGL)
-	   glUniform4f(glGetUniformLocation(_shader.ID, "spotLightPos"), spotLightPos[0], spotLightPos[1], spotLightPos[2], 0.0f);
+	 
 
 #endif
    }
@@ -682,7 +682,7 @@ HRESULT InitWindow(LONG _width, LONG _height)
 	   testObj.m_SpotLightBufferStruct.spotLightColor = XMFLOAT4(spotLightColor[0], spotLightColor[1], spotLightColor[2], 0.0f);
 #endif
 #if defined(OGL)
-	   glUniform4f(glGetUniformLocation(_shader.ID, "spotLightColor"), spotLightColor[0], spotLightColor[1], spotLightColor[2], 0.0f);
+	 
 
 #endif
    }
@@ -692,7 +692,7 @@ HRESULT InitWindow(LONG _width, LONG _height)
 	   testObj.m_SpotLightBufferStruct.spotLightDir = XMFLOAT4(spotLightDir[0], spotLightDir[1], spotLightDir[2], 0.0f);
 #endif
 #if defined(OGL)
-	   glUniform4f(glGetUniformLocation(_shader.ID, "spotLightDir"), spotLightDir[0], spotLightDir[1], spotLightDir[2], 0.0f);
+	  
 
 #endif
    }
@@ -737,8 +737,7 @@ HRESULT InitWindow(LONG _width, LONG _height)
 	   testObj.m_AmbientBufferStruct.ambientColor = XMFLOAT4(ambientColor[0], ambientColor[1], ambientColor[2], 0.0f);
 #endif
 #if defined(OGL)
-	   glUniform4f(glGetUniformLocation(_shader.ID, "spotLightPos"), spotLightPos[0], spotLightPos[1], spotLightPos[2], 0.0f);
-
+	 
 #endif
    }
    if (ImGui::DragFloat("kAmbient", &kAmbient, 1)) {
@@ -798,7 +797,7 @@ HRESULT InitWindow(LONG _width, LONG _height)
 	   testObj.m_SaoBufferStruct.sampleIterations = XMFLOAT4(sampleIterations[0], 0,0,0);
 #endif
 #if defined(OGL)
-	   glUniform4f(glGetUniformLocation(_shader.ID, "spotLightPos"), spotLightPos[0], spotLightPos[1], spotLightPos[2], 0.0f);
+	
 
 #endif
    }
@@ -808,7 +807,7 @@ HRESULT InitWindow(LONG _width, LONG _height)
 	   testObj.m_TooneMaBufferStruct.exposur = FLOAT(exposure[0]);
 #endif
 #if defined(OGL)
-	   glUniform4f(glGetUniformLocation(_shader.ID, "spotLightPos"), spotLightPos[0], spotLightPos[1], spotLightPos[2], 0.0f);
+	 
 
 #endif
    }
@@ -845,7 +844,7 @@ HRESULT InitWindow(LONG _width, LONG _height)
 	   testObj.m_SaoBufferStruct.intensity = FLOAT(intensity);
 #endif
 #if defined(OGL)
-	   _shader.setFloat("spotLightOutner", spotLightOutner);
+	  
 #endif
    }
    ImGui::End();
@@ -868,25 +867,15 @@ HRESULT InitWindow(LONG _width, LONG _height)
 	 lastFrame = currentFrame;
 
     // render
+	
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	_shader.Use();
 	
-    /*
-	_shader.setFloat4("projection", camera.ViewPerspective(glm::radians(camera.Zoom), 1270.0f / 720.0f, 0.1f, 100.0f));
-	_shader.setFloat4("view", camera.GetViewMatrix());
-    */
-   
-    
   
-
-	// light properties
-    _shader.setVec3("light.ambient", 0.1f, 0.1f, 0.1f);
-	// we configure the diffuse intensity slightly higher; the right lighting conditions differ with each lighting method and environment.
-	// each environment and lighting type requires some tweaking to get the best out of your environment.
-
-
+  
+	
 
 	glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), 1270.0f / 720.0f, 0.1f, 100.0f);
 	glm::mat4 view = camera.GetViewMatrixGlm();
@@ -894,6 +883,7 @@ HRESULT InitWindow(LONG _width, LONG _height)
     _shader.setMat4("view",view);
     glm::mat4 wordl= glm::mat4(1.0f);
     _shader.setMat4("World",wordl);
+	
 
 	
 	for (int i = 0; i < models.size(); i++)
@@ -901,6 +891,7 @@ HRESULT InitWindow(LONG _width, LONG _height)
         models[i]->Draw(_shader);
 		
 	}
+
      UIRender(_shader);
 	 ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
      glfwSwapBuffers(window);
@@ -951,7 +942,8 @@ int main()
 		return 0;
 	}
 	first = true;
-	AShader ourShader("C://Graficos1_recursos//ProyectoGraficas1//bin//1.model_loading.vs", "C://Graficos1_recursos//ProyectoGraficas1//bin//1model_loading.fs");
+	AShader ourShader("1.model_loading.vs", "1model_loading.fs");
+
   
    //create UI
     if (FAILED(InitImgUI()))

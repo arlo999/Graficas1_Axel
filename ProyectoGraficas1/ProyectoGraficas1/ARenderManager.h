@@ -3,6 +3,7 @@
 #include <vector>
 #include "AModel.h"
 #include "AEfecto.h"
+#include "AShader.h"
 
 namespace RManager {
 	
@@ -49,16 +50,21 @@ public:
 
 	//PUT ALL MACROS 
 
+#if defined(DX11) 
 	std::vector<D3D10_SHADER_MACRO> m_macros;
+	std::vector<ID3D11RenderTargetView*>m_RTVList;
+#endif	
 	std::vector<AModel*>m_ModelList;
 	std::vector<AEfecto*>m_EfectoList;
-	std::vector<ID3D11RenderTargetView*>m_RTVList;
 	int m_typeTecnicaRender=0;
 	AModel m_ScreenAlignedQuad;
 	AModel m_Skybox;
 
 	//todo usar abstraccion
 	//SHADER RESOURCE
+
+
+#if defined(DX11) 
 	ID3D11ShaderResourceView* m_PositionSRV = NULL;
 	ID3D11ShaderResourceView* m_NormalSRV = NULL;
 	ID3D11ShaderResourceView* m_SpecularSRV = NULL;
@@ -66,7 +72,6 @@ public:
 	ID3D11ShaderResourceView* m_LightSRV = NULL;
 	ID3D11ShaderResourceView* m_SSaoSRV = NULL;
 	ID3D11ShaderResourceView* m_ToonMapSRV = NULL;
-	ID3D11ShaderResourceView* m_FinalSRV = NULL;
 	ID3D11ShaderResourceView* m_SkyboxMapSRV=NULL;
 	ID3D11ShaderResourceView* m_SkyboxNormalMapSRV=NULL;
 	//RENDER TARGETS
@@ -77,12 +82,14 @@ public:
 	ID3D11RenderTargetView* m_LightRT = NULL;
 	ID3D11RenderTargetView* m_SsaoRT = NULL;
 	ID3D11RenderTargetView* m_ToonRT = NULL;
-	ID3D11RenderTargetView* m_FinalRT = NULL;
 	ID3D11RenderTargetView* m_SkyboxRT = NULL;
 	//SAMPLERS
 	ID3D11SamplerState* m_generico = NULL;
-
+#endif
 	//
+
+
+	
 	bool m_Forward=false;
 private:
 	

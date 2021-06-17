@@ -153,15 +153,80 @@ void APase::Render()
 	testObj.g_pImmediateContext.A_VSSetShader(g_pVertexShader, NULL, 0);
 	testObj.g_pImmediateContext.A_PSSetShader(g_pPixelShader, NULL, 0);
 
+	testObj.g_pImmediateContext.A_PSSetSamplers(0, 1, &RM.m_generico);
+	testObj.g_pImmediateContext.A_PSSetSamplers(1, 1, &RM.m_generico);
+	testObj.g_pImmediateContext.A_PSSetSamplers(2, 1, &RM.m_generico);
+	testObj.g_pImmediateContext.A_PSSetSamplers(3, 1, &RM.m_generico);
+	testObj.g_pImmediateContext.A_PSSetSamplers(4, 1, &RM.m_generico);
+	testObj.g_pImmediateContext.A_PSSetSamplers(5, 1, &RM.m_generico);
+	testObj.g_pImmediateContext.A_PSSetSamplers(6, 1, &RM.m_generico);
+	testObj.g_pImmediateContext.A_PSSetSamplers(7, 1, &RM.m_generico);
+	testObj.g_pImmediateContext.A_PSSetSamplers(8, 1, &RM.m_generico);
+
 	if (RM.m_Forward) {
 	
-	
-	
-		for (int i = 0; i < m_ModelList.size(); i++)
-		{
-			m_ModelList[i]->Render();
+		if (m_TypePase == RManager::LIGHT) {
+		/*
+			testObj.g_pImmediateContext.A_OMSetRenderTargets(1, &m_ListRenderTV[0], NULL);
+		*/
+
+			testObj.g_pImmediateContext.A_PSSetShaderResources(0, 1, &RM.m_AlbedoSRV);
+			testObj.g_pImmediateContext.A_PSSetShaderResources(1, 1, &RM.m_NormalSRV);
+			testObj.g_pImmediateContext.A_PSSetShaderResources(2, 1, &RM.m_SpecularSRV);
+			testObj.g_pImmediateContext.A_PSSetShaderResources(7, 1, &RM.m_SkyboxMapSRV);
+			testObj.g_pImmediateContext.A_PSSetShaderResources(8, 1, &RM.m_SkyboxNormalMapSRV);
+
+			for (int i = 0; i < m_ModelList.size(); i++)
+			{
+				m_ModelList[i]->Render();
+			}
+
+
 		}
-	
+		else if (m_TypePase == RManager::SKYBOX) {
+
+
+			testObj.g_pImmediateContext.A_ClearRenderTargetView(m_ListRenderTV[0], red);
+
+			testObj.g_pImmediateContext.A_OMSetRenderTargets(1, &m_ListRenderTV[0], NULL);
+
+			testObj.g_pImmediateContext.A_PSSetShaderResources(7, 1, &RM.m_SkyboxMapSRV);
+
+			RM.m_Skybox.Rendersaq();
+
+
+
+		}
+		else if (m_TypePase == RManager::TONEMAP) {
+		
+			testObj.g_pImmediateContext.A_ClearRenderTargetView(m_ListRenderTV[0], red);
+
+			testObj.g_pImmediateContext.A_OMSetRenderTargets(1, &m_ListRenderTV[0], NULL);
+
+
+
+			testObj.g_pImmediateContext.A_PSSetShaderResources(4, 1, &RM.m_LightSRV);
+			testObj.g_pImmediateContext.A_PSSetShaderResources(5, 1, &RM.m_SSaoSRV);
+
+
+			RM.m_ScreenAlignedQuad.Rendersaq();
+
+		}
+		else if (m_TypePase == RManager::COPY) {
+
+
+
+			testObj.g_pImmediateContext.A_OMSetRenderTargets(1, &testObj.g_pRenderTargetView, NULL);
+
+			testObj.g_pImmediateContext.A_PSSetShaderResources(6, 1, &RM.m_ToonMapSRV);
+
+
+
+			RM.m_ScreenAlignedQuad.Rendersaq();
+
+
+		}	
+		
 	
 	
 	}
@@ -169,20 +234,10 @@ void APase::Render()
 	{ 
 
 
-		testObj.g_pImmediateContext.A_PSSetSamplers(0, 1, &RM.m_generico);
-		testObj.g_pImmediateContext.A_PSSetSamplers(1, 1, &RM.m_generico);
-		testObj.g_pImmediateContext.A_PSSetSamplers(2, 1, &RM.m_generico);
-		testObj.g_pImmediateContext.A_PSSetSamplers(3, 1, &RM.m_generico);
-		testObj.g_pImmediateContext.A_PSSetSamplers(4, 1, &RM.m_generico);
-		testObj.g_pImmediateContext.A_PSSetSamplers(5, 1, &RM.m_generico);
-		testObj.g_pImmediateContext.A_PSSetSamplers(6, 1, &RM.m_generico);
-		testObj.g_pImmediateContext.A_PSSetSamplers(7, 1, &RM.m_generico);
-		testObj.g_pImmediateContext.A_PSSetSamplers(8, 1, &RM.m_generico);
 
 		if (m_TypePase==RManager::LIGHT) {
 
-			//testObj.g_pImmediateContext.A_ClearRenderTargetView(m_ListRenderTV[0], red);
-			//testObj.g_pImmediateContext.A_ClearDepthStencilView(testObj.g_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0.0f);
+			
 			testObj.g_pImmediateContext.A_OMSetRenderTargets(1, &m_ListRenderTV[0], NULL);
 
 			testObj.g_pImmediateContext.A_PSSetShaderResources(0, 1, &RM.m_AlbedoSRV);

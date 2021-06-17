@@ -110,9 +110,6 @@ HRESULT ARenderManager::ApplyEfects()
 	hr = testObj.g_pd3dDevice.A_CreateShaderResourceView(_albedo, &descViewRT, &m_AlbedoSRV);
 	if (FAILED(hr))
 		return hr;
-	hr = testObj.g_pd3dDevice.A_CreateShaderResourceView(_Final, &descViewRT, &m_FinalSRV);
-	if (FAILED(hr))
-		return hr;
 	hr = testObj.g_pd3dDevice.A_CreateShaderResourceView(_Ssao, &descViewRT, &m_SSaoSRV);
 	if (FAILED(hr))
 		return hr;
@@ -199,14 +196,6 @@ HRESULT ARenderManager::ApplyEfects()
 	if (FAILED(hr))
 		return hr;
 	m_RTVList.push_back(m_SsaoRT);
-////////
-	hr = testObj.g_pd3dDevice.A_CreateRenderTargetView(_Final, NULL, &m_FinalRT);
-	if (FAILED(hr))
-		return hr;
-	m_RTVList.push_back(m_FinalRT);
-/////
-
-
 
 	D3D11_SAMPLER_DESC samplerDesc;
 	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
@@ -225,6 +214,8 @@ HRESULT ARenderManager::ApplyEfects()
 		return hr;
 
 #endif
+
+
 	return S_OK;
 }
 

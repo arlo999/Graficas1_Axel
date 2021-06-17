@@ -38,7 +38,15 @@ void AEfecto::InitForward()
 {
 
 	//vertex
-	ATecnica* m_vertex = new ATecnica;
+	ATecnica* m_pixelBlinnPhong = new ATecnica;
+	m_pixelBlinnPhong->InitPixel_BlinnPhong();
+	m_TecnicaList.push_back(m_pixelBlinnPhong);
+
+
+	
+	/*
+	* 
+		ATecnica* m_vertex = new ATecnica;
 	m_vertex->Init();
 	m_TecnicaList.push_back(m_vertex);
 
@@ -58,9 +66,7 @@ void AEfecto::InitForward()
 	m_pixelPhong->InitPixel_Phong();
 	m_TecnicaList.push_back(m_pixelPhong);
 
-	ATecnica* m_pixelBlinnPhong = new ATecnica;
-	m_pixelBlinnPhong->InitPixel_BlinnPhong();
-	m_TecnicaList.push_back(m_pixelBlinnPhong);
+	
 
 	//pixel map
 	ATecnica* m_pixelmap = new ATecnica;
@@ -89,6 +95,7 @@ void AEfecto::InitForward()
 	ATecnica* m_pixelmapSpecularBlinnPhong = new ATecnica;
 	m_pixelmapSpecularBlinnPhong->InitPixelMap_BlinnPhong();
 	m_TecnicaList.push_back(m_pixelmapSpecularBlinnPhong);
+	*/
 }
 
 void AEfecto::InitDefered()

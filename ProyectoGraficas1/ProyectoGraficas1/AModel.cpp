@@ -109,8 +109,12 @@ unsigned int AModel::TextureFromFile(const char* path, const string& directory, 
 
 		testObj.g_pd3dDevice.A_CreateShaderResourceView(texture, &Sdesc, &g_NormalMap);
 	}
-	else if (nameOfFile == "specular.jpg"|| nameOfFile == "base_AO.jpg") {
+	else if (nameOfFile == "specular.jpg"|| nameOfFile == "base_metalic.jpg") {
 		testObj.g_pd3dDevice.A_CreateShaderResourceView(texture, &Sdesc, &g_Specular);
+
+	}
+	else if (nameOfFile == "AO.jpg" || nameOfFile == "base_AO.jpg") {
+		testObj.g_pd3dDevice.A_CreateShaderResourceView(texture, &Sdesc, &g_Ao);
 
 	}
 	else {
@@ -119,6 +123,7 @@ unsigned int AModel::TextureFromFile(const char* path, const string& directory, 
 		testObj.g_pd3dDevice.A_CreateShaderResourceView(texture, &Sdesc, &g_pTextureRV);
 		testObj.g_pd3dDevice.A_CreateShaderResourceView(texture, &Sdesc, &g_NormalMap);
 		testObj.g_pd3dDevice.A_CreateShaderResourceView(texture, &Sdesc, &g_Specular);
+		testObj.g_pd3dDevice.A_CreateShaderResourceView(texture, &Sdesc, &g_Ao);
 	}
 
 	FreeImage_Unload(dib);
@@ -214,6 +219,8 @@ void AModel::Draw(AShader& shader)
 	testObj.g_pImmediateContext.A_PSSetShaderResources(0, 1, &g_pTextureRV);
 	testObj.g_pImmediateContext.A_PSSetShaderResources(1, 1, &g_NormalMap);
 	testObj.g_pImmediateContext.A_PSSetShaderResources(2, 1, &g_Specular);
+
+	testObj.g_pImmediateContext.A_PSSetShaderResources(9, 1, &g_Ao);
 
 #endif	
 	for (unsigned int i = 0; i < meshes.size(); i++)
@@ -405,8 +412,9 @@ Mesh AModel::processMesh(aiMesh* mesh, const aiScene* scene)
 
 	std::vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
 	textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
-
-
+	// 4. AO
+	std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
+	textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 
 	if (diffuseMaps.empty()) {
 		Texture texture;

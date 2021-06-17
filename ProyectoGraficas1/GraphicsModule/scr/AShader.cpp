@@ -1,5 +1,9 @@
 #include "AShader.h"
 
+AShader::AShader()
+{
+}
+
 AShader::AShader(std::string vertexPath, std::string fragmentPath)
 {
 	

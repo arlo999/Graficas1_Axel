@@ -10,6 +10,7 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+
 #endif
 #if defined(DX11)
 #include "ACamera.h"
@@ -18,6 +19,7 @@
 #include <d3dcompiler.h>
 #include <xnamath.h>
 #endif
+
 
 
 #include <vector>
@@ -31,6 +33,9 @@ namespace GraphicsModule
 		XMFLOAT3 n;
 		FLOAT exposur;
 	#endif
+
+
+
 	};
 	struct Sao
 	{
@@ -52,16 +57,16 @@ namespace GraphicsModule
 
 	};
 
-#if defined(DX11)
 	struct PointLight {
+#if defined(DX11)
 
 		XMFLOAT4 pointLightColor;
 		XMFLOAT3 pointLightPos;
 		FLOAT  pointLightAtt;
-	};
 #endif
-#if defined(DX11)
+	};
 	struct spotLight {
+#if defined(DX11)
 
 		XMFLOAT4 spotLightColor;
 		XMFLOAT4 spotLightPos;
@@ -70,8 +75,8 @@ namespace GraphicsModule
 		FLOAT  spotLightInner;
 		FLOAT  spotLightOutner;
 		FLOAT  n = 0;
-	};
 #endif
+	};
 
 	struct Shinies
 	{
@@ -209,6 +214,7 @@ todo esto necesita abstra
 		
 #endif
 	public:
+	
 	
 		
 #if defined(DX11)

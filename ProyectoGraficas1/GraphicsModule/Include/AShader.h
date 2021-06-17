@@ -18,6 +18,7 @@ class AShader
 {
 public:
 	unsigned int ID;
+	AShader();
 	AShader(std::string vertexPath, std::string fragmentPath);
 	
 	// activate the shader

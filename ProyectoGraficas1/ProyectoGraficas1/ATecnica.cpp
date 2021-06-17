@@ -16,7 +16,7 @@ void ATecnica::Init()
 
 
 	auto& RM = RManager::SingletonRM();
-	
+#if defined(DX11) 
 	D3D10_SHADER_MACRO  vertex_Light;
 	vertex_Light.Name= "VERTEX_LIGHT";
 	vertex_Light.Definition="TRUE" ;
@@ -32,7 +32,7 @@ void ATecnica::Init()
 	RM.m_macros.push_back(Terminate);
 
 
-	
+	#endif
 	APase* pase = new APase;
 	pase->Init();
 	m_PaseList.push_back(pase);
@@ -72,6 +72,7 @@ void ATecnica::InitVertex()
 {
 
 	auto& RM = RManager::SingletonRM();
+#if defined(DX11) 
 	RM.m_macros.clear();
 	D3D10_SHADER_MACRO  pixel_Light;
 	pixel_Light.Name = "VERTEX_LIGHT";
@@ -84,7 +85,7 @@ void ATecnica::InitVertex()
 	Terminate.Name = NULL;
 
 	RM.m_macros.push_back(Terminate);
-	
+	#endif
 	APase* pase = new APase;
 	pase->Init();
 	m_PaseList.push_back(pase);
@@ -96,6 +97,7 @@ void ATecnica::InitVertex_Phong()
 
 
 	auto& RM = RManager::SingletonRM();
+#if defined(DX11) 
 	RM.m_macros.clear();
 	D3D10_SHADER_MACRO  pixel_Light;
 	pixel_Light.Name = "VERTEX_LIGHT";
@@ -112,7 +114,7 @@ void ATecnica::InitVertex_Phong()
 	Terminate.Name = NULL;
 
 	RM.m_macros.push_back(Terminate);
-
+	#endif
 	APase* pase = new APase;
 	pase->Init();
 	m_PaseList.push_back(pase);
@@ -122,6 +124,7 @@ void ATecnica::InitVertex_BlinnPhong()
 {
 
 	auto& RM = RManager::SingletonRM();
+#if defined(DX11) 
 	RM.m_macros.clear();
 	D3D10_SHADER_MACRO  pixel_Light;
 	pixel_Light.Name = "VERTEX_LIGHT";
@@ -140,7 +143,7 @@ void ATecnica::InitVertex_BlinnPhong()
 	Terminate.Name = NULL;
 
 	RM.m_macros.push_back(Terminate);
-
+	#endif
 	APase* pase = new APase;
 	pase->Init();
 	m_PaseList.push_back(pase);
@@ -150,6 +153,7 @@ void ATecnica::InitPixel()
 {
 
 	auto& RM = RManager::SingletonRM();
+#if defined(DX11) 
 	RM.m_macros.clear();
 	D3D10_SHADER_MACRO  pixel_Light;
 	pixel_Light.Name = "PIXEL_LIGHT";
@@ -162,7 +166,7 @@ void ATecnica::InitPixel()
 	Terminate.Name = NULL;
 
 	RM.m_macros.push_back(Terminate);
-
+	#endif
 	APase* pase = new APase;
 	pase->Init();
 	m_PaseList.push_back(pase);
@@ -171,6 +175,7 @@ void ATecnica::InitPixel()
 void ATecnica::InitPixel_Phong()
 {
 	auto& RM = RManager::SingletonRM();
+#if defined(DX11) 
 	RM.m_macros.clear();
 	D3D10_SHADER_MACRO  pixel_Light;
 	pixel_Light.Name = "PIXEL_LIGHT";
@@ -189,10 +194,13 @@ void ATecnica::InitPixel_Phong()
 	Terminate.Name = NULL;
 
 	RM.m_macros.push_back(Terminate);
-
+	#endif
 	APase* pase = new APase;
 	pase->Init();
 	m_PaseList.push_back(pase);
+
+
+
 }
 
 void ATecnica::InitPixel_BlinnPhong()
@@ -200,6 +208,7 @@ void ATecnica::InitPixel_BlinnPhong()
 
 
 	auto& RM = RManager::SingletonRM();
+#if defined(DX11) 
 	RM.m_macros.clear();
 	D3D10_SHADER_MACRO  pixel_Light;
 	pixel_Light.Name = "PIXEL_LIGHT";
@@ -209,7 +218,7 @@ void ATecnica::InitPixel_BlinnPhong()
 
 
 	D3D10_SHADER_MACRO  Phong;
-	Phong.Name = "BLINN_PHONG";
+	Phong.Name = "PHONG";
 	Phong.Definition = "TRUE";
 	RM.m_macros.push_back(Phong);
 
@@ -218,15 +227,36 @@ void ATecnica::InitPixel_BlinnPhong()
 	Terminate.Name = NULL;
 
 	RM.m_macros.push_back(Terminate);
+	#endif
+	APase* paseSkyBox = new APase(RManager::SKYBOX);
+	paseSkyBox->InitSkybox();
+	m_PaseList.push_back(paseSkyBox);
 
-	APase* pase = new APase;
-	pase->Init();
-	m_PaseList.push_back(pase);
+
+	APase* paseLight = new APase(RManager::LIGHT);
+	paseLight->Init();
+	m_PaseList.push_back(paseLight);
+
+
+	APase* paseToonMap = new APase(RManager::TONEMAP);
+	paseToonMap->InitTooneMap();
+	m_PaseList.push_back(paseToonMap);
+
+
+
+
+	APase* paseCopy = new APase(RManager::COPY);
+	paseCopy->InitCopy();
+	m_PaseList.push_back(paseCopy);
+
+
+	
 }
 
 void ATecnica::InitPixelMap()
 {
 	auto& RM = RManager::SingletonRM();
+#if defined(DX11) 
 	RM.m_macros.clear();
 	D3D10_SHADER_MACRO  pixel_Light;
 	pixel_Light.Name = "PIXEL_LIGHT";
@@ -244,7 +274,7 @@ void ATecnica::InitPixelMap()
 	Terminate.Name = NULL;
 
 	RM.m_macros.push_back(Terminate);
-
+	#endif
 	APase* pase = new APase;
 	pase->Init();
 	m_PaseList.push_back(pase);
@@ -254,6 +284,7 @@ void ATecnica::InitPixelMap_Phong()
 {
 
 	auto& RM = RManager::SingletonRM();
+#if defined(DX11) 
 	RM.m_macros.clear();
 	D3D10_SHADER_MACRO  pixel_Light;
 	pixel_Light.Name = "PIXEL_LIGHT";
@@ -276,6 +307,7 @@ void ATecnica::InitPixelMap_Phong()
 	Terminate.Name = NULL;
 
 	RM.m_macros.push_back(Terminate);
+	#endif
 
 	APase* pase = new APase;
 	pase->Init();
@@ -286,6 +318,7 @@ void ATecnica::InitPixelMap_BlinnPhong()
 {
 
 	auto& RM = RManager::SingletonRM();
+#if defined(DX11) 
 	RM.m_macros.clear();
 	D3D10_SHADER_MACRO  pixel_Light;
 	pixel_Light.Name = "PIXEL_LIGHT";
@@ -306,8 +339,8 @@ void ATecnica::InitPixelMap_BlinnPhong()
 	D3D10_SHADER_MACRO Terminate;
 	Terminate.Definition = NULL;
 	Terminate.Name = NULL;
-
 	RM.m_macros.push_back(Terminate);
+	#endif
 
 	APase* pase = new APase;
 	pase->Init();
@@ -317,6 +350,7 @@ void ATecnica::InitPixelMap_BlinnPhong()
 void ATecnica::InitPixelMapSpec()
 {
 	auto& RM = RManager::SingletonRM();
+#if defined(DX11) 
 	RM.m_macros.clear();
 	D3D10_SHADER_MACRO  pixel_Light;
 	pixel_Light.Name = "PIXEL_LIGHT";
@@ -339,7 +373,7 @@ void ATecnica::InitPixelMapSpec()
 	Terminate.Name = NULL;
 
 	RM.m_macros.push_back(Terminate);
-
+#endif
 	APase* pase = new APase;
 	pase->Init();
 	m_PaseList.push_back(pase);
@@ -349,6 +383,7 @@ void ATecnica::InitPixelMapSpec_Phong()
 {
 
 	auto& RM = RManager::SingletonRM();
+#if defined(DX11) 
 	RM.m_macros.clear();
 	D3D10_SHADER_MACRO  pixel_Light;
 	pixel_Light.Name = "PIXEL_LIGHT";
@@ -378,7 +413,7 @@ void ATecnica::InitPixelMapSpec_Phong()
 	Terminate.Name = NULL;
 
 	RM.m_macros.push_back(Terminate);
-
+	#endif
 	APase* pase = new APase;
 	pase->Init();
 	m_PaseList.push_back(pase);
@@ -388,6 +423,7 @@ void ATecnica::InitPixelMapSpec_BlinnPhong()
 {
 
 	auto& RM = RManager::SingletonRM();
+#if defined(DX11) 
 	RM.m_macros.clear();
 	D3D10_SHADER_MACRO  pixel_Light;
 	pixel_Light.Name = "PIXEL_LIGHT";
@@ -417,7 +453,7 @@ void ATecnica::InitPixelMapSpec_BlinnPhong()
 	Terminate.Name = NULL;
 
 	RM.m_macros.push_back(Terminate);
-
+	#endif
 	APase* pase = new APase;
 	pase->Init();
 	m_PaseList.push_back(pase);
@@ -427,6 +463,7 @@ void ATecnica::InitGbuffer_NormSpec()
 {
 
 	auto& RM = RManager::SingletonRM();
+#if defined(DX11) 
 	RM.m_macros.clear();
 	D3D10_SHADER_MACRO  normalMap;
 	normalMap.Name = "NORMAL_MAP";
@@ -444,7 +481,7 @@ void ATecnica::InitGbuffer_NormSpec()
 	Terminate.Name = NULL;
 
 	RM.m_macros.push_back(Terminate);
-
+	#endif
 
 	APase* pase = new APase;
 	pase->InitGBuffer();
@@ -453,7 +490,7 @@ void ATecnica::InitGbuffer_NormSpec()
 
 
 	//post procesos
-	
+#if defined(DX11) 
 	RM.m_macros.clear();
 	
 
@@ -466,7 +503,7 @@ void ATecnica::InitGbuffer_NormSpec()
 	Terminate.Name = NULL;
 	RM.m_macros.push_back(Terminate);
 	
-	
+#endif	
 	APase* paseSkyBox = new APase(RManager::SKYBOX);
 	paseSkyBox->InitSkybox();
 	m_PaseListDefferd.push_back(paseSkyBox);

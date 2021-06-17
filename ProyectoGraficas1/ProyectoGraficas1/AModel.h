@@ -45,6 +45,7 @@ public:
 	ID3D11ShaderResourceView* g_pTextureRV;
 	ID3D11ShaderResourceView* g_NormalMap;
 	ID3D11ShaderResourceView* g_Specular;
+	ID3D11ShaderResourceView* g_Ao;
 
 	unsigned int TextureFromFile(const char* path, const string& directory, bool gamma);
 	
