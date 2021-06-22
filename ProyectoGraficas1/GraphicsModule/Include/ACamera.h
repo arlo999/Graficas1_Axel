@@ -12,18 +12,70 @@
 #include <xnamath.h>
 #endif
 
+enum Camera_Movement {
+	FORWARD,
+	BACKWARD,
+	LEFT,
+	RIGHT
+};
+
+// Default camera values
+const float YAW = -90.0f;
+const float PITCH = 0.0f;
+const float SPEED = 0.5f;
+const float SENSITIVITY = .01f;
+const float ZOOM = 45.0f;
+
+
 class ACamera
 {
+
+public:
+#if defined(OGL)
+
+	glm::vec3 Position;
+	glm::vec3 Front;
+	glm::vec3 Up;
+	glm::vec3 Right;
+	glm::vec3 WorldUp;
+
+
+#endif	
+	float Yaw;
+	float Pitch;
+
+	float MovementSpeed;
+	float MouseSensitivity;
+	float Zoom;
+
+	float* m_viewMatrix;
+
+
 public:
 
 
 	ACamera();
 	//get de matriz transformacion
-	
+#if defined(OGL)
+	ACamera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
+	{
+		Position = position;
+		WorldUp = up;
+		Yaw = yaw;
+		Pitch = pitch;
+		updateCameraVectors();
+	}
+	#endif
 	AVector getUp() { return up; }
 	AVector getEye() { return eye; }
 	AVector getAt() { return at; }
+#if defined(OGL)
+	glm::mat4 GetViewMatrixGlm()
+	{
+		return glm::lookAt(Position, Position + Front, Up);
 
+	}
+#endif
 	
 	//set matriz de transformacion
 	void setUp(AVector Up) {
@@ -71,188 +123,9 @@ public:
 	float* ViewPerspective(float fov, float aspectRatio, float cerca, float lejos);
 
 	float* ViewOrtographic(float, float, float, float);
-private:
 
-	//matriz de transformacion , cambiar por puntero de flotantes
-#if defined(DX11)
-	XMMATRIX viewMatrix;
-	#endif
-	float* m_viewMatrix;
-	//vectores de transformacion
-	
-	AVector up, eye, at, w;
-	//frot
-	
-	AVector zaxis;
-	//right
-	
-	AVector xaxis;
-	//up
-	
-	AVector yaxis;
-	//bandera para identicar cambio de frame
-	
-	bool frame = false;
-	
-	int m_fx, m_fy;
-};
-
-
-//////////////////////////////////////////
-//			open gl						//
-//										//
-//////////////////////////////////////////
-// Defines several possible options for camera movement. Used as abstraction to stay away from window-system specific input methods
-enum Camera_Movement {
-	FORWARD,
-	BACKWARD,
-	LEFT,
-	RIGHT
-};
-
-// Default camera values
-const float YAW = -90.0f;
-const float PITCH = 0.0f;
-const float SPEED = 0.5f;
-const float SENSITIVITY = .01f;
-const float ZOOM = 45.0f;
-
-
-// An abstract camera class that processes input and calculates the corresponding Euler Angles, Vectors and Matrices for use in OpenGL
-class Camera
-{
-public:
-
-	Camera(){
-	
-	
-	
-	
-	};
-	// camera Attributes
-	/*
-	AVector Position;
-	AVector Front;
-	AVector Up;
-	AVector Right;
-	AVector WorldUp;
-	*/
-	
-#if defined(OGL)
-
-	glm::vec3 Position;
-	glm::vec3 Front;
-	glm::vec3 Up;
-	glm::vec3 Right;
-	glm::vec3 WorldUp;
-
-
-#endif	
-	float Yaw;
-	float Pitch;
-	
-	float MovementSpeed;
-	float MouseSensitivity;
-	float Zoom;
-
-	float* m_viewMatrix;
-	
-	/*
-	Camera(AVector position = AVector(0.0f, 0.0f, 0.0f), AVector up = AVector(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : 
-	Front(AVector(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
-	{
-		Position = position;
-		WorldUp = up;
-		Yaw = yaw;
-		Pitch = pitch;
-		updateCameraVectors();
-	}
-	*/
-	
-#if defined(OGL)
-
-	Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
-	{
-		Position = position;
-		WorldUp = up;
-		Yaw = yaw;
-		Pitch = pitch;
-		updateCameraVectors();
-	}
-
-	#endif
 	
 
-	/*
-	Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch) 
-	: Front(AVector(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
-	{
-		Position = AVector(posX, posY, posZ);
-		WorldUp = AVector(upX, upY, upZ);
-		Yaw = yaw;
-		Pitch = pitch;
-		updateCameraVectors();
-	}
-	*/
-	void setviewMLookL(AVector x, AVector y, AVector z)
-	{
-	/*
-		//frot
-		Front = (y - x);
-		Front.normalize();
-		//right
-		Right = (Up.ProductoCruz(Front));
-		Right.normalize();
-		//up
-		Up = (Front.ProductoCruz(Right));
-
-#
-		m_viewMatrix = new float[16]{
-			Right.getX() ,Up.getX(),Front.getX(),0,
-			Right.getY(), Up.getY(), Front.getY(),0,
-			Right.getZ(), Up.getZ(), Front.getZ(),0,
-			-Right.ProductoPunto(x),-Up.ProductoPunto(x),-Front.ProductoPunto(x) ,1
-
-		};
-	*/
-
-
-
-
-	}
-
-	// returns the view matrix calculated using Euler Angles and the LookAt Matrix
-
-#if defined(OGL)
-	glm::mat4 GetViewMatrixGlm()
-	{
-		return glm::lookAt(Position, Position + Front, Up);
-
-	}
-	#endif
-
-	float* GetViewMatrix()
-	{
-	/*
-		setviewMLookL(Position, Position + Front, Up);
-		return  m_viewMatrix;
-	*/
-
-	}
-
-	float* ViewPerspective(float fov, float aspectRatio, float cerca, float lejos)
-	{
-
-		float height = cos(fov * .5) / sin(fov * .5);
-		float width = height / aspectRatio;
-		return  new float[16]{
-		  width, 0.0f, 0.0f, 0.0f,
-		  0.0f, height, 0.0f, 0.0f,
-		  0.0f, 0.0f, lejos / (lejos - cerca), 1.0f,
-		  0.0f, 0.0f, (-lejos / (lejos - cerca)) * cerca, 0.0f
-		};
-	}
-	
 	void ProcessKeyboard(Camera_Movement direction, float deltaTime)
 	{
 #if defined(OGL)
@@ -265,10 +138,10 @@ public:
 			Position -= Right * velocity;
 		if (direction == RIGHT)
 			Position += Right * velocity;
-			#endif
+#endif
 	}
 
-	
+
 	void ProcessMouseMovement(float xoffset, float yoffset, bool constrainPitch = true)
 	{
 		xoffset *= MouseSensitivity;
@@ -301,7 +174,7 @@ public:
 	}
 
 private:
-	
+
 	// calculates the front vector from the Camera's (updated) Euler Angles
 
 	void updateCameraVectors()
@@ -316,24 +189,33 @@ private:
 		Right = glm::normalize(glm::cross(Front, WorldUp));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
 		Up = glm::normalize(glm::cross(Right, Front));
 
-		#endif
-/*
-		
-		// calculate the new Front vector
-		AVector front;
-		front.setX( cos((Yaw)) * cos((Pitch)) );
-		front.setY( sin((Pitch)) );
-		front.setZ(  sin((Yaw)) * cos((Pitch)) );
-		front.normalize();
-		Front = front;
-		
-		Front.ProductoCruz(WorldUp);
-		Front.normalize();
+#endif
+		};
 
-		Right =Front;
-		Right.ProductoCruz(Front);
-		Right.normalize();
-		Up = Right;
-	*/	
-	}
+private:
+
+	//matriz de transformacion , cambiar por puntero de flotantes
+#if defined(DX11)
+	XMMATRIX viewMatrix;
+	#endif
+	
+	//vectores de transformacion
+	
+	AVector up, eye, at, w;
+	//frot
+	
+	AVector zaxis;
+	//right
+	
+	AVector xaxis;
+	//up
+	
+	AVector yaxis;
+	//bandera para identicar cambio de frame
+	
+	bool frame = false;
+	
+	int m_fx, m_fy;
 };
+
+

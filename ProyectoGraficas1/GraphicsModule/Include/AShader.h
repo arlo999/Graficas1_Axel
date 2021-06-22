@@ -20,7 +20,7 @@ public:
 	unsigned int ID;
 	AShader();
 	AShader(std::string vertexPath, std::string fragmentPath);
-	
+	void Init(std::string vertexPath, std::string fragmentPath);
 	// activate the shader
   // ------------------------------------------------------------------------
 	void Use()
@@ -57,10 +57,10 @@ public:
 		glUniformMatrix4fv(glGetUniformLocation(ID,name.c_str()),1,GL_FALSE,glm::value_ptr(value) );
 	}
 #endif
-	void setFloat4(const std::string& name, float* value) const
+	void setFloat4(const std::string& name, float value1, float value2, float value3, float value4) const
 	{
 #if defined(OGL)
-		glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, value);
+		glUniform4f(glGetUniformLocation(ID, name.c_str()),  value1,value2,value3,value4);
 #endif
 	}
 	void setVec3(const std::string& name, float value,float value2,float value3) const

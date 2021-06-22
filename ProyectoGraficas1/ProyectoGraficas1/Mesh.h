@@ -102,7 +102,7 @@ public:
 	Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures, vector<ID3D11ShaderResourceView* >textures_vec);
 	// render the mesh
 	void Draw(AShader& shader, bool points);
-	void Render();
+	void Render(AShader& shader);
 //opengl
 private:
 	// render data 

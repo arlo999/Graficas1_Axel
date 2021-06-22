@@ -11,7 +11,11 @@ namespace GraphicsModule
 
 	HRESULT Test::InitDevice(HWND _hwnd)
 	{
-		
+	#if defined(OGL)	
+	
+		 camera= new ACamera(glm::vec3(0.0f, 0.0f, 3.0f));
+	
+	#endif
 
 #if defined(DX11)
 		m_hwnd = _hwnd;
@@ -397,6 +401,7 @@ namespace GraphicsModule
  * @return  #LRESULT: Status code.
  */
 #if defined(DX11)
+	
 	HRESULT Test::ReloadBuffer(unsigned int width, unsigned int height) {
 		
 		HRESULT hr = S_OK;

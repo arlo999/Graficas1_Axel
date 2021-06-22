@@ -136,7 +136,7 @@ unsigned int AModel::TextureFromFile(const char* path, const string& directory, 
 
 	unsigned char* data = stbi_load(filename.c_str(), &width, &height, &nrComponents, STBI_rgb);
 
-
+	
 	glGenTextures(1, &textureID);
 
 
@@ -182,8 +182,8 @@ unsigned int AModel::TextureFromFile(const char* path, const string& directory, 
 		else {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_TRIANGLES);
 		}
-
-
+	
+	
 		stbi_image_free(data);
 	}
 	else
@@ -199,16 +199,6 @@ unsigned int AModel::TextureFromFile(const char* path, const string& directory, 
 
 void AModel::Draw(AShader& shader)
 {
-#if defined(OGL)
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(transform.traslation[0], transform.traslation[1], transform.traslation[2]));
-	model = glm::scale(model, glm::vec3(transform.scale[0], transform.scale[1], transform.scale[2]));
-
-	model = glm::rotate(model, glm::radians(transform.rotation[0] * 180 / 3.1415f), glm::vec3(1, 0, 0));
-	model = glm::rotate(model, glm::radians(transform.rotation[1] * 180 / 3.1415f), glm::vec3(0, 1, 0));
-	model = glm::rotate(model, glm::radians(transform.rotation[2] * 180 / 3.1415f), glm::vec3(0, 0, 1));
-	shader.setMat4("model", model);
-#endif
 #if defined(DX11)
 	auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
 	testObj.cb.mWorld = XMMatrixTranslation(transform.traslation[0], transform.traslation[1], transform.traslation[2]);
@@ -223,13 +213,23 @@ void AModel::Draw(AShader& shader)
 	testObj.g_pImmediateContext.A_PSSetShaderResources(9, 1, &g_Ao);
 
 #endif	
+#if defined(OGL)
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(transform.traslation[0], transform.traslation[1], transform.traslation[2]));
+	model = glm::scale(model, glm::vec3(transform.scale[0], transform.scale[1], transform.scale[2]));
+
+	model = glm::rotate(model, glm::radians(transform.rotation[0] * 180 / 3.1415f), glm::vec3(1, 0, 0));
+	model = glm::rotate(model, glm::radians(transform.rotation[1] * 180 / 3.1415f), glm::vec3(0, 1, 0));
+	model = glm::rotate(model, glm::radians(transform.rotation[2] * 180 / 3.1415f), glm::vec3(0, 0, 1));
+	shader.setMat4("world", model);
 	for (unsigned int i = 0; i < meshes.size(); i++)
 	{
 		meshes[i].Draw(shader, point);
 	}
+	#endif
 }
 
-void AModel::Render()
+void AModel::Render(AShader& shader)
 {
 
 #if defined(DX11)
@@ -245,13 +245,27 @@ void AModel::Render()
 
 	for (unsigned int i = 0; i < meshes.size(); i++)
 	{
-		meshes[i].Render();
+		meshes[i].Render(shader);
 	}
 
 #endif	
+#if defined(OGL)
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(transform.traslation[0], transform.traslation[1], transform.traslation[2]));
+	model = glm::scale(model, glm::vec3(transform.scale[0], transform.scale[1], transform.scale[2]));
+
+	model = glm::rotate(model, glm::radians(transform.rotation[0] * 180 / 3.1415f), glm::vec3(1, 0, 0));
+	model = glm::rotate(model, glm::radians(transform.rotation[1] * 180 / 3.1415f), glm::vec3(0, 1, 0));
+	model = glm::rotate(model, glm::radians(transform.rotation[2] * 180 / 3.1415f), glm::vec3(0, 0, 1));
+	shader.setMat4("world", model);
+	for (unsigned int i = 0; i < meshes.size(); i++)
+	{
+		meshes[i].Render(shader);
+	}
+	#endif
 }
 
-void AModel::Rendersaq()
+void AModel::Rendersaq(AShader& shader)
 {
 #if defined(DX11)
 	auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
@@ -265,8 +279,18 @@ void AModel::Rendersaq()
 
 	for (unsigned int i = 0; i < meshes.size(); i++)
 	{
-		meshes[i].Render();
+		meshes[i].Render(shader);
 	}
+
+
+	#endif
+#if defined(OGL)
+
+	for (unsigned int i = 0; i < meshes.size(); i++)
+	{
+		meshes[i].Render(shader);
+	}
+
 	#endif
 }
 
@@ -372,8 +396,8 @@ Mesh AModel::processMesh(aiMesh* mesh, const aiScene* scene)
 			tanget.setY(mesh->mTangents[1].y);
 			tanget.setZ(mesh->mTangents[2].z);
 			vertex.Tangente[0]=tanget.getX();
-			vertex.Tangente[0]=tanget.getY();
-			vertex.Tangente[0]=tanget.getZ();
+			vertex.Tangente[1]=tanget.getY();
+			vertex.Tangente[2]=tanget.getZ();
 		
 		}
 
@@ -417,12 +441,14 @@ Mesh AModel::processMesh(aiMesh* mesh, const aiScene* scene)
 	textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 
 	if (diffuseMaps.empty()) {
+	/*
 		Texture texture;
 		texture.id = TextureFromFile("base_albedo.jpg", this->directory, false);
 		texture.type = aiTextureType_DIFFUSE;
 		texture.path = "base_albedo.jpg";
 		textures.push_back(texture);
 		textures_loaded.push_back(texture);
+	*/
 	}
 #if defined(OGL)
 

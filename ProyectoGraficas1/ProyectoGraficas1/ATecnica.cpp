@@ -227,7 +227,7 @@ void ATecnica::InitPixel_BlinnPhong()
 	Terminate.Name = NULL;
 
 	RM.m_macros.push_back(Terminate);
-	#endif
+
 	APase* paseSkyBox = new APase(RManager::SKYBOX);
 	paseSkyBox->InitSkybox();
 	m_PaseList.push_back(paseSkyBox);
@@ -249,8 +249,34 @@ void ATecnica::InitPixel_BlinnPhong()
 	paseCopy->InitCopy();
 	m_PaseList.push_back(paseCopy);
 
+#endif
+#if defined(OGL) 
+	APase* paseSkyBox = new APase(RManager::SKYBOX);
+	paseSkyBox->InitSkybox();
+	m_PaseList.push_back(paseSkyBox);
 
+
+
+
+	APase* paseLight = new APase(RManager::LIGHT);
+	paseLight->forward=true;
+	paseLight->InitLight();
+	m_PaseList.push_back(paseLight);
 	
+
+	APase* paseToonMap = new APase(RManager::TONEMAP);
+	paseToonMap->InitTooneMap();
+	m_PaseList.push_back(paseToonMap);
+	
+
+
+
+
+	APase* paseCopy = new APase(RManager::COPY);
+	//paseLight->forward = true;
+	paseCopy->InitCopy();
+	m_PaseList.push_back(paseCopy);
+	#endif
 }
 
 void ATecnica::InitPixelMap()
@@ -482,10 +508,12 @@ void ATecnica::InitGbuffer_NormSpec()
 
 	RM.m_macros.push_back(Terminate);
 	#endif
-
-	APase* pase = new APase;
+	
+	APase* pase = new APase(RManager::GBUFFER);
 	pase->InitGBuffer();
 	m_PaseListDefferd.push_back(pase);
+	
+	
 
 
 
@@ -504,16 +532,17 @@ void ATecnica::InitGbuffer_NormSpec()
 	RM.m_macros.push_back(Terminate);
 	
 #endif	
+
 	APase* paseSkyBox = new APase(RManager::SKYBOX);
 	paseSkyBox->InitSkybox();
 	m_PaseListDefferd.push_back(paseSkyBox);
-	
-	
-	
 
+	
+	
 	APase* paseLight = new APase(RManager::LIGHT);
 	paseLight->InitLight();
 	m_PaseListDefferd.push_back(paseLight);
+
 
 	
 	APase* paseLSao = new APase(RManager::AO);
@@ -522,16 +551,27 @@ void ATecnica::InitGbuffer_NormSpec()
 	
 	
 	
+	
 	APase* paseToonMap = new APase(RManager::TONEMAP);
 	paseToonMap->InitTooneMap();
 	m_PaseListDefferd.push_back(paseToonMap);
 	
-	
-	
 
+	
+	
+	
+	
+	
 	APase* paseCopy = new APase(RManager::COPY);
 	paseCopy->InitCopy();
 	m_PaseListDefferd.push_back(paseCopy);
+	
+	
+	
+	
+	
+	
+	
 	
 	
 

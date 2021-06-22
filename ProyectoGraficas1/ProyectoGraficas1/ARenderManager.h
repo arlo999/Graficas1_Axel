@@ -3,7 +3,7 @@
 #include <vector>
 #include "AModel.h"
 #include "AEfecto.h"
-#include "AShader.h"
+
 
 namespace RManager {
 	
@@ -33,6 +33,8 @@ namespace RManager {
 		TONEMAP,
 		COPY
 	};
+
+
 class ARenderManager
 {
 public:
@@ -48,6 +50,15 @@ public:
 	---------------------------------------------------------------*/
 
 
+	vector<std::string> faces
+	{
+		"SkyboxAsset/right.jpg",
+			"SkyboxAsset/left.jpg",
+			"SkyboxAsset/top.jpg",
+			"SkyboxAsset/bottom.jpg",
+			"SkyboxAsset/front.jpg",
+			"SkyboxAsset/back.jpg"
+	};
 	//PUT ALL MACROS 
 
 #if defined(DX11) 
@@ -89,8 +100,50 @@ public:
 	//
 
 
+	//pases deferred
+
+	AShader m_shaderLight;
+	AShader m_shaderGBuffer;
+	AShader m_shaderCopy;
+	AShader m_shaderToneMap;
+	AShader m_shaderSAO;
+	AShader m_shaderSkybox;
+	//pases forward
+
+	AShader m_shaderlightF;
 	
+
+
 	bool m_Forward=false;
+
+	//ogl
+	//gbuffer
+	unsigned int gBuffer;
+	unsigned int gAlbedo, gPosition, gNormal, gColorSpec, gAlbedoSpec;
+	unsigned int rboDepth;
+	//copy
+	unsigned int CopyRT;
+	//light
+	unsigned int LightRT;
+	unsigned int Lightsrv;
+	//toneMap
+	unsigned int TonemapRT;
+	unsigned int toneMapsrv;
+	//SSAO
+	unsigned int SAORT;
+	unsigned int SAOsrv;
+	//skybox
+
+	unsigned int Skyboxsrv;
+	//forward 
+	
+	unsigned int LightForwardRT;
+	unsigned int LightForwardsrv;
+	unsigned int ToneMapForwardRT;
+	unsigned int ToneMapForwardsrv;
+	unsigned int CopyForwardRT;
+	
+
 private:
 	
 
@@ -116,7 +169,7 @@ public:
 	void Forward();
 	void Deferred();
 
-
+	unsigned int loadCubemap(vector<std::string> faces);
 
 };
 

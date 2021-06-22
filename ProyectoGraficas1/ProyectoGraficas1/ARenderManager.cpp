@@ -26,8 +26,18 @@ bool ARenderManager::Init()
 
 void ARenderManager::LoadDependences()
 {
+#if defined(DX11)
 	m_ScreenAlignedQuad.loadModel("C:\\Graficos1_recursos\\ProyectoGraficas1\\bin\\SAQ\\ScreenAlignedQuad.3ds");
 	m_Skybox.loadModel("C:\\Graficos1_recursos\\ProyectoGraficas1\\bin\\Skybox\\Sphere.3ds");
+#endif
+#if defined(OGL)
+
+	//m_ScreenAlignedQuad.loadModel("C:\\Graficos1_recursos\\ProyectoGraficas1\\bin\\SAQ\\ScreenAlignedQuad.3ds");
+
+	m_ScreenAlignedQuad.loadModel("C:\\Graficos1_recursos\\ProyectoGraficas1\\bin\\SAQ\\SAQ.obj");
+	m_Skybox.loadModel("C:\\Graficos1_recursos\\ProyectoGraficas1\\bin\\Skybox\\SkyboxMesh.obj");
+	#endif
+	
 	ApplyEfects();
 	
 }
@@ -214,8 +224,174 @@ HRESULT ARenderManager::ApplyEfects()
 		return hr;
 
 #endif
+#if defined(OGL) 
+
+	glGenFramebuffers(1, &gBuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
+
+	//- albedo color buffer
+	glGenTextures(1, &gAlbedo);
+	glBindTexture(GL_TEXTURE_2D, gAlbedo);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 1280, 720, 0, GL_RGBA, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gAlbedo, 0);
 
 
+	// - normal color buffer
+	glGenTextures(1, &gNormal);
+	glBindTexture(GL_TEXTURE_2D, gNormal);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 1280, 720, 0, GL_RGBA, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
+
+	// - color + specular color buffer
+	glGenTextures(1, &gAlbedoSpec);
+	glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 1280, 720, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedoSpec, 0);
+
+	// - position color buffer
+	glGenTextures(1, &gPosition);
+	glBindTexture(GL_TEXTURE_2D, gPosition);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 1280, 720, 0, GL_RGBA, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, gPosition, 0);
+
+	// tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
+	unsigned int attachments[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 , GL_COLOR_ATTACHMENT3 };
+	glDrawBuffers(4, attachments);
+	// create and attach depth buffer (renderbuffer)
+
+	glGenRenderbuffers(1, &rboDepth);
+	glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 1280, 720);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
+	
+	// finally check if framebuffer is complete
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "Framebuffer not complete!" << std::endl;
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+
+	//------------------light
+	glGenFramebuffers(1, &LightRT);
+	glBindFramebuffer(GL_FRAMEBUFFER, LightRT);
+
+	//- albedo color buffer
+	glGenTextures(1, &Lightsrv);
+	glBindTexture(GL_TEXTURE_2D, Lightsrv);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 1280, 720, 0, GL_RGBA, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, Lightsrv, 0);
+
+	unsigned int attachmentsLight[1] = { GL_COLOR_ATTACHMENT0 };
+	glDrawBuffers(1, attachmentsLight);
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "Framebuffer not complete!" << std::endl;
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	
+	//--------------------tonemap
+
+
+	glGenFramebuffers(1, &TonemapRT);
+	glBindFramebuffer(GL_FRAMEBUFFER, TonemapRT);
+
+	
+	glGenTextures(1, &toneMapsrv);
+	glBindTexture(GL_TEXTURE_2D, toneMapsrv);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 1280, 720, 0, GL_RGBA, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, toneMapsrv, 0);
+
+	unsigned int attachmentstone[1] = { GL_COLOR_ATTACHMENT0 };
+	glDrawBuffers(1, attachmentstone);
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "Framebuffer not complete!" << std::endl;
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	//--------------------ssao
+
+	glGenFramebuffers(1, &SAORT);
+	glBindFramebuffer(GL_FRAMEBUFFER, SAORT);
+
+
+	glGenTextures(1, &SAOsrv);
+	glBindTexture(GL_TEXTURE_2D, SAOsrv);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 1280, 720, 0, GL_RGBA, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, SAOsrv, 0);
+
+	unsigned int attachmentssao[1] = { GL_COLOR_ATTACHMENT0 };
+	glDrawBuffers(1, attachmentssao);
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "Framebuffer not complete!" << std::endl;
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+//-------------------------copy
+
+	glGenFramebuffers(1, &CopyRT);
+	glBindFramebuffer(GL_FRAMEBUFFER, CopyRT);
+
+	
+
+
+//-----------------------------------------------------------skybox
+	Skyboxsrv=loadCubemap(faces);
+	
+	
+	//-------------------------------------------------forward
+	glGenFramebuffers(1, &LightForwardRT);
+	glBindFramebuffer(GL_FRAMEBUFFER, LightForwardRT);
+
+	
+	glGenTextures(1, &LightForwardsrv);
+	glBindTexture(GL_TEXTURE_2D, LightForwardsrv);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 1280, 720, 0, GL_RGBA, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, LightForwardsrv, 0);
+
+	unsigned int attachmentsLightForward[1] = { GL_COLOR_ATTACHMENT0 };
+	glDrawBuffers(1, attachmentsLightForward);
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "Framebuffer not complete!" << std::endl;
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+//----------------------------------------------------------tonemap
+
+	glGenFramebuffers(1, &ToneMapForwardRT);
+	glBindFramebuffer(GL_FRAMEBUFFER, ToneMapForwardRT);
+
+	glGenTextures(1, &ToneMapForwardsrv);
+	glBindTexture(GL_TEXTURE_2D, ToneMapForwardsrv);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 1280, 720, 0, GL_RGBA, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ToneMapForwardsrv, 0);
+
+	unsigned int attachmentsToneForward[1] = { GL_COLOR_ATTACHMENT0 };
+	glDrawBuffers(1, attachmentsToneForward);
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "Framebuffer not complete!" << std::endl;
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+//----------------------------------copy
+	glGenFramebuffers(1, &CopyForwardRT);
+	glBindFramebuffer(GL_FRAMEBUFFER, CopyForwardRT);
+
+
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	#endif
 	return S_OK;
 }
 
@@ -256,6 +432,45 @@ void ARenderManager::Deferred()
 		m_EfectoList[1]->Render();
 	
 
+}
+
+unsigned int ARenderManager::loadCubemap(vector<std::string> faces)
+{
+	unsigned int textureID=0;
+#if defined(OGL)
+	
+	glGenTextures(1, &textureID);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+	
+	int width, height, nrChannels;
+	for (unsigned int i = 0; i < faces.size(); i++)
+	{
+
+		unsigned char* data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
+		if (data)
+		{
+			
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+				0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+
+		
+		
+			stbi_image_free(data);
+		}
+		else
+		{
+			std::cout << "Cubemap tex failed to load at path: " << faces[i] << std::endl;
+			stbi_image_free(data);
+		}
+	}
+		
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	#endif
+	return textureID;
 }
 
 bool ARenderManager::ForwardInit()

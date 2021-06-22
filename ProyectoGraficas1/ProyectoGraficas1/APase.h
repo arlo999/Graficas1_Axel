@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include "GraphicsModule.h"
+#include "AShader.h"
 #if defined(DX11)
 
 #include <d3d11.h>
@@ -32,6 +33,7 @@ public:
 	HRESULT InitTooneMap();
 	HRESULT InitSkybox();
 
+	bool forward = false;
 
 	HRESULT CompileShaderFromFile(const char* szFileName, const D3D10_SHADER_MACRO* _Macros, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut);
 private:
@@ -42,7 +44,6 @@ private:
 	ID3D11RasterizerState* m_Rasterizador = NULL;
 	std::vector<ID3D11RenderTargetView*>m_ListRenderTV;
 
-	bool m_PostProceso = false;
 	std::vector<AModel*>m_ModelList;
 	int m_TypePase;
 	

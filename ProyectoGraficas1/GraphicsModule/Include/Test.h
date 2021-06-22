@@ -5,15 +5,15 @@
 #include "ADeviceContext.h"
 #include "ASwapChain.h"
 #include "ATexture2D.h"
+#include "ACamera.h"
 
 #if defined(OGL)
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-
 #endif
 #if defined(DX11)
-#include "ACamera.h"
+
 #include <d3d11.h>
 #include <d3dx11.h>
 #include <d3dcompiler.h>
@@ -27,6 +27,7 @@
 
 namespace GraphicsModule
 {
+	
 	struct TooneMap
 	{
 #if defined(DX11)
@@ -205,7 +206,6 @@ todo esto necesita abstra
 		XMMATRIX                            g_Projection;
 		XMFLOAT4                            g_vMeshColor;
 		//-----------------camarera-----------------------//
-		ACamera				*camera;
 		
 		//-------------------------------------- viewport ---------------------//
 		D3D11_VIEWPORT vp;
@@ -214,8 +214,10 @@ todo esto necesita abstra
 		
 #endif
 	public:
-	
-	
+	//camera
+		ACamera				*camera;
+		
+		
 		
 #if defined(DX11)
 
@@ -225,7 +227,6 @@ todo esto necesita abstra
 #endif
 		HRESULT InitDevice(HWND _hwnd);
 public:
-
 		void Render();
 		void Update();
 		void CleanupDevice();

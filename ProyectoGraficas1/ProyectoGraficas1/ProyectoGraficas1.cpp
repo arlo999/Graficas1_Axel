@@ -13,7 +13,7 @@
 #include <GLFW/glfw3.h>
 #endif
 #include "AModel.h"
-#include "ACamera.h"
+
 #include "GraphicsModule.h"
 
 #if defined(DX11)
@@ -48,7 +48,6 @@ float lastFrame = 0.0f;
 
 
 #if defined(OGL)
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 GLFWwindow* window;
 #endif
 
@@ -59,6 +58,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND _hwnd, UINT _m
 #if defined(OGL)
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
+	auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
 	if (firstMouse)
 	{
 		lastX = xpos;
@@ -72,14 +72,16 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	lastX = xpos;
 	lastY = ypos;
 
-	camera.ProcessMouseMovement(xoffset, yoffset);
+	testObj.camera->ProcessMouseMovement(xoffset, yoffset);
 }
     #endif
 //--------Mouse Function Opngl----------------------//
 #if defined(OGL)
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	camera.ProcessMouseScroll(yoffset);
+	auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
+
+	testObj.camera->ProcessMouseScroll(yoffset);
 }
 #endif
 //----------------------Screen function frame buffer----------------//
@@ -330,7 +332,9 @@ HRESULT InitWindow(LONG _width, LONG _height)
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
 	glViewport(0, 0, _width,_height);
-  
+ 
+	
+
 #endif
 #if  defined(DX11)
     // Register class
@@ -418,7 +422,7 @@ HRESULT InitWindow(LONG _width, LONG _height)
  }
 
  //--------------------render ui----------------------------//
- void UIRender(AShader& _shader)
+ void UIRender()
  {
    // Start the Dear ImGui frame
 #if defined(DX11)
@@ -426,7 +430,7 @@ HRESULT InitWindow(LONG _width, LONG _height)
    
    #endif
 #if  defined(OGL) 
-
+   
    ImGui_ImplOpenGL3_NewFrame();
    ImGui_ImplGlfw_NewFrame();
    #endif
@@ -438,7 +442,7 @@ HRESULT InitWindow(LONG _width, LONG _height)
    auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
    auto& RM = RManager::SingletonRM();
   // ImGui::ShowDemoWindow();
-  
+
    ImGui::Begin("Modelo", NULL, 0);
    if (ImGui::BeginCombo("Carga de Modelo", NULL))
    {
@@ -487,7 +491,12 @@ HRESULT InitWindow(LONG _width, LONG _height)
 
                 #endif
 #if defined(OGL) 
-                ImTextureID my_tex_id = (void*)models[i]->textures_loaded[0].id;
+                ImTextureID my_tex_id = (void*)RM.gAlbedo;
+				ImTextureID my_tex_id2 = (void*)RM.gNormal;
+				ImTextureID my_tex_id3 = (void*)RM.gAlbedoSpec;
+				ImTextureID my_tex_id4 = (void*)RM.gPosition;
+				ImTextureID my_tex_id5 = (void*)RM.SAOsrv;
+
 #endif             
                 ImVec2 pos = ImGui::GetCursorScreenPos();
 				ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
@@ -495,8 +504,14 @@ HRESULT InitWindow(LONG _width, LONG _height)
 				ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
 				ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.5f); // 50% opaque white
 				
+				
 				ImGui::ImageButton(my_tex_id, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max);
+				ImGui::ImageButton(my_tex_id2, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max);
+				ImGui::ImageButton(my_tex_id3, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max);
+				ImGui::ImageButton(my_tex_id4, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max);
+				ImGui::ImageButton(my_tex_id5, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max);
 #if defined(DX11)
+				ImGui::ImageButton(my_tex_id, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max);
 				ImGui::ImageButton(my_tex_id2, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max);
 				ImGui::ImageButton(my_tex_id3, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max);
 				ImGui::ImageButton(my_tex_id4, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max);
@@ -595,31 +610,45 @@ HRESULT InitWindow(LONG _width, LONG _height)
 		}
    ImGui::End();
    //dir
+
+//------------------------------------------------------------------------------------
+
    ImGui::Begin("Luz Dir", NULL, 0);
    static float dir[3]{};
    static float color[3]{};
    if (ImGui::DragFloat3("Direccion de luz", dir, 0.001, -1, 1)) {
 
+	   
 
 #if defined(DX11)
 	   testObj.m_LigthBufferStruct.dir = XMFLOAT4(dir[0], dir[1], dir[2], 0.0f);
 #endif
 #if defined(OGL)
+	   RM.m_shaderLight.Use();
+	   RM.m_shaderLight.setFloat4("dirLight",dir[0],dir[1],dir[2],0.0f);
 
-
+	   RM.m_shaderlightF.Use();
+	   RM.m_shaderlightF.setFloat4("dirLight", dir[0], dir[1], dir[2], 0.0f);
 #endif
    }
    if (ImGui::DragFloat3("RGB", color, 0.001, -1, 1)) {
-
+	  
 #if defined(DX11)
 	   testObj.m_LigthBufferStruct.lightDirColor = XMFLOAT4(color[0], color[1], color[2], 0.0f);
 #endif
 #if defined(OGL)
-	
-
+	   RM.m_shaderLight.Use();
+	   RM.m_shaderLight.setFloat4("dirLightColor", color[0],color[1],color[2],0.0f);
+	   RM.m_shaderlightF.Use();
+	   RM.m_shaderlightF.setFloat4("dirLightColor", color[0], color[1], color[2], 0.0f);
 #endif
    }
    ImGui::End();
+
+
+//------------------------------------------------------------------------------------------point light
+
+
    /////////////////////////////////////
 //----------------------------------------Point lIGHT
    ImGui::Begin("PointLight", NULL, 0);
@@ -632,33 +661,43 @@ HRESULT InitWindow(LONG _width, LONG _height)
 	   testObj.m_PointLightBufferStruct.pointLightPos = XMFLOAT3(pointLightPos[0], pointLightPos[1], pointLightPos[2]);
 #endif
 #if defined(OGL)
-	   
-
+	   RM.m_shaderLight.Use();
+	   RM.m_shaderLight.setFloat4("pointLightPos", pointLightPos[0], pointLightPos[1], pointLightPos[2], 0.0f);
+	   RM.m_shaderlightF.Use();
+	   RM.m_shaderlightF.setFloat4("pointLightPos", pointLightPos[0], pointLightPos[1], pointLightPos[2], 0.0f);
 
 #endif
    }
    if (ImGui::DragFloat3("Color Light", pointLightColor, 0.001, -1, 1)) {
-	   
+	  
 #if defined(DX11)
 	   testObj.m_PointLightBufferStruct.pointLightColor = XMFLOAT4(pointLightColor[0], pointLightColor[1], pointLightColor[2], 0.0f);
 #endif
 #if defined(OGL)
-	   glUniform4f(glGetUniformLocation(_shader.ID, "pointLightColor"), pointLightColor[0], pointLightColor[1], pointLightColor[2], 0.0f);
+	   RM.m_shaderLight.Use();
+	   RM.m_shaderLight.setFloat4("pointLightColor", pointLightColor[0], pointLightColor[1], pointLightColor[2], 0.0f);
+	   RM.m_shaderlightF.Use();
+	   RM.m_shaderlightF.setFloat4("pointLightColor", pointLightColor[0], pointLightColor[1], pointLightColor[2], 0.0f);
 #endif
    }
    if (ImGui::DragFloat("pointLightAtt", &pointLightAtt, 0.001, 1, 1000)) {
-	   
+	  
 #if defined(DX11)
 	   testObj.m_PointLightBufferStruct.pointLightAtt = FLOAT(pointLightAtt);
 #endif
 #if defined(OGL)
-	
+	   RM.m_shaderLight.Use();
+	   RM.m_shaderLight.setFloat("pointLightAtt", pointLightAtt);
+	   RM.m_shaderlightF.Use();
+	   RM.m_shaderlightF.setFloat("pointLightAtt", pointLightAtt);
 #endif
    }
    ImGui::End();
 
-   /////////////////////////////////////////////////////
-   ///--------------------------- SpotLight
+
+
+
+   ///------------------------------------------------------------------------------------ SpotLight
    ImGui::Begin("SpotLight", NULL, 0);
    static float spotLightColor[3]{};
    static float spotLightPos[3]{};
@@ -667,12 +706,15 @@ HRESULT InitWindow(LONG _width, LONG _height)
    static float spotLightInner;
    static float spotLightOutner;
    if (ImGui::DragFloat3("Position de PointLight", spotLightPos, 1)) {
-	  
+	   
 #if defined(DX11)
 	   testObj.m_SpotLightBufferStruct.spotLightPos = XMFLOAT4(spotLightPos[0], spotLightPos[1], spotLightPos[2], 0.0f);
 #endif
 #if defined(OGL)
-	 
+	   RM.m_shaderLight.Use();
+	   RM.m_shaderLight.setFloat4("spotLightPos", spotLightPos[0], spotLightPos[1], spotLightPos[2], 0.0f);
+	   RM.m_shaderlightF.Use();
+	   RM.m_shaderlightF.setFloat4("spotLightPos", spotLightPos[0], spotLightPos[1], spotLightPos[2], 0.0f);
 
 #endif
    }
@@ -682,8 +724,11 @@ HRESULT InitWindow(LONG _width, LONG _height)
 	   testObj.m_SpotLightBufferStruct.spotLightColor = XMFLOAT4(spotLightColor[0], spotLightColor[1], spotLightColor[2], 0.0f);
 #endif
 #if defined(OGL)
-	 
+	   RM.m_shaderLight.Use();
+	   RM.m_shaderLight.setFloat4("spotLightColor", spotLightColor[0], spotLightColor[1], spotLightColor[2], 0.0f);
 
+	   RM.m_shaderlightF.Use();
+	   RM.m_shaderlightF.setFloat4("spotLightColor", spotLightColor[0], spotLightColor[1], spotLightColor[2], 0.0f);
 #endif
    }
    if (ImGui::DragFloat3("Dir Light", spotLightDir, 0.001, -1, 1)) {
@@ -692,52 +737,71 @@ HRESULT InitWindow(LONG _width, LONG _height)
 	   testObj.m_SpotLightBufferStruct.spotLightDir = XMFLOAT4(spotLightDir[0], spotLightDir[1], spotLightDir[2], 0.0f);
 #endif
 #if defined(OGL)
-	  
+	   RM.m_shaderLight.Use();
+	   RM.m_shaderLight.setFloat4("spotLightDir", spotLightDir[0], spotLightDir[1], spotLightDir[2], 0.0f);
+	   RM.m_shaderlightF.Use();
+	   RM.m_shaderlightF.setFloat4("spotLightDir", spotLightDir[0], spotLightDir[1], spotLightDir[2], 0.0f);
 
 #endif
    }
-   if (ImGui::DragFloat("Attenaution", &SpotlightAtt, 1)) {
+   if (ImGui::DragFloat("spotLightAtt", &SpotlightAtt, 1)) {
 	  
 #if defined(DX11)
 	   testObj.m_SpotLightBufferStruct.SpotlightAtt = FLOAT(SpotlightAtt);
 #endif
 #if defined(OGL)
-	   _shader.setFloat("SpotlightAtt", SpotlightAtt);
+	   RM.m_shaderLight.Use();
+	   RM.m_shaderLight.setFloat("spotLightAtt", SpotlightAtt);
+
+	   RM.m_shaderlightF.Use();
+	   RM.m_shaderlightF.setFloat("spotLightAtt", SpotlightAtt);
 #endif
    }
-   if (ImGui::DragFloat("Inner", &spotLightInner, 1)) {
-	  
+   if (ImGui::DragFloat("spotLightInner", &spotLightInner, 1)) {
+	   
 #if defined(DX11)
 	   testObj.m_SpotLightBufferStruct.spotLightInner = FLOAT(spotLightInner);
 #endif
 #if defined(OGL)
-	   _shader.setFloat("spotLightInner", spotLightInner);
+	   RM.m_shaderLight.Use();
+	   RM.m_shaderLight.setFloat("spotLightInner", spotLightInner);
+	   RM.m_shaderlightF.Use();
+	   RM.m_shaderlightF.setFloat("spotLightInner", spotLightInner);
 #endif
    }
-   if (ImGui::DragFloat("Outner", &spotLightOutner, 1)) {
+   if (ImGui::DragFloat("spotLightOuter", &spotLightOutner, 1)) {
 	  
 #if defined(DX11)
 	   testObj.m_SpotLightBufferStruct.spotLightOutner = FLOAT(spotLightOutner);
 #endif
 #if defined(OGL)
-	   _shader.setFloat("spotLightOutner", spotLightOutner);
+	   RM.m_shaderLight.Use();
+	   RM.m_shaderLight.setFloat("spotLightOuter", spotLightOutner);
+	   RM.m_shaderlightF.Use();
+	   RM.m_shaderlightF.setFloat("spotLightOuter", spotLightOutner);
 #endif
    }
    ImGui::End();
+
+///-------------------------------------------------------------------------------------------------amnbient
+
    // render UI
    ImGui::Begin("Ambient", NULL, 0);
    static float ambientColor[3]{};
-   static float kAmbient;
+   static  float kAmbient;
    static float kSpecular;
    static float shininess;
    static float kDiffuse;
    if (ImGui::DragFloat3("Ambient Color", ambientColor, 1)) {
-	   
+	  
 #if defined(DX11)
 	   testObj.m_AmbientBufferStruct.ambientColor = XMFLOAT4(ambientColor[0], ambientColor[1], ambientColor[2], 0.0f);
 #endif
 #if defined(OGL)
-	 
+	   RM.m_shaderLight.Use();
+	 RM.m_shaderLight.setFloat4("ambientColor",ambientColor[0], ambientColor[1], ambientColor[2],0.0f);
+	 RM.m_shaderlightF.Use();
+	 RM.m_shaderlightF.setFloat4("ambientColor", ambientColor[0], ambientColor[1], ambientColor[2], 0.0f);
 #endif
    }
    if (ImGui::DragFloat("kAmbient", &kAmbient, 1)) {
@@ -746,34 +810,49 @@ HRESULT InitWindow(LONG _width, LONG _height)
 	   testObj.m_AmbientBufferStruct.kAmbient = FLOAT(kAmbient);
 #endif
 #if defined(OGL)
-	   _shader.setFloat("spotLightOutner", spotLightOutner);
+	   RM.m_shaderLight.Use();
+	   RM.m_shaderLight.setFloat("kAmbient", kAmbient);
+	   RM.m_shaderlightF.Use();
+	   RM.m_shaderlightF.setFloat("kAmbient", kAmbient);
 #endif
    }
    if (ImGui::DragFloat("kSpecular", &kSpecular, 1)) {
-	   
+	  
 #if defined(DX11)
 	   testObj.m_SpecularBufferStruct.kSpecular = FLOAT(kSpecular);
 #endif
 #if defined(OGL)
-	   _shader.setFloat("spotLightOutner", spotLightOutner);
+	   RM.m_shaderLight.Use();
+	   RM.m_shaderLight.setFloat("kSpecular", kSpecular);
+	   RM.m_shaderlightF.Use();
+	   RM.m_shaderlightF.setFloat("kSpecular", kSpecular);
 #endif
    }
    if (ImGui::DragFloat("shininess", &shininess, 1)) {
-	   
+	
 #if defined(DX11)
 	   testObj.m_ShiniesBufferStruct.shininess = FLOAT(shininess);
 #endif
 #if defined(OGL)
-	   _shader.setFloat("spotLightOutner", spotLightOutner);
+	   RM.m_shaderLight.Use();
+	   RM.m_shaderLight.setFloat("shininess", shininess);
+	   RM.m_shaderlightF.Use();
+	   RM.m_shaderlightF.setFloat("shininess", shininess);
 #endif
    }
    if (ImGui::DragFloat("kDiffuse", &kDiffuse, 1)) {
-	   
+	  
 #if defined(DX11)
 	   testObj.m_DiffuseBufferStruct.kDiffuse = FLOAT(kDiffuse);
 #endif
 #if defined(OGL)
-	   _shader.setFloat("spotLightOutner", spotLightOutner);
+	   RM.m_shaderLight.Use();
+	   float i = glGetUniformLocation(RM.m_shaderLight.ID, "kDiffuse");
+	   glUniform1f(i, kDiffuse);
+	   RM.m_shaderlightF.Use();
+	   float i2 = glGetUniformLocation(RM.m_shaderlightF.ID, "kDiffuse");
+	   glUniform1f(i2, kDiffuse);
+	 //  RM.m_shaderLight.setFloat("kDiffuse", kDiffuse);
 #endif
    }
    ImGui::End();
@@ -783,7 +862,7 @@ HRESULT InitWindow(LONG _width, LONG _height)
    /*
    * SSAo
    */
-   
+   //----------------------------------------------------------------
    ImGui::Begin("SSAO", NULL, 0);
    static float sampleIterations[3]{};
    static float sampleRadius;
@@ -792,59 +871,59 @@ HRESULT InitWindow(LONG _width, LONG _height)
    static float intensity;
    static float exposure[3]{};
    if (ImGui::DragFloat("Sample Iteration", sampleIterations, 0.001, 0, 5)) {
-
+	   RM.m_shaderSAO.Use();
 #if defined(DX11)
 	   testObj.m_SaoBufferStruct.sampleIterations = XMFLOAT4(sampleIterations[0], 0,0,0);
 #endif
 #if defined(OGL)
-	
-
+	   RM.m_shaderSAO.setFloat("sampleIterations", sampleIterations[0]);
+		
 #endif
    }
-   if (ImGui::DragFloat("exposure", exposure, 1)) {
-
+   if (ImGui::DragFloat("exposure", exposure, 0.001, 0, 5)) {
+	   RM.m_shaderToneMap.Use();
 #if defined(DX11)
 	   testObj.m_TooneMaBufferStruct.exposur = FLOAT(exposure[0]);
 #endif
 #if defined(OGL)
-	 
+	   RM.m_shaderToneMap.setFloat("exposure",exposure[0]);
 
 #endif
    }
-   if (ImGui::DragFloat("sampleRadius", &sampleRadius, 1)) {
-
+   if (ImGui::DragFloat("sampleRadius", &sampleRadius, 0.001, 0, 5)) {
+	   RM.m_shaderSAO.Use();
 #if defined(DX11)
 	   testObj.m_SaoBufferStruct.sampleRadius = FLOAT(sampleRadius);
 #endif
 #if defined(OGL)
-	   _shader.setFloat("spotLightOutner", spotLightOutner);
+	   RM.m_shaderSAO.setFloat("sampleRadius", sampleRadius);
 #endif
    }
-   if (ImGui::DragFloat("scale", &scale, 1)) {
-
+   if (ImGui::DragFloat("scale", &scale, 0.001, 0, 5)) {
+	   RM.m_shaderSAO.Use();
 #if defined(DX11)
 	   testObj.m_SaoBufferStruct.scale = FLOAT(scale);
 #endif
 #if defined(OGL)
-	   _shader.setFloat("spotLightOutner", spotLightOutner);
+	   RM.m_shaderSAO.setFloat("scale", scale);
 #endif
    }
-   if (ImGui::DragFloat("bias", &bias, 1)) {
-
+   if (ImGui::DragFloat("bias", &bias, 0.001, 0, 5)) {
+	   RM.m_shaderSAO.Use();
 #if defined(DX11)
 	   testObj.m_SaoBufferStruct.bias = FLOAT(bias);
 #endif
 #if defined(OGL)
-	   _shader.setFloat("spotLightOutner", spotLightOutner);
+	   RM.m_shaderSAO.setFloat("bias", bias);
 #endif
    }
-   if (ImGui::DragFloat("intensity", &intensity, 1)) {
-
+   if (ImGui::DragFloat("intensity", &intensity, 0.001, 0, 5)) {
+	   RM.m_shaderSAO.Use();
 #if defined(DX11)
 	   testObj.m_SaoBufferStruct.intensity = FLOAT(intensity);
 #endif
 #if defined(OGL)
-	  
+	   RM.m_shaderSAO.setFloat("intensity", intensity);
 #endif
    }
    ImGui::End();
@@ -856,58 +935,40 @@ HRESULT InitWindow(LONG _width, LONG _height)
    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
  #endif
+#if defined(OGL)
+
+   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+#endif
  }
 
 //--------------------render function ----------------------//
- void Render(AShader& _shader) {
+ void Render() {
 #if  defined(OGL)
      auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
+	 auto& RM = RManager::SingletonRM();
 	 float currentFrame = glfwGetTime();
 	 deltaTime = currentFrame - lastFrame;
 	 lastFrame = currentFrame;
 
-    // render
 	
-	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	_shader.Use();
+	 RM.Render(models);
 	
-  
-  
+     UIRender();
 	
 
-	glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), 1270.0f / 720.0f, 0.1f, 100.0f);
-	glm::mat4 view = camera.GetViewMatrixGlm();
-    _shader.setMat4("projection",projection);
-    _shader.setMat4("view",view);
-    glm::mat4 wordl= glm::mat4(1.0f);
-    _shader.setMat4("World",wordl);
-	
-
-	
-	for (int i = 0; i < models.size(); i++)
-	{
-        models[i]->Draw(_shader);
-		
-	}
-
-     UIRender(_shader);
-	 ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-     glfwSwapBuffers(window);
+	 glfwSwapBuffers(window);
      glfwPollEvents();
 #endif
 #if defined(DX11) 
 	 auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
-     auto& RM = RManager::SingletonRM();
-
+	 auto& RM = RManager::SingletonRM();
      testObj.Render();
     //render manager
   
     RM.Render(models);
 	
    
-     UIRender(_shader);
+     UIRender();
 	
      testObj.g_pSwapChain.m_swapchain->Present(0, 0);
  #endif
@@ -918,17 +979,20 @@ HRESULT InitWindow(LONG _width, LONG _height)
 #if defined(OGL)
  void processInput(GLFWwindow* window)
  {
+	 auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
+
+
 	 if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		 glfwSetWindowShouldClose(window, true);
 
 	 if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		 camera.ProcessKeyboard(FORWARD, deltaTime);
+		 testObj.camera->ProcessKeyboard(FORWARD, deltaTime);
 	 if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		 camera.ProcessKeyboard(BACKWARD, deltaTime);
+		 testObj.camera->ProcessKeyboard(BACKWARD, deltaTime);
 	 if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		 camera.ProcessKeyboard(LEFT, deltaTime);
+		 testObj.camera->ProcessKeyboard(LEFT, deltaTime);
 	 if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		 camera.ProcessKeyboard(RIGHT, deltaTime);
+		 testObj.camera->ProcessKeyboard(RIGHT, deltaTime);
  }
 #endif
 //-----main-----------------------------------//
@@ -942,7 +1006,7 @@ int main()
 		return 0;
 	}
 	first = true;
-	AShader ourShader("1.model_loading.vs", "1model_loading.fs");
+	
 
   
    //create UI
@@ -964,7 +1028,7 @@ int main()
 	{
         processInput(window);
 		Update();
-        Render(ourShader);
+        Render();
         
 	}
     #endif
@@ -981,7 +1045,7 @@ int main()
         else
         {
             Update();
-            Render(ourShader);
+            Render();
         }
     }
 #endif    
