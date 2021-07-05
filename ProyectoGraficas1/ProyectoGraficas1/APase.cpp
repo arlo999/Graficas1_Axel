@@ -419,7 +419,7 @@ void APase::Render()
 
 			
 			RM.m_shaderSkybox.Use();
-			glm::mat4 projection = glm::perspective(glm::radians(testObj.camera->Zoom), 1270.0f / 720.0f, 0.1f, 100.0f);
+			glm::mat4 projection = glm::perspective(glm::radians(testObj.camera->Zoom), 1270.0f / 720.0f, 0.1f, 1000.0f);
 			glm::mat4 view = testObj.camera->GetViewMatrixGlm();
 			RM.m_shaderSkybox.setMat4("proj", projection);
 			RM.m_shaderSkybox.setMat4("view", view);
@@ -565,7 +565,7 @@ void APase::Render()
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			RM.m_shaderGBuffer.Use();	
 
-			glm::mat4 projection = glm::perspective(glm::radians(testObj.camera->Zoom), 1270.0f / 720.0f, 0.1f, 100.0f);
+			glm::mat4 projection = glm::perspective(glm::radians(testObj.camera->Zoom), 1270.0f / 720.0f, 0.1f, 1000.0f);
 			glm::mat4 view = testObj.camera->GetViewMatrixGlm();
 			RM.m_shaderGBuffer.setMat4("proj",projection);
 			RM.m_shaderGBuffer.setMat4("view",view);

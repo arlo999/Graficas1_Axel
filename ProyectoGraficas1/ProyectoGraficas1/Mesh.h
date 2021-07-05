@@ -7,6 +7,8 @@
 #include "ABuffer.h"
 #include <string>
 #include <vector>
+#include <map>
+
 #if defined(DX11)
 #include <d3d11.h>
 #include <d3dx11.h>
@@ -24,30 +26,6 @@ struct SimpleVertex
 #endif
 };
 
-struct AsimpleVertex {
-
-	float Vertex[3];
-	float TexVex[2];
-	float Normal[3];
-
-};
-struct Afloat3 {
-
-	float x;
-	float y;
-	float z;
-};
-struct Afloat2 {
-
-	float x;
-	float y;
-};
-struct AsimpleVertexV2 {
-	Afloat3 Pos;
-	Afloat2 TextVex;
-	Afloat3 Vertex;
-};
-
 struct Texture {
 	unsigned int id;
 	string type;
@@ -55,28 +33,61 @@ struct Texture {
 };
 struct Vertex {
 	float Position[3];
-	
 	float Normal[3];
 	float Binormal[3];
 	float Tangente[3];
 	float TexCoords[2];
 	
+	
 };
+struct VertexSkeleton {
+	float Position[3];
+	float Normal[3];
+	float Binormal[3];
+	float Tangente[3];
+	float TexCoords[2];
+	float idvertex[4];
+	float Weights[4];
+
+};
+struct Bone {
+	int id = 0; // position of the bone in final upload array
+	std::string name = "";
+	glm::mat4 offset = glm::mat4(1.0f);
+	std::vector<Bone> children = {};
+
+};
+//structic animation track
+struct BoneTransformTrack {
+	std::vector<float> positionTimestamps = {};
+	std::vector<float> rotationTimestamps = {};
+	std::vector<float> scaleTimestamps = {};
+
+	std::vector<glm::vec3> positions = {};
+	std::vector<glm::quat> rotations = {};
+	std::vector<glm::vec3> scales = {};
+
+};
+
+struct Animation {
+	float duration=0.0f;
+	float tickPerSecon=1.0f;
+	std::map<std::string,BoneTransformTrack> boneTransform={};
+};
+
+
+
+
+
 class Mesh
 {
 public:
 	Mesh();
 	~Mesh();
-	//version con el struc con float
-	void setMesh( AsimpleVertex*, int);
-	AsimpleVertex* getMesh();
+
 	float* getMatrixTransFormacion();
 	
-	//esta es la version 2
-	//esta version utiliza un struc que llama a otro struc que contiene 3 floats
-	void setMesh2(AsimpleVertexV2*, int);
-	AsimpleVertexV2* getMesh2();
-	
+
 	
 	//get set transformacion
 	void setPosition(AVector Position);
@@ -92,6 +103,7 @@ public:
 	ABuffer m_pIndexBuffer;
 	
 	vector<Vertex>       vertices;
+	vector<VertexSkeleton>       verticesSkeleton;
 	vector<unsigned int> indices;
 	vector<Texture>      textures;
 
@@ -99,7 +111,8 @@ public:
 	unsigned int VAO;
 
 	Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures);
-	Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures, vector<ID3D11ShaderResourceView* >textures_vec);
+
+	Mesh(vector<VertexSkeleton> vertices, vector<unsigned int> indices, vector<Texture> textures);
 	// render the mesh
 	void Draw(AShader& shader, bool points);
 	void Render(AShader& shader);
@@ -108,10 +121,10 @@ private:
 	// render data 
 	unsigned int VBO, EBO;
 	void setupMesh();
+	void setupMeshSkeleton();
 	HWND g_hwnd;
 private:
-	AsimpleVertex* buffer;
-	AsimpleVertexV2* m_buffer;
+
 	AVector m_position;
 	unsigned short* m_Indice;
 

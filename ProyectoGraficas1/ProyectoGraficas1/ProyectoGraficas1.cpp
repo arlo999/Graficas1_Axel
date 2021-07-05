@@ -163,7 +163,15 @@ void LoadModel(const std::string& _Filename, unsigned int type)
 		ourModel->point = true;
 		ourModel->loadModel(_Filename);
 		models.push_back(ourModel);
-    }else{
+	}
+	else if (type == 5) {
+
+		ourModel = new AModel;
+		ourModel->rgb = true;
+		ourModel->loadModelSkeleton(_Filename);
+		models.push_back(ourModel);
+	}
+	else{
     
 		ourModel = new AModel;
 		ourModel->rgb = true;
@@ -442,7 +450,6 @@ HRESULT InitWindow(LONG _width, LONG _height)
    auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
    auto& RM = RManager::SingletonRM();
   // ImGui::ShowDemoWindow();
-
    ImGui::Begin("Modelo", NULL, 0);
    if (ImGui::BeginCombo("Carga de Modelo", NULL))
    {
@@ -468,6 +475,12 @@ HRESULT InitWindow(LONG _width, LONG _height)
 
 
            LoadModel(OpenWindowFile(g_hwnd), 4);
+
+	   }
+	   if (ImGui::Button("Skeleto")) {
+
+
+		   LoadModel(OpenWindowFile(g_hwnd), 5);
 
 	   }
         ImGui::EndCombo();

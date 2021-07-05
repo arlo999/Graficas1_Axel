@@ -7,6 +7,8 @@
 #if defined(OGL)
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/quaternion.hpp>
 #endif
 #if defined(DX11)
 #include <xnamath.h>
