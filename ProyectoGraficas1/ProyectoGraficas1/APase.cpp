@@ -569,6 +569,7 @@ void APase::Render()
 			glm::mat4 view = testObj.camera->GetViewMatrixGlm();
 			RM.m_shaderGBuffer.setMat4("proj",projection);
 			RM.m_shaderGBuffer.setMat4("view",view);
+			RM.m_shaderGBuffer.setInt("anim",1);
 		
 			for (int i = 0; i < m_ModelList.size(); i++)
 			{
@@ -749,9 +750,10 @@ HRESULT APase::InitGBuffer()
 	#endif
 #if defined(OGL) 
 	glEnable(GL_CULL_FACE);
+	//glEnable(GL_CW);
 	glCullFace(GL_FRONT);
 	
-	glFrontFace(GL_CW);
+	glFrontFace(GL_CCW);
 	
 	RM.m_shaderGBuffer.Init("ShaderOGL\\GBuffer.vs", "ShaderOGL\\GBuffer.fs");
 	#endif

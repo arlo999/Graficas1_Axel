@@ -265,6 +265,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(DEVLIBS)imgui-1.8\;$(DEVLIBS)imgui-1.8\backends\;$(DXSDK_DIR)Include\;$(SolutionDir)GraphicsModule\include\</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <LanguageStandard>Default</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -419,7 +420,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)lib\GraphicsModule\$(Configuration)\$(PlatformTarget)\;$(DXSDK_DIR)Lib\$(PlatformTarget)\;$(DEVLIBS)assimp\Lib;$(DEVLIBS)FreeImage\Dist\x64\;$(DEVLIBS);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)Externals\Opengl_stuff\Lib;$(SolutionDir)lib\GraphicsModule\$(Configuration)\$(PlatformTarget)\;$(DXSDK_DIR)Lib\$(PlatformTarget)\;$(DEVLIBS)assimp\Lib;$(DEVLIBS)FreeImage\Dist\x64\;$(DEVLIBS);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxerr.lib;dxguid.lib;d3dx11d.lib;d3dx9d.lib;FreeImage.lib;assimp-vc142-mtd.lib;GraphicsModule_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
@@ -512,6 +513,9 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_DirectX|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_directx|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="AAnimation.cpp" />
+    <ClCompile Include="AAnimator.cpp" />
+    <ClCompile Include="ABone.cpp" />
     <ClCompile Include="AEfecto.cpp" />
     <ClCompile Include="AMaterial.cpp" />
     <ClCompile Include="AModel.cpp" />
@@ -528,7 +532,12 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AAnimation.h" />
+    <ClInclude Include="AAnimator.h" />
+    <ClInclude Include="ABone.h" />
+    <ClInclude Include="ABoneInfo.h" />
     <ClInclude Include="AEfecto.h" />
+    <ClInclude Include="AHelper.h" />
     <ClInclude Include="AMaterial.h" />
     <ClInclude Include="AModel.h" />
     <ClInclude Include="APase.h" />

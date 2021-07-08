@@ -134,7 +134,13 @@ namespace GraphicsModule
 		XMFLOAT4 vMeshColor;
 #endif
 	};
-
+	struct BoneTransform
+	{
+#if defined(DX11)
+		float mWorldfinalBonesTransformations[16];
+		
+#endif
+	};
 	class Test
 	{
 	public:
@@ -163,7 +169,9 @@ todo esto necesita abstra
 		ABuffer m_pCBChangesEveryFrame;
 		CBNeverChanges cbNeverChanges;//--------------------view matrix
 		CBChangesEveryFrame cb;//--------------------------world matrix
-
+		//bonetransform
+		ABuffer m_BonetransformBuffer;
+		BoneTransform m_BonetransformBufferStruct;
 		//DirLight
 		ABuffer  m_LigthBuffer;
 		DirLigth m_LigthBufferStruct;

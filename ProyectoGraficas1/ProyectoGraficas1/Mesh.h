@@ -15,7 +15,7 @@
 #include <d3dcompiler.h>
 #endif
 #include "Test.h"
-
+#define MAX_BONE_INFLUENCE 4
 using namespace std;
 struct SimpleVertex
 {
@@ -37,7 +37,11 @@ struct Vertex {
 	float Binormal[3];
 	float Tangente[3];
 	float TexCoords[2];
-	
+	//bone indexes which will influence this vertex
+	unsigned int m_BoneIDs[4];
+
+	//weights from each bone
+	float m_Weights[4];
 	
 };
 struct VertexSkeleton {
@@ -50,6 +54,7 @@ struct VertexSkeleton {
 	float Weights[4];
 
 };
+/*
 struct Bone {
 	int id = 0; // position of the bone in final upload array
 	std::string name = "";
@@ -75,6 +80,7 @@ struct Animation {
 	std::map<std::string,BoneTransformTrack> boneTransform={};
 };
 
+*/
 
 
 

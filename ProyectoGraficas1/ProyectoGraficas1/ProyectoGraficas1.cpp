@@ -5,6 +5,7 @@
 #include <iostream>
 #include <stdio.h>
 #include "ARenderManager.h"
+
 #if  defined(OGL)
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
@@ -12,6 +13,9 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #endif
+
+//#include "AAnimation.h"
+#include "AAnimator.h"
 #include "AModel.h"
 
 #include "GraphicsModule.h"
@@ -40,7 +44,8 @@ float lastY = 720 / 2.0f;
 bool show_demo_window = true;
 bool show_another_window = false;
 ImVec4 clear_color = ImVec4(0.0f, 0.125f, 0.3f, 1.0f);
-
+AAnimation m_animation;
+AAnimator m_animator;
 //-------------------------- timing------------------//
 
 float deltaTime = 0.0f;
@@ -145,31 +150,43 @@ void LoadModel(const std::string& _Filename, unsigned int type)
     ourModel->bgr=true;
 	 ourModel->loadModel(_Filename);
      models.push_back(ourModel);
+	 m_animation.Init(_Filename, ourModel);
+	 m_animator.Init(&m_animation);
      
     }else if(type ==2){
 		ourModel = new AModel;
 		ourModel->rgb = true;
 		ourModel->loadModel(_Filename);
 		models.push_back(ourModel);
+		m_animation.Init(_Filename, ourModel);
+		m_animator.Init(&m_animation);
+	
+
     }else if(type==3){
     
 		ourModel = new AModel;
 		ourModel->wire = true;
 		ourModel->loadModel(_Filename);
 		models.push_back(ourModel);
+		m_animation.Init(_Filename, ourModel);
+		m_animator.Init(&m_animation);
     }else if(type == 4){
     
 		ourModel = new AModel;
 		ourModel->point = true;
 		ourModel->loadModel(_Filename);
 		models.push_back(ourModel);
+		m_animation.Init(_Filename, ourModel);
+		m_animator.Init(&m_animation);
 	}
 	else if (type == 5) {
 
 		ourModel = new AModel;
 		ourModel->rgb = true;
-		ourModel->loadModelSkeleton(_Filename);
+		ourModel->loadModel(_Filename);
 		models.push_back(ourModel);
+		m_animation.Init(_Filename, ourModel);
+		m_animator.Init(&m_animation);
 	}
 	else{
     
@@ -177,7 +194,9 @@ void LoadModel(const std::string& _Filename, unsigned int type)
 		ourModel->rgb = true;
 		ourModel->loadModel(_Filename);
 		models.push_back(ourModel);
-    }
+		m_animation.Init(_Filename, ourModel);
+		m_animator.Init(&m_animation);
+	}
      
     
 }
@@ -959,11 +978,22 @@ HRESULT InitWindow(LONG _width, LONG _height)
 #if  defined(OGL)
      auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
 	 auto& RM = RManager::SingletonRM();
-	 float currentFrame = glfwGetTime();
-	 deltaTime = currentFrame - lastFrame;
+	 float currentFrame = (float)glfwGetTime();
+	 deltaTime = (currentFrame - lastFrame);
 	 lastFrame = currentFrame;
 
-	
+	 
+	 m_animator.UpdateAnimation(deltaTime);
+	 auto transforms = m_animator.GetPoseTransforms();
+	 RM.m_shaderGBuffer.Use();
+	 for (int i = 0; i < transforms.size(); ++i){
+		 RM.m_shaderGBuffer.setMat42("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
+		// RM.m_shaderGBuffer.setMat42("finalBonesMatrices", transforms[i]);
+
+	// glUniformMatrix4fv(glGetUniformLocation(RM.m_shaderGBuffer.ID, "finalBonesMatrices[" + std::to_string(i) + "]"), 1, 1, glm::value_ptr(transforms[i]));
+
+	 }
+
 	 RM.Render(models);
 	
      UIRender();
@@ -977,7 +1007,19 @@ HRESULT InitWindow(LONG _width, LONG _height)
 	 auto& RM = RManager::SingletonRM();
      testObj.Render();
     //render manager
-  
+	 float currentFrame = clock();
+	 deltaTime = currentFrame - lastFrame;
+	 lastFrame = currentFrame;
+
+	 m_animator.UpdateAnimation(deltaTime);
+	 auto transforms = m_animator.m_Transformsf;
+	 for (int i = 0; i < transforms.size(); ++i) {
+		
+			testObj.m_BonetransformBufferStruct.mWorldfinalBonesTransformations = transforms[i];
+		
+
+	 }
+	 testObj.g_pImmediateContext.A_VSSetConstantBuffers(3, 1, &testObj.m_BonetransformBuffer.getBufferDX11());
     RM.Render(models);
 	
    

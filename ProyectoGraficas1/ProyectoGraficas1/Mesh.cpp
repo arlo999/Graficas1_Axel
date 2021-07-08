@@ -1,6 +1,6 @@
 #include "Mesh.h"
 #include <iostream>
-#include "Mesh.h"
+
 
 
 Mesh::Mesh()
@@ -188,7 +188,15 @@ void Mesh::setupMesh()
 	//tangente
 	glEnableVertexAttribArray(4);
 	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Tangente));
-	
+	//idvertex
+	glEnableVertexAttribArray(5);
+
+	glVertexAttribIPointer(5, 4, GL_INT, sizeof(Vertex), (const GLvoid*)offsetof(Vertex, m_BoneIDs));
+	//glVertexAttribPointer(5, 4, GL_INT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_BoneIDs));
+
+	//Weights
+	glEnableVertexAttribArray(6);
+	glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_Weights));
 	
 
 	glBindVertexArray(0);

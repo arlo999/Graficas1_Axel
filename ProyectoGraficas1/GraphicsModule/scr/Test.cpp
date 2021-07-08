@@ -152,6 +152,10 @@ namespace GraphicsModule
 		hr = g_pd3dDevice.A_CreateBuffer(&bd, NULL, &m_pCBChangesEveryFrame.getBufferDX11());
 		if (FAILED(hr))
 			return hr;
+		bd.ByteWidth = sizeof(BoneTransform);
+		hr = g_pd3dDevice.A_CreateBuffer(&bd, NULL, &m_BonetransformBuffer.getBufferDX11());
+		if (FAILED(hr))
+			return hr;
 		// Create the constant buffers
 		bd.Usage = D3D11_USAGE_DEFAULT;
 		bd.ByteWidth = sizeof(DirLigth);
@@ -289,6 +293,8 @@ namespace GraphicsModule
 		g_pImmediateContext.A_UpdateSubresource(m_SaoBuffer.getBufferDX11(), 0, NULL, &m_SaoBufferStruct, 0, 0);
 		//toone
 		g_pImmediateContext.A_UpdateSubresource(m_TooneMaBuffer.getBufferDX11(), 0, NULL, &m_TooneMaBufferStruct, 0, 0);
+		//bone
+		g_pImmediateContext.A_UpdateSubresource(m_BonetransformBuffer.getBufferDX11(), 0, NULL, &m_BonetransformBufferStruct, 0, 0);
 		//camara
 
 
