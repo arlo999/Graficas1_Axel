@@ -31,7 +31,7 @@ public:
 	//destructor
 	~AAnimation();
 
-	void Init(const std::string& animationPath, AModel* model);
+	bool  Init(const std::string& animationPath, AModel* model);
 	ABone* FindBone(const std::string& name);
 	inline  float GetTicksPerSecond() { return m_TicksPerSecond; }
 	inline  float GetDuration() { return m_Duration; }

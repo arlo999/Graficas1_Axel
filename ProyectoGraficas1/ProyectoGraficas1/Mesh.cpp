@@ -44,6 +44,12 @@ Mesh::Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture
 	// now that we have all the required data, set the vertex buffers and its attribute pointers.
 	setupMesh();
 }
+void Mesh::Init(vector<VertexSkeleton> vertices, vector<unsigned int> indices)
+{
+	this->verticesSkeleton = vertices;
+	this->indices = indices;
+	setupMeshSkeleton();
+}
 Mesh::Mesh(vector<VertexSkeleton> vertices, vector<unsigned int> indices, vector<Texture> textures)
 {
 	this->verticesSkeleton = vertices;
@@ -122,7 +128,7 @@ void Mesh::Draw(AShader& shader, bool triangles)
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 
-	
+	testObj.g_pImmediateContext.A_IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	testObj.g_pImmediateContext.A_IASetVertexBuffers(0, 1, &m_pVertexBuffer.getBufferDX11(), &stride, &offset);
 	testObj.g_pImmediateContext.A_IASetIndexBuffer(m_pIndexBuffer.getBufferDX11(), DXGI_FORMAT_R32_UINT, 0);
 
@@ -139,7 +145,7 @@ void Mesh::Render(AShader& shader)
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 
-
+	testObj.g_pImmediateContext.A_IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	testObj.g_pImmediateContext.A_IASetVertexBuffers(0, 1, &m_pVertexBuffer.getBufferDX11(), &stride, &offset);
 	testObj.g_pImmediateContext.A_IASetIndexBuffer(m_pIndexBuffer.getBufferDX11(), DXGI_FORMAT_R32_UINT, 0);
 
@@ -149,10 +155,32 @@ void Mesh::Render(AShader& shader)
 	glBindVertexArray(VAO);
 	
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
-	//glDrawArrays(GL_TRIANGLE_STRIP, 0, indices.size());
 	
 	glBindVertexArray(0);
 	#endif
+}
+
+void Mesh::RenderSkeleton()
+{
+#if defined(DX11)
+	auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
+
+	UINT stride = sizeof(VertexSkeleton);
+	UINT offset = 0;
+
+	testObj.g_pImmediateContext.A_IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+	testObj.g_pImmediateContext.A_IASetVertexBuffers(0, 1, &m_pVertexBuffer.getBufferDX11(), &stride, &offset);
+	testObj.g_pImmediateContext.A_IASetIndexBuffer(m_pIndexBuffer.getBufferDX11(), DXGI_FORMAT_R32_UINT, 0);
+
+	testObj.g_pImmediateContext.A_DrawIndexed(indices.size(), 0, 0);
+#endif	
+#if defined(OGL)
+	glBindVertexArray(VAO);
+
+	glDrawElements(GL_LINES, indices.size(), GL_UNSIGNED_INT, 0);
+
+	glBindVertexArray(0);
+#endif
 }
 
 void Mesh::setupMesh()
@@ -254,26 +282,16 @@ void Mesh::setupMeshSkeleton()
 	// vertex Positions
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexSkeleton), (void*)0);
-	// vertex normals
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexSkeleton), (void*)offsetof(VertexSkeleton, Normal));
-	// vertex texture coords
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(VertexSkeleton), (void*)offsetof(VertexSkeleton, TexCoords));
-	//binormal
-	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(VertexSkeleton), (void*)offsetof(VertexSkeleton, Binormal));
-	//tangente
-	glEnableVertexAttribArray(4);
-	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(VertexSkeleton), (void*)offsetof(VertexSkeleton, Tangente));
 
 	//idvertex
-	glEnableVertexAttribArray(5);
-	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(VertexSkeleton), (void*)offsetof(VertexSkeleton, idvertex));
+	glEnableVertexAttribArray(1);
+
+	glVertexAttribIPointer(1, 4, GL_INT, sizeof(VertexSkeleton), (const GLvoid*)offsetof(VertexSkeleton, m_BoneIDs));
+	//glVertexAttribPointer(5, 4, GL_INT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_BoneIDs));
 
 	//Weights
-	glEnableVertexAttribArray(6);
-	glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(VertexSkeleton), (void*)offsetof(VertexSkeleton, Weights));
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(VertexSkeleton), (void*)offsetof(VertexSkeleton, m_Weights));
 
 
 	glBindVertexArray(0);
@@ -284,12 +302,12 @@ void Mesh::setupMeshSkeleton()
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));
 	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(Vertex) * vertices.size();
+	bd.ByteWidth = sizeof(VertexSkeleton) * verticesSkeleton.size();
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bd.CPUAccessFlags = 0;
 	D3D11_SUBRESOURCE_DATA InitData;
 	ZeroMemory(&InitData, sizeof(InitData));
-	InitData.pSysMem = vertices.data();
+	InitData.pSysMem = verticesSkeleton.data();
 	testObj.g_pd3dDevice.A_CreateBuffer(&bd, &InitData, &m_pVertexBuffer.getBufferDX11());
 
 	bd.Usage = D3D11_USAGE_DEFAULT;

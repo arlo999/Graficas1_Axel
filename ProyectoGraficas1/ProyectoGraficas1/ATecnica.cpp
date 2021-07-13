@@ -243,7 +243,9 @@ void ATecnica::InitPixel_BlinnPhong()
 	m_PaseList.push_back(paseToonMap);
 
 
-
+	APase* skeleton = new APase(RManager::SKELETAN);
+	skeleton->InitSkeleto();
+	m_PaseList.push_back(skeleton);
 
 	APase* paseCopy = new APase(RManager::COPY);
 	paseCopy->InitCopy();
@@ -251,10 +253,11 @@ void ATecnica::InitPixel_BlinnPhong()
 
 #endif
 #if defined(OGL) 
+
 	APase* paseSkyBox = new APase(RManager::SKYBOX);
+	paseSkyBox->forward = true;
 	paseSkyBox->InitSkybox();
 	m_PaseList.push_back(paseSkyBox);
-
 
 
 
@@ -265,17 +268,22 @@ void ATecnica::InitPixel_BlinnPhong()
 	
 
 	APase* paseToonMap = new APase(RManager::TONEMAP);
+	paseToonMap->forward = true;
 	paseToonMap->InitTooneMap();
 	m_PaseList.push_back(paseToonMap);
 	
-
-
-
+	APase* Skeletan = new APase(RManager::SKELETAN);
+	Skeletan->forward = true;
+	Skeletan->InitSkeleto();
+	m_PaseList.push_back(Skeletan);
 
 	APase* paseCopy = new APase(RManager::COPY);
-	//paseLight->forward = true;
+	paseCopy->forward = true;
 	paseCopy->InitCopy();
 	m_PaseList.push_back(paseCopy);
+
+	
+
 	#endif
 }
 
@@ -558,14 +566,16 @@ void ATecnica::InitGbuffer_NormSpec()
 	
 
 	
-	
+
+	APase* Skeletan = new APase(RManager::SKELETAN);
+	Skeletan->InitSkeleto();
+	m_PaseListDefferd.push_back(Skeletan);
 	
 	
 	
 	APase* paseCopy = new APase(RManager::COPY);
 	paseCopy->InitCopy();
 	m_PaseListDefferd.push_back(paseCopy);
-	
 	
 	
 	

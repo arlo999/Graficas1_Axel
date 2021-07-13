@@ -10,7 +10,7 @@ AAnimation::~AAnimation()
 
 }
 
-void AAnimation::Init(const std::string& animationPath, AModel* model)
+bool AAnimation::Init(const std::string& animationPath, AModel* model)
 {
 	Assimp::Importer importer;
 	//const aiScene* scene = importer.ReadFile(animationPath, aiProcess_Triangulate| aiProcess_FlipUVs | aiProcess_GenSmoothNormals);
@@ -19,7 +19,7 @@ void AAnimation::Init(const std::string& animationPath, AModel* model)
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
 	{
 		cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << endl;
-		return;
+		return false;
 	}
 	assert(scene && scene->mRootNode);
 	auto animation = scene->mAnimations[0];

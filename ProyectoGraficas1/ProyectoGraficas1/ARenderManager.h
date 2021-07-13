@@ -1,7 +1,6 @@
 #pragma once
 #include <iostream>
 #include <vector>
-
 #include "AModel.h"
 #include "AEfecto.h"
 
@@ -32,7 +31,8 @@ namespace RManager {
 		LIGHT,
 		AO,
 		TONEMAP,
-		COPY
+		COPY,
+		SKELETAN
 	};
 
 
@@ -71,7 +71,7 @@ public:
 	int m_typeTecnicaRender=0;
 	AModel m_ScreenAlignedQuad;
 	AModel m_Skybox;
-
+	float m_deltaTime;
 	//todo usar abstraccion
 	//SHADER RESOURCE
 
@@ -109,6 +109,7 @@ public:
 	AShader m_shaderToneMap;
 	AShader m_shaderSAO;
 	AShader m_shaderSkybox;
+	AShader m_skeleton;
 	//pases forward
 
 	AShader m_shaderlightF;
@@ -156,7 +157,7 @@ public:
 	bool Init();
 	void LoadDependences();
 	HRESULT ApplyEfects();
-	void Render(std::vector<AModel*>& _ModelList);
+	void Render(std::vector<AModel*>& _ModelList, float deltaTime);
 	
 	//inits efects
 

@@ -37,50 +37,16 @@ struct Vertex {
 	float Binormal[3];
 	float Tangente[3];
 	float TexCoords[2];
-	//bone indexes which will influence this vertex
 	unsigned int m_BoneIDs[4];
-
-	//weights from each bone
 	float m_Weights[4];
 	
 };
 struct VertexSkeleton {
-	float Position[3];
-	float Normal[3];
-	float Binormal[3];
-	float Tangente[3];
-	float TexCoords[2];
-	float idvertex[4];
-	float Weights[4];
-
-};
-/*
-struct Bone {
-	int id = 0; // position of the bone in final upload array
-	std::string name = "";
-	glm::mat4 offset = glm::mat4(1.0f);
-	std::vector<Bone> children = {};
-
-};
-//structic animation track
-struct BoneTransformTrack {
-	std::vector<float> positionTimestamps = {};
-	std::vector<float> rotationTimestamps = {};
-	std::vector<float> scaleTimestamps = {};
-
-	std::vector<glm::vec3> positions = {};
-	std::vector<glm::quat> rotations = {};
-	std::vector<glm::vec3> scales = {};
-
+	float Position[4];
+	unsigned int m_BoneIDs[4];
+	float m_Weights[4];
 };
 
-struct Animation {
-	float duration=0.0f;
-	float tickPerSecon=1.0f;
-	std::map<std::string,BoneTransformTrack> boneTransform={};
-};
-
-*/
 
 
 
@@ -117,11 +83,13 @@ public:
 	unsigned int VAO;
 
 	Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures);
+	void Init(vector<VertexSkeleton> vertices, vector<unsigned int> indices);
 
 	Mesh(vector<VertexSkeleton> vertices, vector<unsigned int> indices, vector<Texture> textures);
 	// render the mesh
 	void Draw(AShader& shader, bool points);
 	void Render(AShader& shader);
+	void RenderSkeleton();
 //opengl
 private:
 	// render data 

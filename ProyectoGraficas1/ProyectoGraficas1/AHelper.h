@@ -4,8 +4,14 @@
 #include<assimp/vector3.h>
 #include<assimp/matrix4x4.h>
 #include<glm/gtc/quaternion.hpp>
-
-
+#include <glm/gtc/type_ptr.hpp>
+#include <Windows.h>
+#if defined(DX11)
+#include <d3d11.h>
+#include <d3dx11.h>
+#include <d3dcompiler.h>
+#include <xnamath.h>
+#endif
 class AHelper
 {
 public:
@@ -98,4 +104,35 @@ public:
 			glm::vec4(0, 0, 0, 1.0f));
 
 	}
+#if defined(DX11)
+	static XMMATRIX glmtoXmatrix( glm::mat4 AssimpMatrix) {
+
+		double dArray[16] = { 0.0 };
+
+		const float* pSource = (const float*)glm::value_ptr(AssimpMatrix);
+		for (int i = 0; i < 16; ++i)
+			dArray[i] = pSource[i];
+
+	XMVECTOR a=	XMVectorSet(dArray[0], dArray[1], dArray[2], dArray[3]);
+	XMVECTOR b=	XMVectorSet(dArray[4], dArray[5], dArray[6], dArray[7]);
+	XMVECTOR c=	XMVectorSet(dArray[8], dArray[9], dArray[10], dArray[11]);
+	XMVECTOR d=	XMVectorSet(dArray[12], dArray[13], dArray[14], dArray[15]);
+
+		return XMMATRIX( a,b,c,d);
+	}
+	#endif
+	static long long GetCurrentTimeMillis()
+	{
+
+		return GetTickCount64();
+
+	}
+
+	static float GetRunningTime()
+	{
+		float m_startTime = GetCurrentTimeMillis();
+		float RunningTime = (float)((double)GetCurrentTimeMillis() - (double)m_startTime) / 1000.0f;
+		return RunningTime;
+	}
+	
 };

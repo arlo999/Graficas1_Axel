@@ -29,6 +29,7 @@ void ARenderManager::LoadDependences()
 #if defined(DX11)
 	m_ScreenAlignedQuad.loadModel("C:\\Graficos1_recursos\\ProyectoGraficas1\\bin\\SAQ\\ScreenAlignedQuad.3ds");
 	m_Skybox.loadModel("C:\\Graficos1_recursos\\ProyectoGraficas1\\bin\\Skybox\\Sphere.3ds");
+
 #endif
 #if defined(OGL)
 
@@ -397,10 +398,10 @@ HRESULT ARenderManager::ApplyEfects()
 
 
 
-void ARenderManager::Render(std::vector<AModel*>& _ModelList)
+void ARenderManager::Render(std::vector<AModel*>& _ModelList, float deltaTime)
 {
 
-	
+	m_deltaTime=deltaTime;
 	m_ModelList=_ModelList;
 	if (m_Forward) {
 

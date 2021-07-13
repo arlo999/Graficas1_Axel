@@ -134,10 +134,18 @@ namespace GraphicsModule
 		XMFLOAT4 vMeshColor;
 #endif
 	};
+	struct ModelSkybox
+	{
+#if defined(DX11)
+		XMMATRIX mWorld;
+		
+#endif
+	};
 	struct BoneTransform
 	{
 #if defined(DX11)
-		float mWorldfinalBonesTransformations[16];
+		XMMATRIX mWorldfinalBonesTransformations[100];
+		XMFLOAT4 anim;
 		
 #endif
 	};
@@ -169,9 +177,12 @@ todo esto necesita abstra
 		ABuffer m_pCBChangesEveryFrame;
 		CBNeverChanges cbNeverChanges;//--------------------view matrix
 		CBChangesEveryFrame cb;//--------------------------world matrix
+		CBChangesEveryFrame skybox;//--------------------------world matrix
 		//bonetransform
 		ABuffer m_BonetransformBuffer;
+
 		BoneTransform m_BonetransformBufferStruct;
+		BoneTransform m_BonetransformSkeletonBufferStruct;
 		//DirLight
 		ABuffer  m_LigthBuffer;
 		DirLigth m_LigthBufferStruct;

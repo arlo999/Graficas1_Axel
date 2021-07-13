@@ -56,7 +56,7 @@ unsigned int AModel::TextureFromFile(const char* path, const string& directory, 
 		testObj.g_pImmediateContext.A_IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	}
 	else if (wire == true) {
-		testObj.g_pImmediateContext.A_IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
+		testObj.g_pImmediateContext.A_IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 	}
 	else if (point == true) {
 		testObj.g_pImmediateContext.A_IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
@@ -103,14 +103,14 @@ unsigned int AModel::TextureFromFile(const char* path, const string& directory, 
 	Sdesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 	Sdesc.Texture2D.MostDetailedMip = 0;
 	Sdesc.Texture2D.MipLevels = 1;
-	if (nameOfFile == "diffuse.jpg"|| nameOfFile=="base_albedo.jpg") {
+	if (nameOfFile == "diffuse.jpg"|| nameOfFile=="base_albedo.jpg"||"guard1_body.tga"||"guard1_face.tga"||"guard1_helmet.tga") {
 		testObj.g_pd3dDevice.A_CreateShaderResourceView(texture, &Sdesc, &g_pTextureRV);
 	}
 	else if (nameOfFile == "normal.png"|| nameOfFile == "base_normal.jpg") {
 
 		testObj.g_pd3dDevice.A_CreateShaderResourceView(texture, &Sdesc, &g_NormalMap);
 	}
-	else if (nameOfFile == "specular.jpg"|| nameOfFile == "base_metalic.jpg") {
+	else if (nameOfFile == "specular.jpg"|| nameOfFile == "base_metallic.jpg") {
 		testObj.g_pd3dDevice.A_CreateShaderResourceView(texture, &Sdesc, &g_Specular);
 
 	}
@@ -203,9 +203,10 @@ AModel::AModel()
 {
 }
 
-void AModel::Draw(AShader& shader)
+void AModel::Draw(AShader& shader, float deltatimen)
 {
 #if defined(DX11)
+
 	auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
 	testObj.cb.mWorld = XMMatrixTranslation(transform.traslation[0], transform.traslation[1], transform.traslation[2]);
 	testObj.cb.mWorld = XMMatrixMultiply(XMMatrixScaling(transform.scale[0], transform.scale[1], transform.scale[2]), testObj.cb.mWorld);
@@ -215,9 +216,19 @@ void AModel::Draw(AShader& shader)
 	testObj.g_pImmediateContext.A_PSSetShaderResources(0, 1, &g_pTextureRV);
 	testObj.g_pImmediateContext.A_PSSetShaderResources(1, 1, &g_NormalMap);
 	testObj.g_pImmediateContext.A_PSSetShaderResources(2, 1, &g_Specular);
+	
+	UpdateAnimation(deltatimen);
+	auto transforms = GetPoseTransforms();
+	testObj.g_pImmediateContext.A_UpdateSubresource(testObj.m_BonetransformBuffer.getBufferDX11(), 0, NULL, &testObj.m_BonetransformBufferStruct, 0, 0);
 
-	testObj.g_pImmediateContext.A_PSSetShaderResources(9, 1, &g_Ao);
+	for (int i = 0; i < transforms.size(); ++i) {
+		testObj.m_BonetransformBufferStruct.mWorldfinalBonesTransformations[i]=AHelper::glmtoXmatrix(transforms[i]);
+	}
 
+	for (unsigned int i = 0; i < meshes.size(); i++)
+	{
+		meshes[i].Render(shader);
+	}
 #endif	
 #if defined(OGL)  
 	shader.Use();
@@ -228,8 +239,13 @@ void AModel::Draw(AShader& shader)
 	model = glm::rotate(model, glm::radians(transform.rotation[0] * 180 / 3.1415f), glm::vec3(1, 0, 0));
 	model = glm::rotate(model, glm::radians(transform.rotation[1] * 180 / 3.1415f), glm::vec3(0, 1, 0));
 	model = glm::rotate(model, glm::radians(transform.rotation[2] * 180 / 3.1415f), glm::vec3(0, 0, 1));
-	
-	
+
+	UpdateAnimation(deltatimen);
+	auto transforms = GetPoseTransforms();
+
+	for (int i = 0; i < transforms.size(); ++i) {
+		shader.setMat42("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
+	}
 	shader.setMat4("world", model);
 
 	for (unsigned int i = 0; i < meshes.size(); i++)
@@ -239,9 +255,8 @@ void AModel::Draw(AShader& shader)
 	#endif
 }
 
-void AModel::Render(AShader& shader)
+void AModel::Drawskelton(AShader& shader, float deltatimen)
 {
-
 #if defined(DX11)
 	auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
 	testObj.cb.mWorld = XMMatrixTranslation(transform.traslation[0], transform.traslation[1], transform.traslation[2]);
@@ -249,10 +264,58 @@ void AModel::Render(AShader& shader)
 	testObj.cb.mWorld = XMMatrixMultiplyTranspose(XMMatrixRotationRollPitchYaw(transform.rotation[0], transform.rotation[1], transform.rotation[2]), testObj.cb.mWorld);
 
 	testObj.g_pImmediateContext.A_UpdateSubresource(testObj.m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &testObj.cb, 0, 0);
+
+	testObj.g_pImmediateContext.A_UpdateSubresource(testObj.m_BonetransformBuffer.getBufferDX11(), 0, NULL, &testObj.m_BonetransformSkeletonBufferStruct, 0, 0);
+	
+	UpdateAnimation(deltatimen);
+	auto transforms = GetPoseTransformsSkeleton();
+
+	for (int i = 0; i < transforms.size(); ++i) {
+		testObj.m_BonetransformSkeletonBufferStruct.mWorldfinalBonesTransformations[i] = AHelper::glmtoXmatrix(transforms[i]);
+	}
+
+	skeleton.RenderSkeleton();
+#endif		
+#if defined(OGL) 
+	shader.Use();
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(transform.traslation[0], transform.traslation[1], transform.traslation[2]));
+	model = glm::scale(model, glm::vec3(transform.scale[0], transform.scale[1], transform.scale[2]));
+
+	model = glm::rotate(model, glm::radians(transform.rotation[0] * 180 / 3.1415f), glm::vec3(1, 0, 0));
+	model = glm::rotate(model, glm::radians(transform.rotation[1] * 180 / 3.1415f), glm::vec3(0, 1, 0));
+	model = glm::rotate(model, glm::radians(transform.rotation[2] * 180 / 3.1415f), glm::vec3(0, 0, 1));
+
+	UpdateAnimation(deltatimen);
+	auto transforms = GetPoseTransformsSkeleton();
+
+	for (int i = 0; i < transforms.size(); ++i) {
+		shader.setMat42("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
+	}
+	shader.setMat4("world", model);
+
+	skeleton.RenderSkeleton();
+#endif
+}
+
+void AModel::Render(AShader& shader)
+{
+
+#if defined(DX11)
+	auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
+	
+
+	testObj.g_pImmediateContext.A_UpdateSubresource(testObj.m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &testObj.skybox, 0, 0);
+
+	testObj.skybox.mWorld = XMMatrixTranslation(transform.traslation[0], transform.traslation[1], transform.traslation[2]);
+	testObj.skybox.mWorld = XMMatrixMultiply(XMMatrixScaling(transform.scale[0], transform.scale[1], transform.scale[2]), testObj.skybox.mWorld);
+	testObj.skybox.mWorld = XMMatrixMultiplyTranspose(XMMatrixRotationRollPitchYaw(transform.rotation[0], transform.rotation[1], transform.rotation[2]), testObj.skybox.mWorld);
+	
 	testObj.g_pImmediateContext.A_PSSetShaderResources(0, 1, &g_pTextureRV);
 	testObj.g_pImmediateContext.A_PSSetShaderResources(1, 1, &g_NormalMap);
 	testObj.g_pImmediateContext.A_PSSetShaderResources(2, 1, &g_Specular);
 
+	
 	for (unsigned int i = 0; i < meshes.size(); i++)
 	{
 		meshes[i].Render(shader);
@@ -335,52 +398,41 @@ void AModel::loadModel(string const& path)
 
 	
 		directory = path.substr(0, path.find_last_of(92));
-		
-	
 		processNode(scene->mRootNode, scene);
+		
+		if ( scene->mNumAnimations == 0) {
+
+		}
+		else {
+		auto animation = scene->mAnimations[0];
+		m_Duration = animation->mDuration;
+		m_TicksPerSecond = animation->mTicksPerSecond;
+		globalTransformation = scene->mRootNode->mTransformation;
+		globalTransformation = globalTransformation.Inverse();
+		SetupBones(animation);
+		ReadHeirarchyData(m_RootNode, scene->mRootNode);
+
+		m_CurrentTime = 0.0f;
+		m_DeltaTime = 0.0f;
+		m_Transforms.reserve(100);
+		m_TransformsSkeleton.reserve(100);
+		for (int i = 0; i < 100; i++) {
+
+			m_Transforms.push_back(glm::mat4(0.0f));
+			m_TransformsSkeleton.push_back(glm::mat4(0.0f));
+			
+		}
 	
 	
-
-
-}
-
-void AModel::loadModelSkeleton(string const& path)
-{
-
-	transform.scale[0] = 1.0f;
-	transform.scale[1] = 1.0f;
-	transform.scale[2] = 1.0f;
-
-	transform.traslation[0] = 0.0f;
-	transform.traslation[1] = 0.0f;
-	transform.traslation[2] = 0.0f;
-
-	transform.rotation[0] = 0.0f;
-	transform.rotation[1] = 0.0f;
-	transform.rotation[2] = 0.0f;
-
-
-
-	Assimp::Importer importer;
-
-	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices);
-
-	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
-	{
-		cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << endl;
-		return;
+		
+		SetupIndicesSkeleton(&m_RootNode, &m_RootNode);
+		skeleton.Init(vertexskeleton,indicesSkeleton);
 	}
-
-
-	directory = path.substr(0, path.find_last_of(92));
-
-
-	processNode(scene->mRootNode, scene);
-
-
+	
 
 
 }
+
 
 void AModel::processNode(aiNode* node, const aiScene* scene)
 {
@@ -414,29 +466,7 @@ Mesh AModel::processMesh(aiMesh* mesh, const aiScene* scene)
 	{
 		Vertex vertex;
 		SetVertexBoneDataToDefault(vertex);
-		/*
-		glm::vec3 pos= AHelper::GetGLMVec(mesh->mVertices[i]);
-		vertex.Position[0] =pos.x; 
-		vertex.Position[1] =pos.y; 
-		vertex.Position[2] =pos.z;
-		*/
-		/*
-		vertex.Position[0] = AHelper::GetGLMVec(mesh->mVertices[i])[0];
-		vertex.Position[1] = AHelper::GetGLMVec(mesh->mVertices[i])[1];
-		vertex.Position[2] = AHelper::GetGLMVec(mesh->mVertices[i])[2];
-		*/
-
-		/*
-		glm::vec3 nor= AHelper::GetGLMVec(mesh->mNormals[i]);
-		vertex.Normal[0] =nor.x;
-		vertex.Normal[1] =nor.y;
-		vertex.Normal[2] =nor.z;
-		*/
-		/*
-		vertex.Normal[0] = AHelper::GetGLMVec(mesh->mNormals[i])[0];
-		vertex.Normal[1] = AHelper::GetGLMVec(mesh->mNormals[i])[1];
-		vertex.Normal[2] = AHelper::GetGLMVec(mesh->mNormals[i])[2];
-		*/
+		
 
 		AVector vector;
 
@@ -493,6 +523,7 @@ Mesh AModel::processMesh(aiMesh* mesh, const aiScene* scene)
 		}
 	
 		vertices.push_back(vertex);
+		
 	}
 	
 
@@ -533,14 +564,12 @@ Mesh AModel::processMesh(aiMesh* mesh, const aiScene* scene)
 	textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 
 	if (diffuseMaps.empty()) {
-	/*
 		Texture texture;
 		texture.id = TextureFromFile("base_albedo.jpg", this->directory, false);
 		texture.type = aiTextureType_DIFFUSE;
 		texture.path = "base_albedo.jpg";
 		textures.push_back(texture);
 		textures_loaded.push_back(texture);
-	*/
 	}
 #if defined(OGL)
 
@@ -604,6 +633,9 @@ void AModel::SetVertexBoneData(Vertex& vertex, int boneID, float weight)
 		{
 			vertex.m_Weights[i] = weight;
 			vertex.m_BoneIDs[i] = boneID;
+			
+
+
 			break;
 		}
 	}
@@ -626,6 +658,7 @@ void AModel::ExtractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh*
 			BoneInfo newBoneInfo;
 			newBoneInfo.id = boneCount;
 			newBoneInfo.offset = AHelper::assimpToGlmMatrix(mesh->mBones[boneIndex]->mOffsetMatrix);
+			newBoneInfo.indice=boneIndex;
 			boneInfoMap[boneName] = newBoneInfo;
 			boneID = boneCount;
 			boneCount++;
@@ -641,10 +674,244 @@ void AModel::ExtractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh*
 
 		for (int weightIndex = 0; weightIndex < numWeights; ++weightIndex)
 		{
-			int vertexId = weights[weightIndex].mVertexId ;// mesh->mBones[boneIndex]->mWeights[weightIndex].mVertexId;
+			int vertexId = weights[weightIndex].mVertexId;
 			float weight = weights[weightIndex].mWeight;
 			assert(vertexId <= vertices.size());
 			SetVertexBoneData(vertices[vertexId], boneID, weight);
+			//SetVertexBoneData(vertexskeleton[vertexId], boneID, weight);
 		}
 	}
 }
+
+ABone* AModel::FindBone(const std::string& name)
+{
+	auto iter = std::find_if(m_Bones.begin(), m_Bones.end(),
+		[&](const ABone& Bone)
+		{
+			return Bone.GetBoneName() == name;
+		}
+	);
+	if (iter == m_Bones.end()) return nullptr;
+	else return &(*iter);
+}
+
+
+void AModel::SetupBones(const aiAnimation* animation)
+{
+	int size = animation->mNumChannels;
+
+	auto& boneInfoMap = GetOffsetMatMap();
+	int& boneCount = GetBoneCount();
+
+	for (int i = 0; i < size; i++)
+	{
+		auto channel = animation->mChannels[i];
+		std::string boneName = channel->mNodeName.data;
+
+		if (boneInfoMap.find(boneName) == boneInfoMap.end())
+		{
+			boneInfoMap[boneName].id = boneCount;
+			boneCount++;
+		}
+		m_Bones.push_back(ABone(channel->mNodeName.data,
+		boneInfoMap[channel->mNodeName.data].id, channel));
+	}
+
+	m_BoneInfoMap = boneInfoMap;
+}
+
+void AModel::ReadHeirarchyData(AssimpData& dest, const aiNode* src)
+{
+	assert(src);
+
+	dest.name = src->mName.data;
+	dest.transformation = AHelper::ConvertMatrixToGLMFormat(src->mTransformation);
+	dest.childrenCount = src->mNumChildren;
+
+	for (int i = 0; i < src->mNumChildren; i++)
+	{
+		AssimpData newData;
+		ReadHeirarchyData(newData, src->mChildren[i]);
+		dest.children.push_back(newData);
+	}
+}
+
+void AModel::SetupIndicesSkeleton(const AssimpData* node, const AssimpData* parent)
+{
+	std::string nodeName = node->name;
+	
+	ABone* Bone = FindBone(nodeName);
+	
+	auto boneInfoMap = GetBoneIDMap();
+
+
+		if (boneInfoMap.find(nodeName) != boneInfoMap.end())
+		{
+		//tengo que ponerle los pesos 
+		
+
+			
+			int index = boneInfoMap[nodeName].id;
+			indicesSkeleton.push_back(index);
+			
+
+
+	}
+		std::string nodeNameParent = parent->name;
+
+		ABone* BoneParent = FindBone(nodeNameParent);
+
+		
+		
+		if (boneInfoMap.find(nodeNameParent) != boneInfoMap.end())
+		{
+			//tengo que ponerle los pesos 
+
+
+
+			int index = boneInfoMap[nodeNameParent].id;
+			indicesSkeleton.push_back(index);
+
+
+
+		}
+	for (int i = 0; i < node->childrenCount; i++) {
+		
+		
+		SetupIndicesSkeleton(&node->children[i],node);
+		
+		
+	}
+
+	if (boneInfoMap.find(nodeName) != boneInfoMap.end())
+	{
+	VertexSkeleton vertice;
+	vertice.Position[0] = 0;
+	vertice.Position[1] = 0;
+	vertice.Position[2] = 0;
+	
+	vertice.m_BoneIDs[0]=boneInfoMap[nodeName].id;
+	vertice.m_BoneIDs[1]=0;
+	vertice.m_BoneIDs[2]=0;
+	vertice.m_BoneIDs[3]=0;
+
+	vertice.m_Weights[0]=1;
+	vertice.m_Weights[1]=0;
+	vertice.m_Weights[2]=0;
+	vertice.m_Weights[3]=0;
+	
+	vertexskeleton.push_back(vertice);
+	}
+}
+
+void AModel::UpdateAnimation(float dt)
+{
+	m_DeltaTime += dt;
+	
+	
+		float TicksPerSecond = GetTicksPerSecond() != 0 ?
+			GetTicksPerSecond() : 25.0f;
+		float TimeInTicks = m_DeltaTime * TicksPerSecond;
+		float AnimationTime = fmod(TimeInTicks, GetDuration());
+		m_CurrentTime=AnimationTime;
+		
+		/*
+		m_CurrentTime = GetTicksPerSecond() * dt;
+		m_CurrentTime = fmod(m_CurrentTime,GetDuration());
+		*/
+
+		CalculateBoneTransform(&GetRootNode(), glm::mat4(1.0f));
+}
+
+void AModel::PlayAnimation()
+{
+	
+	m_CurrentTime = 0.0f;
+}
+
+void AModel::UpdateAnimationSkeleton(float dt)
+{
+	m_DeltaTime += dt;
+
+
+	float TicksPerSecond = GetTicksPerSecond() != 0 ?
+		GetTicksPerSecond() : 25.0f;
+	float TimeInTicks = m_DeltaTime * TicksPerSecond;
+	float AnimationTime = fmod(TimeInTicks, GetDuration());
+	m_CurrentTime = AnimationTime;
+
+	/*
+	m_CurrentTime = GetTicksPerSecond() * dt;
+	m_CurrentTime = fmod(m_CurrentTime,GetDuration());
+	*/
+
+	CalculateBoneTransformSkeleton(&GetRootNode(), glm::mat4(1.0f));
+}
+
+void AModel::CalculateBoneTransform(const AssimpData* node, glm::mat4 parentTransform)
+{
+	std::string nodeName = node->name;
+	glm::mat4 nodeTransform = node->transformation;
+
+	ABone* Bone = FindBone(nodeName);
+	if (Bone)
+	{
+
+		if (Tpose) {
+		Bone->Update(m_CurrentTime);
+		nodeTransform = Bone->GetLocalTransform();
+		}
+
+	}
+
+	glm::mat4 globalTransformation2 = parentTransform * nodeTransform;
+
+	auto boneInfoMap = GetBoneIDMap();
+	if (boneInfoMap.find(nodeName) != boneInfoMap.end())
+	{
+		int index = boneInfoMap[nodeName].id;
+		glm::mat4 offset = boneInfoMap[nodeName].offset;
+		m_Transforms[index] = globalTransformation2 * offset ;
+		m_TransformsSkeleton[index] = globalTransformation2 * AHelper::assimpToGlmMatrix(globalTransformation) ;
+
+
+	}
+
+	for (int i = 0; i < node->childrenCount; i++) {
+		CalculateBoneTransform(&node->children[i], globalTransformation2);
+	}
+}
+
+void AModel::CalculateBoneTransformSkeleton(const AssimpData* node, glm::mat4 parentTransform)
+{
+	std::string nodeName = node->name;
+	glm::mat4 nodeTransform = node->transformation;
+
+	ABone* Bone = FindBone(nodeName);
+	if (Bone)
+	{
+
+		if (Tpose) {
+			Bone->Update(m_CurrentTime);
+			nodeTransform = Bone->GetLocalTransform();
+		}
+
+	}
+
+	glm::mat4 globalTransformation2 = parentTransform * nodeTransform;
+
+	auto boneInfoMap = GetBoneIDMap();
+	if (boneInfoMap.find(nodeName) != boneInfoMap.end())
+	{
+		int index = boneInfoMap[nodeName].id;
+		glm::mat4 offset = boneInfoMap[nodeName].offset;
+		m_TransformsSkeleton[index] = globalTransformation2 ;
+
+
+	}
+
+	for (int i = 0; i < node->childrenCount; i++) {
+		CalculateBoneTransform(&node->children[i], globalTransformation2);
+	}
+}
+

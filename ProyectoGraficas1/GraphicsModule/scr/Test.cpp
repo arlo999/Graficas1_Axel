@@ -152,10 +152,11 @@ namespace GraphicsModule
 		hr = g_pd3dDevice.A_CreateBuffer(&bd, NULL, &m_pCBChangesEveryFrame.getBufferDX11());
 		if (FAILED(hr))
 			return hr;
-		bd.ByteWidth = sizeof(BoneTransform);
+		bd.ByteWidth = (sizeof(XMMATRIX)*100)+sizeof(XMFLOAT4);
 		hr = g_pd3dDevice.A_CreateBuffer(&bd, NULL, &m_BonetransformBuffer.getBufferDX11());
 		if (FAILED(hr))
 			return hr;
+	
 		// Create the constant buffers
 		bd.Usage = D3D11_USAGE_DEFAULT;
 		bd.ByteWidth = sizeof(DirLigth);
@@ -295,9 +296,15 @@ namespace GraphicsModule
 		g_pImmediateContext.A_UpdateSubresource(m_TooneMaBuffer.getBufferDX11(), 0, NULL, &m_TooneMaBufferStruct, 0, 0);
 		//bone
 		g_pImmediateContext.A_UpdateSubresource(m_BonetransformBuffer.getBufferDX11(), 0, NULL, &m_BonetransformBufferStruct, 0, 0);
+
+		g_pImmediateContext.A_UpdateSubresource(m_BonetransformBuffer.getBufferDX11(), 0, NULL, &m_BonetransformSkeletonBufferStruct, 0, 0);
+
+		g_pImmediateContext.A_UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &skybox, 0, 0);
 		//camara
 
+		g_pImmediateContext.A_VSSetConstantBuffers(13, 1, &m_BonetransformBuffer.getBufferDX11());
 
+		
 		//dirLight
 		g_pImmediateContext.A_VSSetConstantBuffers(3, 1, &m_LigthBuffer.getBufferDX11());
 		//PointLight
@@ -321,6 +328,7 @@ namespace GraphicsModule
 		g_pImmediateContext.PSSetConstantBuffers(5, 1, &m_PointLightBuffer.getBufferDX11());
 		//SpotLight
 		g_pImmediateContext.PSSetConstantBuffers(6, 1, &m_SpotLightBuffer.getBufferDX11());
+	
 		//Ambient
 		g_pImmediateContext.PSSetConstantBuffers(7, 1, &m_AmbientBuffer.getBufferDX11());
 		//specular
@@ -334,7 +342,8 @@ namespace GraphicsModule
 
 		g_pImmediateContext.PSSetConstantBuffers(12, 1, &m_TooneMaBuffer.getBufferDX11());
 
-
+		g_pImmediateContext.PSSetConstantBuffers(13, 1, &m_BonetransformBuffer.getBufferDX11());
+		
 		g_pImmediateContext.A_PSSetSamplers(0, 1, &g_DiffuseSampler);
 
 		g_pImmediateContext.A_PSSetSamplers(1, 1, &g_normalMapSampler);
@@ -346,6 +355,7 @@ namespace GraphicsModule
 		g_pImmediateContext.A_VSSetConstantBuffers(1, 1, &m_pCBChangeOnResize.getBufferDX11());
 		g_pImmediateContext.A_VSSetConstantBuffers(2, 1, &m_pCBChangesEveryFrame.getBufferDX11());
 		g_pImmediateContext.A_UpdateSubresource(m_pCBChangesEveryFrame.getBufferDX11(), 0, NULL, &cb, 0, 0);
+	
 
 		//-------------------------set sampler to shader-------------------------------///
 		g_pImmediateContext.A_CSSetConstantBuffers(2, 1, &m_pCBChangesEveryFrame.getBufferDX11());

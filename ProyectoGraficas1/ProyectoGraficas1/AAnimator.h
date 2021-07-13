@@ -6,7 +6,7 @@
 #include <glm/glm.hpp>
 #include <assimp/scene.h>
 #include <assimp/Importer.hpp>
-#include "AAnimation.h"
+
 
 
 
@@ -18,15 +18,15 @@ public:
 	AAnimator() {
 
 	};
-	AAnimator(AAnimation* current);
+	AAnimator(AModel* current);
 	
 
 	~AAnimator();
 
 
-	void Init(AAnimation* current);
+	void Init(AModel* current);
 	void UpdateAnimation(float dt);
-	void PlayAnimation(AAnimation* pAnimation);
+	void PlayAnimation(AModel* pAnimation);
 	
 	void CalculateBoneTransform(const AssimpData* node, glm::mat4 parentTransform);
 
@@ -37,8 +37,8 @@ public:
 	//std::vector<float[16]>m_Transformsf; 
 private:
 	std::vector<glm::mat4> m_Transforms;
-	AAnimation* m_CurrentAnimation;
-	AAnimation prueba;
+	AModel* m_CurrentAnimation;
+
 	float m_CurrentTime;
 	float m_DeltaTime;
 

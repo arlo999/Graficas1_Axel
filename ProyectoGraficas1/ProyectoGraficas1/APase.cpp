@@ -140,6 +140,7 @@ void APase::Render()
 	auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
 	auto& RM = RManager::SingletonRM();
 	m_ModelList	=	RM.m_ModelList;
+	
 #if defined(DX11)
 	float ClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f }; // red, green, blue, alpha
 	float red[4] = { 1.0f, 0.125f, 0.3f, 1.0f }; // red, green, blue, alpha
@@ -171,25 +172,18 @@ void APase::Render()
 			testObj.g_pImmediateContext.A_PSSetShaderResources(2, 1, &RM.m_SpecularSRV);
 			testObj.g_pImmediateContext.A_PSSetShaderResources(7, 1, &RM.m_SkyboxMapSRV);
 			testObj.g_pImmediateContext.A_PSSetShaderResources(8, 1, &RM.m_SkyboxNormalMapSRV);
-
+			testObj.m_BonetransformBufferStruct.anim = XMFLOAT4(1, 0, 0, 0.0f);
 			for (int i = 0; i < m_ModelList.size(); i++)
 			{
-				m_ModelList[i]->Render(RM.m_shaderLight);
+				m_ModelList[i]->Draw(RM.m_shaderGBuffer, RM.m_deltaTime);
 			}
 #endif
 #if defined(OGL)	
 
-
-			glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			glBindFramebuffer(GL_FRAMEBUFFER, RM.LightForwardRT);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
-			RM.m_shaderlightF.Use();
-			
-			//position
-			RM.m_shaderlightF.setInt("texture_skyboxmap", 3);
+			RM.m_shaderLight.Use();
+			//albedo
+			glActiveTexture(GL_TEXTURE4);
+			RM.m_shaderLight.setInt("texture_skyboxmap", 4);
 			glBindTexture(GL_TEXTURE_CUBE_MAP, RM.Skyboxsrv);
 
 			RM.m_shaderlightF.setFloat4("viewPosition", testObj.camera->getEye().getX(), testObj.camera->getEye().getY(), testObj.camera->getEye().getZ(), testObj.camera->getEye().getM());
@@ -201,7 +195,7 @@ void APase::Render()
 
 			for (int i = 0; i < m_ModelList.size(); i++)
 			{
-				m_ModelList[i]->Draw(RM.m_shaderlightF);
+				m_ModelList[i]->Draw(RM.m_shaderlightF, RM.m_deltaTime);
 			}
 		
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -217,7 +211,7 @@ void APase::Render()
 			testObj.g_pImmediateContext.A_OMSetRenderTargets(1, &m_ListRenderTV[0], NULL);
 
 			testObj.g_pImmediateContext.A_PSSetShaderResources(7, 1, &RM.m_SkyboxMapSRV);
-
+			
 			RM.m_Skybox.Rendersaq(RM.m_shaderSkybox);
 
 #endif
@@ -327,10 +321,43 @@ void APase::Render()
 
 
 
-		}	
+		}
+		else if (m_TypePase == RManager::SKELETAN) {
+
+
+#if defined(DX11)
+
+		testObj.g_pImmediateContext.A_ClearDepthStencilView(testObj.g_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0.0f);
+		//testObj.g_pImmediateContext.A_OMSetRenderTargets(m_ListRenderTV.size(), m_ListRenderTV.data(), testObj.g_pDepthStencilView);
+		testObj.m_BonetransformBufferStruct.anim = XMFLOAT4(1, 0, 0, 0.0f);;
+
+
+		for (int i = 0; i < m_ModelList.size(); i++)
+		{
+			m_ModelList[i]->Drawskelton(RM.m_skeleton, RM.m_deltaTime);
+		}
+	#endif
+
+		}
 		
-	
-	
+#if defined(OGL)		
+
+		RM.m_skeleton.Use();
+
+
+		glm::mat4 projection = glm::perspective(glm::radians(testObj.camera->Zoom), 1270.0f / 720.0f, 0.1f, 1000.0f);
+		glm::mat4 view = testObj.camera->GetViewMatrixGlm();
+		RM.m_skeleton.setMat4("proj", projection);
+		RM.m_skeleton.setMat4("view", view);
+
+		for (int i = 0; i < m_ModelList.size(); i++)
+		{
+
+
+			m_ModelList[i]->Drawskelton(RM.m_skeleton, RM.m_deltaTime);
+		}
+
+	#endif
 	}
 	else
 	{ 
@@ -503,7 +530,7 @@ void APase::Render()
 
 			RM.m_ScreenAlignedQuad.Rendersaq(RM.m_shaderToneMap);
 		
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		
 			#endif
 
 
@@ -551,10 +578,12 @@ void APase::Render()
 
 			testObj.g_pImmediateContext.A_ClearDepthStencilView(testObj.g_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0.0f);
 			testObj.g_pImmediateContext.A_OMSetRenderTargets(m_ListRenderTV.size(), m_ListRenderTV.data(), testObj.g_pDepthStencilView);
+			testObj.m_BonetransformBufferStruct.anim= XMFLOAT4(1, 0, 0, 0.0f);;
+		
 
 			for (int i = 0; i < m_ModelList.size(); i++)
 			{
-				m_ModelList[i]->Render(RM.m_shaderGBuffer);
+				m_ModelList[i]->Draw(RM.m_shaderGBuffer, RM.m_deltaTime);
 			}
 			
 		#endif	
@@ -573,14 +602,57 @@ void APase::Render()
 		
 			for (int i = 0; i < m_ModelList.size(); i++)
 			{
-				m_ModelList[i]->Draw(RM.m_shaderGBuffer);
+
+			
+				m_ModelList[i]->Draw(RM.m_shaderGBuffer, RM.m_deltaTime);
 			}
-		
+			
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 
 		
 
+#endif
+		}
+		else if (m_TypePase == RManager::SKELETAN) {
+		
+#if defined(DX11)
+
+		
+
+		testObj.g_pImmediateContext.A_ClearDepthStencilView(testObj.g_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0.0f);
+		//testObj.g_pImmediateContext.A_OMSetRenderTargets(m_ListRenderTV.size(), m_ListRenderTV.data(), testObj.g_pDepthStencilView);
+		testObj.m_BonetransformBufferStruct.anim = XMFLOAT4(1, 0, 0, 0.0f);;
+
+
+		for (int i = 0; i < m_ModelList.size(); i++)
+		{
+			m_ModelList[i]->Drawskelton(RM.m_skeleton, RM.m_deltaTime);
+		}
+
+#endif
+#if defined(OGL)		
+		
+
+	
+		RM.m_skeleton.Use();
+		
+
+		glm::mat4 projection = glm::perspective(glm::radians(testObj.camera->Zoom), 1270.0f / 720.0f, 0.1f, 1000.0f);
+		glm::mat4 view = testObj.camera->GetViewMatrixGlm();
+		RM.m_skeleton.setMat4("proj", projection);
+		RM.m_skeleton.setMat4("view", view);
+		
+		for (int i = 0; i < m_ModelList.size(); i++)
+			{
+
+
+				m_ModelList[i]->Drawskelton(RM.m_skeleton, RM.m_deltaTime);
+			}
+
+			
+
+			
 #endif
 		}
 
@@ -1541,6 +1613,159 @@ HRESULT APase::InitSkybox()
 	RM.m_Skybox.transform.scale[1] = 10;
 	RM.m_Skybox.transform.scale[2] = 10;
 	#endif
+	return S_OK;
+}
+
+HRESULT APase::InitSkeleto()
+{
+	auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
+	auto& RM = RManager::SingletonRM();
+
+	/*
+	* 1- paso cargar shader
+	* 2-create render targets
+	*/
+#if defined(DX11)
+
+
+
+
+	HRESULT hr = S_OK;
+
+
+	D3D11_RASTERIZER_DESC dr;
+	dr.CullMode = D3D11_CULL_NONE;
+	dr.FillMode = D3D11_FILL_SOLID;
+	dr.FrontCounterClockwise = false;
+	dr.DepthBiasClamp = 0;
+	dr.DepthClipEnable = 0;
+	dr.SlopeScaledDepthBias = 0;
+	dr.DepthClipEnable = FALSE;
+	dr.MultisampleEnable = TRUE;
+	dr.ScissorEnable = FALSE;
+	dr.AntialiasedLineEnable = FALSE;
+	hr = testObj.g_pd3dDevice.A_CreateRasterizerState(&dr, &m_Rasterizador);
+	if (FAILED(hr))
+	{
+
+	}
+
+	// Compile the vertex shader
+
+	ID3DBlob* pVSBlob = NULL;
+	hr = CompileShaderFromFile("Skeletonvs.fx", RM.m_macros.data(), "vs_main", "vs_4_0", &pVSBlob);
+	if (FAILED(hr))
+	{
+		MessageBox(NULL,
+			"The FX file cannot be compiled.  Please run this executable from the directory that contains the FX file.", "Error", MB_OK);
+		return hr;
+	}
+
+	// Create the vertex shader
+	hr = testObj.g_pd3dDevice.A_CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), NULL, &g_pVertexShader);
+	if (FAILED(hr))
+	{
+
+	}
+
+	// Reflect shader info
+	ID3D11ShaderReflection* pVertexShaderReflection = NULL;
+	if (FAILED(D3DReflect(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), IID_ID3D11ShaderReflection, (void**)&pVertexShaderReflection)))
+	{
+		pVSBlob->Release();
+		return hr;
+	}
+
+	// Get shader info
+	D3D11_SHADER_DESC shaderDesc;
+	pVertexShaderReflection->GetDesc(&shaderDesc);
+
+	// Read input layout description from shader info
+	std::vector<D3D11_INPUT_ELEMENT_DESC> inputLayoutDesc;
+	for (UINT32 i = 0; i < shaderDesc.InputParameters; i++)
+	{
+		D3D11_SIGNATURE_PARAMETER_DESC paramDesc;
+		pVertexShaderReflection->GetInputParameterDesc(i, &paramDesc);
+
+		// fill out input element desc
+		D3D11_INPUT_ELEMENT_DESC elementDesc;
+		elementDesc.SemanticName = paramDesc.SemanticName;
+		elementDesc.SemanticIndex = paramDesc.SemanticIndex;
+		elementDesc.InputSlot = 0;
+		elementDesc.AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
+		elementDesc.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+		elementDesc.InstanceDataStepRate = 0;
+
+		// determine DXGI format
+		if (paramDesc.Mask == 1)
+		{
+			if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_UINT32) elementDesc.Format = DXGI_FORMAT_R32_UINT;
+			else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_SINT32) elementDesc.Format = DXGI_FORMAT_R32_SINT;
+			else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32) elementDesc.Format = DXGI_FORMAT_R32_FLOAT;
+		}
+		else if (paramDesc.Mask <= 3)
+		{
+			if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_UINT32) elementDesc.Format = DXGI_FORMAT_R32G32_UINT;
+			else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_SINT32) elementDesc.Format = DXGI_FORMAT_R32G32_SINT;
+			else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32) elementDesc.Format = DXGI_FORMAT_R32G32_FLOAT;
+		}
+		else if (paramDesc.Mask <= 7)
+		{
+			if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_UINT32) elementDesc.Format = DXGI_FORMAT_R32G32B32_UINT;
+			else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_SINT32) elementDesc.Format = DXGI_FORMAT_R32G32B32_SINT;
+			else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32) elementDesc.Format = DXGI_FORMAT_R32G32B32_FLOAT;
+		}
+		else if (paramDesc.Mask <= 15)
+		{
+			if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_UINT32) elementDesc.Format = DXGI_FORMAT_R32G32B32A32_UINT;
+			else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_SINT32) elementDesc.Format = DXGI_FORMAT_R32G32B32A32_SINT;
+			else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32) elementDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+		}
+
+		//save element desc
+		inputLayoutDesc.push_back(elementDesc);
+	}
+
+	// Try to create Input Layout
+	hr = testObj.g_pd3dDevice.A_CreateInputLayout(&inputLayoutDesc[0], inputLayoutDesc.size(), pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), &g_pVertexLayout);
+
+	//Free allocation shader reflection memory
+	pVertexShaderReflection->Release();
+	pVSBlob->Release();
+
+
+	// Compile the pixel shader
+	ID3DBlob* pPSBlob = NULL;
+	hr = CompileShaderFromFile("Skeleton.fx", RM.m_macros.data(), "ps_main", "ps_4_0", &pPSBlob);
+	if (FAILED(hr))
+	{
+		MessageBox(NULL,
+			"The FX file cannot be compiled.  Please run this executable from the directory that contains the FX file.", "Error", MB_OK);
+		return hr;
+	}
+
+	// Create the pixel shader
+	hr = testObj.g_pd3dDevice.A_CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), NULL, &g_pPixelShader);
+	if (FAILED(hr)) {
+
+
+		pPSBlob->Release();
+		return hr;
+	}
+
+	
+#endif
+#if defined(OGL)
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_FRONT);
+	glFrontFace(GL_CW);
+
+
+	
+	RM.m_skeleton.Init("ShaderOGL\\Skeletal.vs", "ShaderOGL\\Skeletal.fs");
+
+
+#endif
 	return S_OK;
 }
 

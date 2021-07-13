@@ -5,7 +5,7 @@ AAnimator::~AAnimator()
 {
 }
 
-AAnimator::AAnimator(AAnimation* current)
+AAnimator::AAnimator(AModel* current)
 {
 
 	m_CurrentAnimation = current;
@@ -16,7 +16,7 @@ AAnimator::AAnimator(AAnimation* current)
 		m_Transforms.push_back(glm::mat4(0.0f));
 }
 
-void AAnimator::Init(AAnimation* current)
+void AAnimator::Init(AModel* current)
 {
 	m_CurrentAnimation = current;
 	m_CurrentTime = 0.0f;
@@ -44,7 +44,7 @@ void AAnimator::UpdateAnimation(float dt)
 	}
 }
 
-void AAnimator::PlayAnimation(AAnimation* pAnimation)
+void AAnimator::PlayAnimation(AModel* pAnimation)
 {
 	m_CurrentAnimation = pAnimation;
 	m_CurrentTime = 0.0f;
@@ -60,27 +60,7 @@ void AAnimator::CalculateBoneTransform(const AssimpData* node, glm::mat4 parentT
 	ABone* Bone = m_CurrentAnimation->FindBone(nodeName);
 	if (Bone)
 	{
-	/*
-		// Interpolate scaling and generate scaling transformation matrix
-		aiVector3D Scaling;
-		CalcInterpolatedScaling(Scaling, m_CurrentAnimation->GetDuration(), pNodeAnim);
-		glm::mat4 ScalingM;
-		ScalingM=AHelper::InitScaleTransform(Scaling.x, Scaling.y, Scaling.z);
-
-		// Interpolate rotation and generate rotation transformation matrix
-		aiQuaternion RotationQ;
-		CalcInterpolatedRotation(RotationQ, m_CurrentAnimation->GetDuration(), pNodeAnim);
-		glm::mat4 RotationM = AHelper::Initmat3x3Asim(RotationQ.GetMatrix());
-
-		// Interpolate translation and generate translation transformation matrix
-		aiVector3D Translation;
-		CalcInterpolatedPosition(Translation, m_CurrentAnimation->GetDuration(), pNodeAnim);
-		glm::mat4  TranslationM;
-		TranslationM = AHelper::InitTranslationTransform(Translation.x, Translation.y, Translation.z);
-
-		// Combine the above transformations
-		nodeTransform = TranslationM * RotationM * ScalingM;
-	*/
+	
 	
 		Bone->Update(m_CurrentTime);
 		nodeTransform = Bone->GetLocalTransform();
@@ -95,7 +75,7 @@ void AAnimator::CalculateBoneTransform(const AssimpData* node, glm::mat4 parentT
 		int index = boneInfoMap[nodeName].id;
 		glm::mat4 offset = boneInfoMap[nodeName].offset;
 		m_Transforms[index] = globalTransformation * offset ;
-		//AHelper::ConvertMatrixToGLMFormat(m_CurrentAnimation->globalTransformation) ;
+	
 		
 	}
 

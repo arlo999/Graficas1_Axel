@@ -32,6 +32,8 @@ public:
 	HRESULT InitSao();
 	HRESULT InitTooneMap();
 	HRESULT InitSkybox();
+	HRESULT InitSkeleto();
+
 
 	bool forward = false;
 

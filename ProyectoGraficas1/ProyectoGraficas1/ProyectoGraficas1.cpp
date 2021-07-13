@@ -14,10 +14,7 @@
 #include <GLFW/glfw3.h>
 #endif
 
-//#include "AAnimation.h"
-#include "AAnimator.h"
 #include "AModel.h"
-
 #include "GraphicsModule.h"
 
 #if defined(DX11)
@@ -44,8 +41,7 @@ float lastY = 720 / 2.0f;
 bool show_demo_window = true;
 bool show_another_window = false;
 ImVec4 clear_color = ImVec4(0.0f, 0.125f, 0.3f, 1.0f);
-AAnimation m_animation;
-AAnimator m_animator;
+
 //-------------------------- timing------------------//
 
 float deltaTime = 0.0f;
@@ -150,16 +146,15 @@ void LoadModel(const std::string& _Filename, unsigned int type)
     ourModel->bgr=true;
 	 ourModel->loadModel(_Filename);
      models.push_back(ourModel);
-	 m_animation.Init(_Filename, ourModel);
-	 m_animator.Init(&m_animation);
+	
      
     }else if(type ==2){
 		ourModel = new AModel;
 		ourModel->rgb = true;
 		ourModel->loadModel(_Filename);
 		models.push_back(ourModel);
-		m_animation.Init(_Filename, ourModel);
-		m_animator.Init(&m_animation);
+	
+	
 	
 
     }else if(type==3){
@@ -168,16 +163,16 @@ void LoadModel(const std::string& _Filename, unsigned int type)
 		ourModel->wire = true;
 		ourModel->loadModel(_Filename);
 		models.push_back(ourModel);
-		m_animation.Init(_Filename, ourModel);
-		m_animator.Init(&m_animation);
+	
+		
     }else if(type == 4){
     
 		ourModel = new AModel;
 		ourModel->point = true;
 		ourModel->loadModel(_Filename);
 		models.push_back(ourModel);
-		m_animation.Init(_Filename, ourModel);
-		m_animator.Init(&m_animation);
+		
+	
 	}
 	else if (type == 5) {
 
@@ -185,8 +180,8 @@ void LoadModel(const std::string& _Filename, unsigned int type)
 		ourModel->rgb = true;
 		ourModel->loadModel(_Filename);
 		models.push_back(ourModel);
-		m_animation.Init(_Filename, ourModel);
-		m_animator.Init(&m_animation);
+	
+	
 	}
 	else{
     
@@ -194,8 +189,8 @@ void LoadModel(const std::string& _Filename, unsigned int type)
 		ourModel->rgb = true;
 		ourModel->loadModel(_Filename);
 		models.push_back(ourModel);
-		m_animation.Init(_Filename, ourModel);
-		m_animator.Init(&m_animation);
+		
+	
 	}
      
     
@@ -396,6 +391,9 @@ HRESULT InitWindow(LONG _width, LONG _height)
     auto& testObj = GraphicsModule::GetTestObj(g_hwnd);
  
 #endif
+	
+
+
     return S_OK;
 }
 //-----------------------Function to init Imgui---------------//
@@ -511,6 +509,12 @@ HRESULT InitWindow(LONG _width, LONG _height)
 				if (ImGui::DragFloat3("Scale", models[i]->transform.scale, 0.001, -10, 10)) {}
 				if (ImGui::DragFloat3("Translation", models[i]->transform.traslation, 0.001, -10, 10)) {}
 				if (ImGui::DragFloat3("Rotation", models[i]->transform.rotation, 0.001, -10, 10)) {}
+				if (ImGui::RadioButton("Animation", models[i]->Tpose == true)) {
+					models[i]->Tpose = true;
+				} ImGui::SameLine();
+				if (ImGui::RadioButton("T-pose", models[i]->Tpose == false)) {
+					models[i]->Tpose = false;
+				} 
 				float my_tex_w = 256;
 				float my_tex_h = 256;
                 
@@ -983,18 +987,9 @@ HRESULT InitWindow(LONG _width, LONG _height)
 	 lastFrame = currentFrame;
 
 	 
-	 m_animator.UpdateAnimation(deltaTime);
-	 auto transforms = m_animator.GetPoseTransforms();
-	 RM.m_shaderGBuffer.Use();
-	 for (int i = 0; i < transforms.size(); ++i){
-		 RM.m_shaderGBuffer.setMat42("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
-		// RM.m_shaderGBuffer.setMat42("finalBonesMatrices", transforms[i]);
+	
 
-	// glUniformMatrix4fv(glGetUniformLocation(RM.m_shaderGBuffer.ID, "finalBonesMatrices[" + std::to_string(i) + "]"), 1, 1, glm::value_ptr(transforms[i]));
-
-	 }
-
-	 RM.Render(models);
+	 RM.Render(models, deltaTime);
 	
      UIRender();
 	
@@ -1007,20 +1002,14 @@ HRESULT InitWindow(LONG _width, LONG _height)
 	 auto& RM = RManager::SingletonRM();
      testObj.Render();
     //render manager
-	 float currentFrame = clock();
-	 deltaTime = currentFrame - lastFrame;
+	 
+	 float currentFrame = GetTickCount64();
+	 deltaTime = (float)((double)currentFrame - (double)lastFrame) / 1000.0f;
 	 lastFrame = currentFrame;
 
-	 m_animator.UpdateAnimation(deltaTime);
-	 auto transforms = m_animator.m_Transformsf;
-	 for (int i = 0; i < transforms.size(); ++i) {
-		
-			testObj.m_BonetransformBufferStruct.mWorldfinalBonesTransformations = transforms[i];
-		
-
-	 }
-	 testObj.g_pImmediateContext.A_VSSetConstantBuffers(3, 1, &testObj.m_BonetransformBuffer.getBufferDX11());
-    RM.Render(models);
+	
+	// testObj.g_pImmediateContext.A_VSSetConstantBuffers(3, 1, &testObj.m_BonetransformBuffer.getBufferDX11());
+    RM.Render(models,deltaTime);
 	
    
      UIRender();

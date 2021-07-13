@@ -13,4 +13,5 @@ struct BoneInfo
 	*/
 	glm::mat4 offset;
 
+	int indice;
 };
